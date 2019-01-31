@@ -100,8 +100,8 @@ void initialize_pins() {
 
 int assert_pin(int pin) {
 	/*
-	 *	need to search through pin database to map
-	 *	we can either search through the database and look for the pin_num,
+	 *	need to search through the pin database to map ports to physical pins
+	 *	we can either iterate through the db and look for the pin_num,
 	 *	which would cost us CPU cycles, or we could map the pin number to the
 	 *	index of the db array. 0 is always invalid, no 0 pin
 	 *	array size is thus the maximum pin number, plus one for the 0-index.
@@ -111,18 +111,20 @@ int assert_pin(int pin) {
 	if(pin >= ARRAY_SIZE(atmega328_pins)  || pin <= 0)
 		return -1;
 	else
-		switch(atmega328_pins[pin].port_reg) {
-			case ATMEL_PORT_B		:
-				PORTB |= (1 << atmega328_pins[pin].port_num);
-				return 0;
-			case ATMEL_PORT_C		:
-				PORTC |= (1 << atmega328_pins[pin].port_num);
-				return 0;
-			case ATMEL_PORT_D		:
-				PORTD |= (1 << atmega328_pins[pin].port_num);
-				return 0;
-			case ATMEL_PORT_INVAL	:
-				return -1;
+		if(atmega328_pins[pin].pin_dir == ATMEL_OUTPUT){
+			switch(atmega328_pins[pin].port_reg) {
+				case ATMEL_PORT_B		:
+					PORTB |= (1 << atmega328_pins[pin].port_num);
+					return 0;
+				case ATMEL_PORT_C		:
+					PORTC |= (1 << atmega328_pins[pin].port_num);
+					return 0;
+				case ATMEL_PORT_D		:
+					PORTD |= (1 << atmega328_pins[pin].port_num);
+					return 0;
+				case ATMEL_PORT_INVAL	:
+					return -1;
+			}
 		}
 
 	/* not reached */
@@ -133,18 +135,20 @@ int deassert_pin(int pin) {
 	if(pin >= ARRAY_SIZE(atmega328_pins)  || pin <= 0)
 		return -1;
 	else
-		switch(atmega328_pins[pin].port_reg) {
-			case ATMEL_PORT_B		:
-				PORTB &= ~(1 << atmega328_pins[pin].port_num);
-				return 0;
-			case ATMEL_PORT_C		:
-				PORTC &= ~(1 << atmega328_pins[pin].port_num);
-				return 0;
-			case ATMEL_PORT_D		:
-				PORTD &= ~(1 << atmega328_pins[pin].port_num);
-				return 0;
-			case ATMEL_PORT_INVAL	:
-				return -1;
+		if(atmega328_pins[pin].pin_dir == ATMEL_OUTPUT){
+			switch(atmega328_pins[pin].port_reg) {
+				case ATMEL_PORT_B		:
+					PORTB &= ~(1 << atmega328_pins[pin].port_num);
+					return 0;
+				case ATMEL_PORT_C		:
+					PORTC &= ~(1 << atmega328_pins[pin].port_num);
+					return 0;
+				case ATMEL_PORT_D		:
+					PORTD &= ~(1 << atmega328_pins[pin].port_num);
+					return 0;
+				case ATMEL_PORT_INVAL	:
+					return -1;
+			}
 		}
 
 	/* not reached */
