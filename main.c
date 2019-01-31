@@ -64,7 +64,6 @@ struct atmel_328_pin {
 
 void initialize_pins() {
 	for(int i = 0; i < ARRAY_SIZE(atmega328_pins); i++) {
-
 		if(atmega328_pins[i].port_reg != ATMEL_PORT_INVAL) {
 			if(atmega328_pins[i].pin_dir == ATMEL_OUTPUT) {
 				switch(atmega328_pins[i].port_reg) {
@@ -126,9 +125,7 @@ int assert_pin(int pin) {
 				return -1;
 		}
 
-	/*
-	 *	Not reached
-	 */
+	/* not reached */
 	return -1;
 }
 
@@ -150,9 +147,7 @@ int deassert_pin(int pin) {
 				return -1;
 		}
 
-	/*
-	 *	Not reached
-	 */
+	/* not reached */
 	return -1;
 }
 
@@ -170,5 +165,6 @@ int main() {
 			}
 		}
 	}
+
 	return(0);
 }
