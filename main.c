@@ -125,7 +125,8 @@ int assert_pin(int pin) {
 				case ATMEL_PORT_INVAL	:
 					return -1;
 			}
-		}
+		} else
+			return -1;
 
 	/* not reached */
 	return -1;
@@ -149,7 +150,8 @@ int deassert_pin(int pin) {
 				case ATMEL_PORT_INVAL	:
 					return -1;
 			}
-		}
+		} else
+			return -1;
 
 	/* not reached */
 	return -1;
