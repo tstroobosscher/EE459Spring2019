@@ -10,4 +10,4 @@ little different than the 328.
 C compiler set to C99
 
 Useful commands:
-	git archive -o snapshot.zip --format zip
+	git archive -o snapshot.zip --format zip HEAD

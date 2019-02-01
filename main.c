@@ -67,30 +67,30 @@ void initialize_pins() {
 		if(atmega328_pins[i].port_reg != ATMEL_PORT_INVAL) {
 			if(atmega328_pins[i].pin_dir == ATMEL_OUTPUT) {
 				switch(atmega328_pins[i].port_reg) {
-					case ATMEL_PORT_B		:
+					case ATMEL_PORT_B	:
 						DDRB |= (1 << atmega328_pins[i].port_num);
 						break;
-					case ATMEL_PORT_C		:
+					case ATMEL_PORT_C	:
 						DDRC |= (1 << atmega328_pins[i].port_num);
 						break;
-					case ATMEL_PORT_D		:
+					case ATMEL_PORT_D	:
 						DDRD |= (1 << atmega328_pins[i].port_num);
 						break;
-					case ATMEL_PORT_INVAL	:
+					default				:
 						break;
 				}
 			} else if(atmega328_pins[i].pin_dir == ATMEL_INPUT) {
 				switch(atmega328_pins[i].port_reg) {
-					case ATMEL_PORT_B		:
+					case ATMEL_PORT_B	:
 						DDRB &= ~(1 << atmega328_pins[i].port_num);
 						break;
-					case ATMEL_PORT_C		:
+					case ATMEL_PORT_C	:
 						DDRC &= ~(1 << atmega328_pins[i].port_num);
 						break;
-					case ATMEL_PORT_D		:
+					case ATMEL_PORT_D	:
 						DDRD &= ~(1 << atmega328_pins[i].port_num);
 						break;
-					case ATMEL_PORT_INVAL	:
+					default				:
 						break;
 				}
 			}
@@ -108,27 +108,25 @@ int assert_pin(int pin) {
 	 * 	therefore a pin request of ARRAY_SIZE is invalid
 	 */
 
-	if(pin >= ARRAY_SIZE(atmega328_pins)  || pin <= 0)
+	if(pin >= ARRAY_SIZE(atmega328_pins) || pin <= 0)
 		return -1;
 	else
-		if(atmega328_pins[pin].pin_dir == ATMEL_OUTPUT){
-			switch(atmega328_pins[pin].port_reg) {
-				case ATMEL_PORT_B		:
-					PORTB |= (1 << atmega328_pins[pin].port_num);
-					return 0;
-				case ATMEL_PORT_C		:
-					PORTC |= (1 << atmega328_pins[pin].port_num);
-					return 0;
-				case ATMEL_PORT_D		:
-					PORTD |= (1 << atmega328_pins[pin].port_num);
-					return 0;
-				case ATMEL_PORT_INVAL	:
-					return -1;
-			}
-		} else
-			return -1;
+		if(atmega328_pins[pin].port_reg != ATMEL_PORT_INVAL)
+			if(atmega328_pins[pin].pin_dir == ATMEL_OUTPUT)
+				switch(atmega328_pins[pin].port_reg) {
+					case ATMEL_PORT_B	:
+						PORTB |= (1 << atmega328_pins[pin].port_num);
+						return 0;
+					case ATMEL_PORT_C	:
+						PORTC |= (1 << atmega328_pins[pin].port_num);
+						return 0;
+					case ATMEL_PORT_D	:
+						PORTD |= (1 << atmega328_pins[pin].port_num);
+						return 0;
+					default				:
+						return -1;
+				}
 
-	/* not reached */
 	return -1;
 }
 
@@ -136,24 +134,22 @@ int deassert_pin(int pin) {
 	if(pin >= ARRAY_SIZE(atmega328_pins)  || pin <= 0)
 		return -1;
 	else
-		if(atmega328_pins[pin].pin_dir == ATMEL_OUTPUT){
-			switch(atmega328_pins[pin].port_reg) {
-				case ATMEL_PORT_B		:
-					PORTB &= ~(1 << atmega328_pins[pin].port_num);
-					return 0;
-				case ATMEL_PORT_C		:
-					PORTC &= ~(1 << atmega328_pins[pin].port_num);
-					return 0;
-				case ATMEL_PORT_D		:
-					PORTD &= ~(1 << atmega328_pins[pin].port_num);
-					return 0;
-				case ATMEL_PORT_INVAL	:
-					return -1;
-			}
-		} else
-			return -1;
-
-	/* not reached */
+		if(atmega328_pins[pin].port_reg != ATMEL_PORT_INVAL)
+			if(atmega328_pins[pin].pin_dir == ATMEL_OUTPUT)
+				switch(atmega328_pins[pin].port_reg) {
+					case ATMEL_PORT_B		:
+						PORTB &= ~(1 << atmega328_pins[pin].port_num);
+						return 0;
+					case ATMEL_PORT_C		:
+						PORTC &= ~(1 << atmega328_pins[pin].port_num);
+						return 0;
+					case ATMEL_PORT_D		:
+						PORTD &= ~(1 << atmega328_pins[pin].port_num);
+						return 0;
+					case ATMEL_PORT_INVAL	:
+						return -1;
+				}
+				
 	return -1;
 }
 
