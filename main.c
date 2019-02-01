@@ -62,7 +62,7 @@ struct atmel_328_pin {
 	28,	ATMEL_PORT_C, 5, ATMEL_OUTPUT,
 };
 
-void initialize_pins() {
+static void initialize_pins() {
 	for(int i = 0; i < ARRAY_SIZE(atmega328_pins); i++) {
 		if(atmega328_pins[i].port_reg != ATMEL_PORT_INVAL) {
 			if(atmega328_pins[i].pin_dir == ATMEL_OUTPUT) {
