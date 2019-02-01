@@ -6,3 +6,6 @@ so it might not work on other systems. For some reason the USBtiny doesn't
 enumerate a tty device, the avr toolchain interfaces with it through the usb bus 
 infrastructure with the VID:PID numbers. The programmer still works but its a
 little different than the 328.
+
+Useful commands:
+	git archive -o snapshot.zip --format zip

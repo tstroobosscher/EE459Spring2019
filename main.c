@@ -10,7 +10,7 @@
 
 #define ARRAY_SIZE(x) (sizeof((x))/sizeof((x)[0]))
 /* milliseconds */
-#define PAUSE 100
+#define PULSE_WIDTH_MS 100
 
 enum {
 	ATMEL_PORT_B,
@@ -155,20 +155,24 @@ int deassert_pin(int pin) {
 	return -1;
 }
 
+void pulse_pin(int pin) {
+	/*
+	 *	assert the pin, wait, deassert
+	 *	delay time must be known at compile time
+	 */
+	assert_pin(pin);
+	_delay_ms(PULSE_WIDTH_MS);
+	deassert_pin(pin);
+}
+
 int main() {
 
 	initialize_pins();
-
-	while(1){
-		for(int i = 0; i < ARRAY_SIZE(atmega328_pins); i++){
-			if(atmega328_pins[i].port_reg != ATMEL_PORT_INVAL){
-				assert_pin(i);
-				_delay_ms(PAUSE);
-				deassert_pin(i);
-				_delay_ms(PAUSE);
-			}
-		}
-	}
+	
+	while(1)		
+		for(int i = 0; i < ARRAY_SIZE(atmega328_pins); i++)
+			if(atmega328_pins[i].port_reg != ATMEL_PORT_INVAL)
+				pulse_pin(i);
 
 	return(0);
 }
