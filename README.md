@@ -7,5 +7,7 @@ enumerate a tty device, the avr toolchain interfaces with it through the usb bus
 infrastructure with the VID:PID numbers. The programmer still works but its a
 little different than the 328.
 
+C compiler set to C99
+
 Useful commands:
 	git archive -o snapshot.zip --format zip
