@@ -44,9 +44,9 @@
 #define PIN_TX 3
 
 void initialize_pins();
-int assert_pin(int pin);
-int deassert_pin(int pin);
-void pulse_pin(int pin);
+char assert_pin(char pin);
+char deassert_pin(char pin);
+void pulse_pin(char pin);
 void cycle_pins();
 
 #endif

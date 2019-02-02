@@ -21,11 +21,13 @@ static const enum {
 	ATMEL_DIR_INVAL,
 };
 
+
+/* set pin behavior here (OUTPUT/INPUT) */
 static const struct atmel_328_pin {
-	int pin_num;
-	int port_reg;
-	int port_num;
-	int pin_dir;
+	unsigned char pin_num;
+	unsigned char port_reg;
+	unsigned char port_num;
+	unsigned char pin_dir;
 } atmega328_pins[] = {
 	0,	ATMEL_PORT_INVAL,	0,	ATMEL_DIR_INVAL,
 	1,	ATMEL_PORT_INVAL,	0,	ATMEL_DIR_INVAL,
@@ -96,7 +98,7 @@ void initialize_pins() {
 }
 
 /* export */
-int assert_pin(int pin) {
+char assert_pin(char pin) {
 	/*
 	 *	need to search through the pin database to map ports to physical pins
 	 *	we can either iterate through the db and look for the pin_num,
@@ -126,7 +128,7 @@ int assert_pin(int pin) {
 }
 
 /* export */
-int deassert_pin(int pin) {
+char deassert_pin(char pin) {
 	if(pin < ARRAY_SIZE(atmega328_pins)  || pin > 0)
 		if(atmega328_pins[pin].port_reg != ATMEL_PORT_INVAL)
 			if(atmega328_pins[pin].pin_dir == ATMEL_OUTPUT)
@@ -148,7 +150,7 @@ int deassert_pin(int pin) {
 }
 
 /* export */
-void pulse_pin(int pin) {
+void pulse_pin(char pin) {
 	/*
 	 *	assert the pin, wait, deassert
 	 *	delay time must be known at compile time
