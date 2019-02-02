@@ -6,15 +6,15 @@
 
 /*
  *	Pin assignments:
- *		1:	Reset
+ *		1:	(Invalid) Reset
  *		2:	(UART) RX
  *		3:	(UART) TX
  *		4:
  *		5:
  *		6:
- *		7:	VCC
- *		8:	GND
- *		9:	XTAL
+ *		7:	(Invalid) VCC
+ *		8:	(Invalid) GND
+ *		9:	(Invalid) XTAL
  *		10:	
  *		11:
  *		12:
@@ -25,9 +25,9 @@
  *		17:
  *		18:
  *		19:
- *		20: AVCC
- *		21:	AREF
- *		22:	GND
+ *		20: (Invalid) AVCC
+ *		21:	(Invalid) AREF
+ *		22:	(Invalid) GND
  *		23:	(Analog)
  *		24:	(Analog)
  *		25:	(Analog)
