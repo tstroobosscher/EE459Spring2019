@@ -161,6 +161,6 @@ void pulse_pin(int pin) {
 /* export */
 void cycle_pins() {
 	for(int i = 0; i < ARRAY_SIZE(atmega328_pins); i++)
-			if(atmega328_pins[i].port_reg != ATMEL_PORT_INVAL)
-				pulse_pin(i);
+		if(atmega328_pins[i].port_reg != ATMEL_PORT_INVAL)
+			pulse_pin(i);
 }
