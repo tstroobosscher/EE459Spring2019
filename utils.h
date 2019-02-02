@@ -6,7 +6,6 @@
 #define UTILS_H
 
 #define ARRAY_SIZE(x) (sizeof((x))/sizeof((x)[0]))
-
-void delay_ms(int ms);
+#define DELAY_MS(x) (_delay_ms(x))
 
 #endif

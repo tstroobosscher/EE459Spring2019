@@ -154,7 +154,7 @@ void pulse_pin(int pin) {
 	 *	delay time must be known at compile time
 	 */
 	assert_pin(pin);
-	_delay_ms(PULSE_WIDTH_MS);
+	DELAY_MS(PULSE_WIDTH_MS);
 	deassert_pin(pin);
 }
 
