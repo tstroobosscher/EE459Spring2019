@@ -16,7 +16,7 @@ static const enum {
 	ATMEL_PORT_INVAL,
 };
 
-/* DDR */
+/* DDRX */
 static const enum {
 	ATMEL_INPUT,
 	ATMEL_OUTPUT,
