@@ -105,7 +105,6 @@ int assert_pin(int pin) {
 	 *	array size is thus the maximum pin number, plus one for the 0-index.
 	 * 	therefore a pin request of ARRAY_SIZE is invalid
 	 */
-
 	if(pin < ARRAY_SIZE(atmega328_pins) && pin > 0)
 		if(atmega328_pins[pin].port_reg != ATMEL_PORT_INVAL)
 			if(atmega328_pins[pin].pin_dir == ATMEL_OUTPUT)
