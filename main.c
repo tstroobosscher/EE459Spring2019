@@ -1,12 +1,12 @@
+/*
+ *	EE459 Spring 2019 Team 17 - Main
+ */
+
 #include <avr/io.h>
 #include <util/delay.h>
 
 #include "pins.h"
 #include "utils.h"
-
-/*
- *	EE459 Spring 2019 Team 17 - Main
- */
 
 int main() {
 

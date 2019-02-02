@@ -1,3 +1,7 @@
+/*
+ *	EE459 Team 17 - Pins header
+ */
+
 #ifndef PINS_H
 #define PINS_H
 
