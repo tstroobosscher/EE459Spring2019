@@ -8,7 +8,20 @@
 #include "pins.h"
 #include "utils.h"
 
-const struct atmel_328_pin {
+static const enum {
+	ATMEL_PORT_B,
+	ATMEL_PORT_C,
+	ATMEL_PORT_D,
+	ATMEL_PORT_INVAL,
+};
+
+static const enum {
+	ATMEL_INPUT,
+	ATMEL_OUTPUT,
+	ATMEL_DIR_INVAL,
+};
+
+static const struct atmel_328_pin {
 	int pin_num;
 	int port_reg;
 	int port_num;
@@ -45,6 +58,7 @@ const struct atmel_328_pin {
 	28,	ATMEL_PORT_C, 5, ATMEL_OUTPUT,
 };
 
+/* export */
 void initialize_pins() {
 	for(int i = 0; i < ARRAY_SIZE(atmega328_pins); i++) {
 		if(atmega328_pins[i].port_reg != ATMEL_PORT_INVAL) {
@@ -81,6 +95,7 @@ void initialize_pins() {
 	}
 }
 
+/* export */
 int assert_pin(int pin) {
 	/*
 	 *	need to search through the pin database to map ports to physical pins
@@ -111,6 +126,7 @@ int assert_pin(int pin) {
 	return -1;
 }
 
+/* export */
 int deassert_pin(int pin) {
 	if(pin < ARRAY_SIZE(atmega328_pins)  || pin > 0)
 		if(atmega328_pins[pin].port_reg != ATMEL_PORT_INVAL)
@@ -132,6 +148,7 @@ int deassert_pin(int pin) {
 	return -1;
 }
 
+/* export */
 void pulse_pin(int pin) {
 	/*
 	 *	assert the pin, wait, deassert
@@ -140,4 +157,11 @@ void pulse_pin(int pin) {
 	assert_pin(pin);
 	_delay_ms(PULSE_WIDTH_MS);
 	deassert_pin(pin);
+}
+
+/* export */
+void cycle_pins() {
+	for(int i = 0; i < ARRAY_SIZE(atmega328_pins); i++)
+			if(atmega328_pins[i].port_reg != ATMEL_PORT_INVAL)
+				pulse_pin(i);
 }
