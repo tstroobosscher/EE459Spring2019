@@ -167,7 +167,7 @@ int main() {
 
 	initialize_pins();
 	
-	while(1)		
+	while(1)
 		for(int i = 0; i < ARRAY_SIZE(atmega328_pins); i++)
 			if(atmega328_pins[i].port_reg != ATMEL_PORT_INVAL)
 				pulse_pin(i);
