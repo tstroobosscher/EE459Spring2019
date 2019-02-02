@@ -1,7 +1,7 @@
 # EE459Spring2019
 Group 17 code
 
-#Makefile/Compiler
+##Makefile/Compiler
 
 The compiler flags were set up to target the ISP programmer from a linux machine
 so it might not work on other systems. For some reason the USBtiny doesn't 
@@ -14,7 +14,7 @@ C compiler set to C99
 	-std=c99
 ```
 
-#Pins
+##Pins
 
 Pin definitions are set in the pin structure of the pins.c file. The structure 
 maps the physical pin numbers to their individual registers. So instead of 
@@ -31,11 +31,11 @@ all configured to output. To switch just write:
 	struct {
 	...
 	#,	PORT_REG, #, ATMEL_OUTPUT/ATMEL_INPUT
-    ...
-}
+	...
+	}
 ```
 
-#Useful Commands
+##Useful Commands
 ```
 	git archive -o snapshot.zip --format zip HEAD
 ```
