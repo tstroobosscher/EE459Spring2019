@@ -8,6 +8,7 @@
 #include "pins.h"
 #include "utils.h"
 
+/* PORTX */
 static const enum {
 	ATMEL_PORT_B,
 	ATMEL_PORT_C,
@@ -15,6 +16,7 @@ static const enum {
 	ATMEL_PORT_INVAL,
 };
 
+/* DDR */
 static const enum {
 	ATMEL_INPUT,
 	ATMEL_OUTPUT,
