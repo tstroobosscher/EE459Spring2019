@@ -87,20 +87,20 @@ CPU resources.
 
 EDIT:
 We can emulate this functionality with the various hardware interrupts the 328
-supports:<br>
-	INT0_vect		: Generic external<br>
-	INT1_vect		: Generic external<br>
-	PCINT0_vect		: Pin change PORTB<br>
-	PCINT1_vect		: Pin change PORTC<br>
-	PCINT2_vect		: Pin change PORTD<br>
-	SPI_STC_vect	: SPI transfer complete<br>
-	USART_RX_vect	: UART RX complete<br>
-	USART_UDRE_vect	: UART data register empty<br>
-	USART_TX_vect	: UART TX complete<br>
-	ADC_vect		: ADC conversion complete<br>
-	TWI_vect		: I2C? Might be useful<br>
-	and all the various timer interrupts<br>
-<br>
+supports:\s\s
+	+ INT0_vect		: Generic external\s\s
+	+ INT1_vect		: Generic external\s\s
+	+ PCINT0_vect		: Pin change PORTB\s\s
+	+ PCINT1_vect		: Pin change PORTC\s\s
+	+ PCINT2_vect		: Pin change PORTD\s\s
+	+ SPI_STC_vect	: SPI transfer complete\s\s
+	+ USART_RX_vect	: UART RX complete\s\s
+	+ USART_UDRE_vect	: UART data register empty\s\s
+	+ USART_TX_vect	: UART TX complete\s\s
+	+ ADC_vect		: ADC conversion complete\s\s
+	+ TWI_vect		: I2C? Might be useful\s\s
+	+ and all the various timer interrupts\s\s
+
 I have no idea what this would entail, but it wouldn't hurt to do some research
 on the topic to see if there are any open source libraries that we could 
 possibly take inspiration from.
