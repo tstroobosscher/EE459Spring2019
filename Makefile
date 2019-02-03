@@ -9,21 +9,26 @@ FUSES      = -U hfuse:w:0xde:m -U lfuse:w:0xff:m -U efuse:w:0x05:m
 AVRDUDE = avrdude $(PROGRAMMER) -p $(DEVICE)
 COMPILE = avr-gcc -std=c99 -Wall -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE)
 
+PWD = $(shell pwd)
+COMMIT = $(shell git rev-parse HEAD)
+
+STATS_FILE = $(PWD)/avr_size.txt
+
 # symbolic targets:
 all:	main.hex
 
 .c.o:
-	$(COMPILE) -c $< -o $@
+	@$(COMPILE) -c $< -o $@
 
 .S.o:
-	$(COMPILE) -x assembler-with-cpp -c $< -o $@
+	@$(COMPILE) -x assembler-with-cpp -c $< -o $@
 # "-x assembler-with-cpp" should not be necessary since this is the default
 # file type for the .S (with capital S) extension. However, upper case
 # characters are not always preserved on Windows. To ensure WinAVR
 # compatibility define the file type manually.
 
 .c.s:
-	$(COMPILE) -S $< -o $@
+	@$(COMPILE) -S $< -o $@
 
 flash:	all
 	$(AVRDUDE) -U flash:w:main.hex:i
@@ -39,16 +44,19 @@ load: all
 	bootloadHID main.hex
 
 clean:
-	rm -f main.hex main.elf $(OBJECTS)
+	@rm -f main.hex main.elf $(OBJECTS)
+	@rm -f $(STATS_FILE)
 
 # file targets:
 main.elf: $(OBJECTS)
 	$(COMPILE) -o main.elf $(OBJECTS)
 
 main.hex: main.elf
-	rm -f main.hex
-	avr-objcopy -j .text -j .data -O ihex main.elf main.hex
-	avr-size --format=avr --mcu=$(DEVICE) main.elf
+	@rm -f main.hex
+	@avr-objcopy -j .text -j .data -O ihex main.elf main.hex
+	@echo "Commit : $(COMMIT)\n" > $(STATS_FILE)
+	@avr-size --format=avr --mcu=$(DEVICE) main.elf >> $(STATS_FILE)
+	@cat $(STATS_FILE)
 # If you have an EEPROM section, you must also create a hex file for the
 # EEPROM and add it to the "flash" target.
 

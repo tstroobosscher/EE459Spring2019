@@ -107,7 +107,7 @@ void initialize_pins() {
 char get_pin(char pin) {
 	/*
 	 *  return 1 if pin 1, 0 if 0, and -1 if error
-	 *	########### Not tested yet #############
+	 *	########### Not tested yet ############
 	 */
 	if(pin < ARRAY_SIZE(atmega328_pins) && pin > 0)
 		if(atmega328_pins[pin].port_reg != ATMEL_PORT_INVAL)
