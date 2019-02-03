@@ -8,6 +8,23 @@
 /* milliseconds */
 #define PULSE_WIDTH_MS 100
 
+/* PORTX */
+#define	ATMEL_PORT_B 0
+#define	ATMEL_PORT_C 1
+#define	ATMEL_PORT_D 2
+#define	ATMEL_PORT_INVAL 3
+
+/* DDRX */
+#define	ATMEL_INPUT 0
+#define	ATMEL_OUTPUT 1
+#define	ATMEL_DIR_INVAL 2
+
+/* Internal Pull-Ups */
+#define	ATMEL_PULL_ENA 0
+#define	ATMEL_PULL_DIS 1
+#define	ATMEL_PULL_INVAL 2
+
+
 /*
  *	Pin assignments:
  *		1:	(Invalid) Reset

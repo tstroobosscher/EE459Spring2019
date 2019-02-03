@@ -8,28 +8,6 @@
 #include "pins.h"
 #include "utils.h"
 
-/* PORTX */
-static const enum {
-	ATMEL_PORT_B,
-	ATMEL_PORT_C,
-	ATMEL_PORT_D,
-	ATMEL_PORT_INVAL,
-};
-
-/* DDRX */
-static const enum {
-	ATMEL_INPUT,
-	ATMEL_OUTPUT,
-	ATMEL_DIR_INVAL,
-};
-
-/* Internal Pull-Ups */
-static const enum {
-	ATMEL_PULL_ENA,
-	ATMEL_PULL_DIS,
-	ATMEL_PULL_INVAL,
-};
-
 /* set pin behavior here (OUTPUT/INPUT), ENA/DIS internal pull ups */
 static const struct atmel_328_pin {
 	unsigned char pin_num;
@@ -71,6 +49,9 @@ static const struct atmel_328_pin {
 
 /* export */
 void initialize_pins() {
+	/*
+	 *	Here we are assuming that internal pull ups are off by default
+	 */
 	for(int i = 0; i < ARRAY_SIZE(atmega328_pins); i++) {
 		if(atmega328_pins[i].port_reg != ATMEL_PORT_INVAL) {
 			if(atmega328_pins[i].pin_dir == ATMEL_OUTPUT) {
@@ -101,6 +82,7 @@ void initialize_pins() {
 					default				:
 						break;
 				}
+				/* set internal pull-ups if input pin */
 				if(atmega328_pins[i].pull_up == ATMEL_PULL_ENA) {
 					switch(atmega328_pins[i].port_reg) {
 						case ATMEL_PORT_B	:
@@ -124,26 +106,22 @@ void initialize_pins() {
 /* export */
 char get_pin(char pin) {
 	/*
-	 *	need to search through the pin database to map ports to physical pins
-	 *	we can either iterate through the db and look for the pin_num,
-	 *	which would cost us CPU cycles, or we could map the pin number to the
-	 *	index of the db array. 0 is always invalid, no 0 pin
-	 *	array size is thus the maximum pin number, plus one for the 0-index.
-	 * 	therefore a pin request of ARRAY_SIZE is invalid
+	 *  return 1 if pin 1, 0 if 0, and -1 if error
+	 *	########### Not tested yet #############
 	 */
 	if(pin < ARRAY_SIZE(atmega328_pins) && pin > 0)
 		if(atmega328_pins[pin].port_reg != ATMEL_PORT_INVAL)
 			if(atmega328_pins[pin].pin_dir == ATMEL_INPUT)
 				switch(atmega328_pins[pin].port_reg) {
 					case ATMEL_PORT_B	:
-						PINB |= (1 << atmega328_pins[pin].port_num);
-						return 0;
+						return(
+							(PINB & ~(1 << atmega328_pins[pin].port_num)) > 0);
 					case ATMEL_PORT_C	:
-						PINC |= (1 << atmega328_pins[pin].port_num);
-						return 0;
+						return(
+							(PINC & ~(1 << atmega328_pins[pin].port_num)) > 0);
 					case ATMEL_PORT_D	:
-						PIND |= (1 << atmega328_pins[pin].port_num);
-						return 0;
+						return(
+							(PIND & ~(1 << atmega328_pins[pin].port_num)) > 0);
 					default				:
 						return -1;
 				}
