@@ -115,4 +115,4 @@ possibly take inspiration from.
 ## Stats
 | Date | Commit | Program Space | Data Space |
 |---|---|---|---|
-| February 3, 2019 | 1a580e57 | 3.2% | 7,1% |
+| February 3, 2019 | 1a580e57 | 3.2% | 7.1% |
