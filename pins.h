@@ -15,14 +15,14 @@
 #define	ATMEL_PORT_INVAL 3
 
 /* DDRX */
-#define	ATMEL_INPUT 0
-#define	ATMEL_OUTPUT 1
-#define	ATMEL_DIR_INVAL 2
+#define	ATMEL_INPUT 4
+#define	ATMEL_OUTPUT 5
+#define	ATMEL_DIR_INVAL 6
 
 /* Internal Pull-Ups */
-#define	ATMEL_PULL_ENA 0
-#define	ATMEL_PULL_DIS 1
-#define	ATMEL_PULL_INVAL 2
+#define	ATMEL_PULL_ENA 7
+#define	ATMEL_PULL_DIS 8
+#define	ATMEL_PULL_INVAL 9
 
 
 /*
@@ -61,6 +61,7 @@
 #define PIN_TX 3
 
 void initialize_pins();
+char get_pin(char pin);
 char assert_pin(char pin);
 char deassert_pin(char pin);
 void pulse_pin(char pin);

@@ -54,7 +54,7 @@ main.elf: $(OBJECTS)
 main.hex: main.elf
 	@rm -f main.hex
 	@avr-objcopy -j .text -j .data -O ihex main.elf main.hex
-	@echo "Commit : $(COMMIT)\n" > $(STATS_FILE)
+	@echo "Commit: $(COMMIT)\n" > $(STATS_FILE)
 	@avr-size --format=avr --mcu=$(DEVICE) main.elf >> $(STATS_FILE)
 	@cat $(STATS_FILE)
 # If you have an EEPROM section, you must also create a hex file for the
