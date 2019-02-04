@@ -12,7 +12,7 @@ int main() {
 
 	initialize_pins();
 	
-	while(1)		
+	while(1)
 		cycle_pins();
 
 	return(0);

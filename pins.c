@@ -86,16 +86,16 @@ void initialize_pins() {
 				if(atmega328_pins[i].pull_up == ATMEL_PULL_ENA) {
 					switch(atmega328_pins[i].port_reg) {
 						case ATMEL_PORT_B	:
-						PORTB |= (1 << atmega328_pins[i].port_num);
-						break;
-					case ATMEL_PORT_C	:
-						PORTC |= (1 << atmega328_pins[i].port_num);
-						break;
-					case ATMEL_PORT_D	:
-						PORTD |= (1 << atmega328_pins[i].port_num);
-						break;
-					default				:
-						break;
+							PORTB |= (1 << atmega328_pins[i].port_num);
+							break;
+						case ATMEL_PORT_C	:
+							PORTC |= (1 << atmega328_pins[i].port_num);
+							break;
+						case ATMEL_PORT_D	:
+							PORTD |= (1 << atmega328_pins[i].port_num);
+							break;
+						default				:
+							break;
 					}
 				}
 			}

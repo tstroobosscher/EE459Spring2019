@@ -34,7 +34,7 @@ all configured to output. To switch just write:
 ```
 	struct {
 	...
-	#,	PORT_REG, #, ATMEL_OUTPUT/ATMEL_INPUT
+	#,	PORT_REG, #, ATMEL_OUTPUT/ATMEL_INPUT, PULL_UP/DN
 	...
 	}
 ```
@@ -111,3 +111,8 @@ possibly take inspiration from.
 ```
 	git archive -o snapshot.zip --format zip HEAD
 ```
+
+## Stats
+| Date | Commit | Program Space | Data Space |
+|---|---|---|---|
+| February 3, 2019 | 1a580e57 | 3.2% | 7,1% |
