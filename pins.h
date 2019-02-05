@@ -9,21 +9,26 @@
 #define PULSE_WIDTH_MS 100
 
 /* PORTX */
-#define	ATMEL_PORT_B 0
-#define	ATMEL_PORT_C 1
-#define	ATMEL_PORT_D 2
-#define	ATMEL_PORT_INVAL 3
+const enum {
+	ATMEL_PORT_B,
+	ATMEL_PORT_C,
+	ATMEL_PORT_D,
+	ATMEL_PORT_INVAL,
+};
 
 /* DDRX */
-#define	ATMEL_INPUT 4
-#define	ATMEL_OUTPUT 5
-#define	ATMEL_DIR_INVAL 6
+const enum {
+	ATMEL_INPUT,
+	ATMEL_OUTPUT,
+	ATMEL_DIR_INVAL,
+};
 
 /* Internal Pull-Ups */
-#define	ATMEL_PULL_ENA 7
-#define	ATMEL_PULL_DIS 8
-#define	ATMEL_PULL_INVAL 9
-
+const enum {
+	ATMEL_PULL_ENA,
+	ATMEL_PULL_DIS,
+	ATMEL_PULL_INVAL,
+};
 
 /*
  *	Pin assignments:
