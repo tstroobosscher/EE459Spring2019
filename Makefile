@@ -11,6 +11,7 @@ COMPILE = avr-gcc -std=c99 -Wall -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE)
 
 PWD = $(shell pwd)
 COMMIT = $(shell git rev-parse HEAD)
+BRANCH = $(shell git rev-parse --abbrev-ref HEAD)
 
 STATS_FILE = $(PWD)/avr_size.txt
 

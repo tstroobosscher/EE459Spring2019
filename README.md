@@ -111,6 +111,45 @@ possibly take inspiration from.
 ```
 	git archive -o snapshot.zip --format zip HEAD
 ```
+### Cloning repository
+This creates a local repository identical to the remote one that you can test
+with and make changes to.
+You can grab the git URL from the "Clone or Download" tab on the repository 
+front page
+```
+	git clone <http-url-git>
+```
+### Viewing repository changes, both staged and unstaged
+```
+	git status
+```
+### Adding changed files to the commit stage
+Once you're comfortable with your changes you can mark then for addition to the
+repository's database. To add all changed files you can substitute the path
+argument with "." and execute from the project root.
+```
+	git add <path/to/file>
+```
+### Commiting changes
+Once the changes you make are finalized and added to the commitment stage they
+can be added to the permanent history of the repository.
+```
+	git commit -m "commit message, Hello!"
+```
+### Branching off on a working branch
+Typically you don't just make changes directly to the same branch every one
+else is working on. This can lead to data races and ends up being pretty
+annoying to work out once code gets mixed up. So generally you branch off onto
+your own section separate from everyone else, work there, and then merge in all
+your changes to the master all in one motion.
+```
+	git checkout -b New-Branch-Name
+```
+### Synchronizing your local repository with the remote
+This just pulls in other peoples changes into your own local repository.
+```
+	git pull
+```
 
 ## Stats
 | Date | Commit | Program Space | Data Space |
