@@ -105,6 +105,10 @@ I have no idea what this would entail, but it wouldn't hurt to do some research
 on the topic to see if there are any open source libraries that we could 
 possibly take inspiration from.
 
+# Draft of our Block Diagram
+
+<img src="resources/EE459_Diagram.png">
+
 ## Useful Commands
 
 ### Creating a snapshot of the repo
