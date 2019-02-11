@@ -36,7 +36,7 @@ broadcasted by all vehicles homologated for sale in the US after 2007,
 capturing live positional and geographical data, and presenting the aggregated
 data as a performance branded vehicle enhancement. This system will effectively
 give an end user access to professional grade vehicle performance monitoring 
-equipment in a single, monolithic package.
+equipment in a single, complete package.
 
 Purpose
 
@@ -101,7 +101,7 @@ finalized. At this point we will have a minimal end-to-end prototype of our
 idea. 
 
 	The month of March will be dedicated to expanding on our prototype by adding
-extra inputs (ex. sensors) and outputs (ex Flash memory). 
+extra inputs (ex. sensors) and outputs (ex Flash memory).
 	
 	Then April can be spent debugging, optimizing, and testing the product.
 
@@ -109,4 +109,8 @@ Major Tasks
 
 	Decide our minimum end-to-end implementation of our idea, order parts.
 
+	Decide on major parts for our I/O modules, Flash? 
+
+	Design interfacing structures to be able to communicate with the 
+	peripheral devices with the ATMEGA328.
 
