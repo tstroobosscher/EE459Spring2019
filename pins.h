@@ -66,10 +66,10 @@ const enum {
 #define PIN_TX 3
 
 void initialize_pins();
-char get_pin(char pin);
-char assert_pin(char pin);
-char deassert_pin(char pin);
-void pulse_pin(char pin);
+char get_pin(unsigned char pin);
+char assert_pin(unsigned char pin);
+char deassert_pin(unsigned char pin);
+void pulse_pin(unsigned char pin);
 void cycle_pins();
 
 #endif
