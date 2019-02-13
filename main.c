@@ -1,6 +1,8 @@
 /*
  *	EE459 Spring 2019 Team 17 - Main
  */
+ 
+ // the code is very simple
 
 #include <avr/io.h>
 #include <util/delay.h>
