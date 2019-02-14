@@ -1,6 +1,66 @@
 # EE459Spring2019
 Group 17 code
 
+# Recreational Vehicle Monitoring and Real-Time Data Analysis
+
+## Abstract
+
+Our project involves reading the standardized diagnostic information 
+broadcasted by all vehicles homologated for sale in the US after 2007,
+capturing live positional and geographical data, and presenting the aggregated
+data as a performance branded vehicle enhancement. This system will effectively
+give an end user access to professional grade vehicle performance monitoring 
+equipment in a single, complete package.
+
+## Purpose
+
+Our intention is to record readily available diagnostic information 
+combined with sensory data such as location and acceleration to a vehicle
+enthusiast and recreational racing participant for monitoring and analyis 
+purposes. With this system, users will be able to identify driving
+characteristics that can produce real-time and logged data that can then be
+carefully analyzed to optimize for any driving condition. With sensory data
+this generic, it would also be able to monitor driving conditions that can
+lead to safety hazards, premature vehicle and engine wear, and provide 
+immediate and specific maintenence notifications (ex. your check engine light
+goes on, what caused it?). 
+
+## Usage
+
+This system will function as a standalone unit that interfaces with the 
+vehicle's 16 pin OBD2 port underneith the dash, and can then be mounted to the
+center console where a display and button panel can provide controls and
+streaming output to the user. Since the OBD2 standard provides 12V DC power, 
+our only connection once inside the vehicle will be to the same diagnostic 
+port. The user can configure and select data streams and choose when to enable
+logging for later analysis. The log files can then be offloaded and then parsed
+with custom software.
+
+## Major Pieces
+	
+Firstly Our system is modularized around the ATMEGA328 processor. The 
+processor will handle all input, asynchronous and synchronous, as well as
+output streaming to any peripheral displays, serial ports, or memory units. All
+vehicle communication is facilitated with the diagnostic module, employing the 
+ELM327L. This chip provides multiple interfacing options for vehicle analysis 
+and can read a wide range of makes, models, and years of vehicles. The 
+diagnostic module has a built in UART interface and will meet the ATMEGA328's
+UART immediately. No logic translation is needed since the ELM327 can be 
+configured to run 5V logic. Next, any control modules such as buttons or 
+controls can be routed to GPIO's on the main processor. Any peripheral sensory
+units have the option of interfacing with the processor though digital logic,
+or we can use one of the on-board ADC's that comes with the 328. On the output
+side, the processed data will mainly be sent syncronously to the various memory
+or streaming devices. SD Flash uses its own co-processor and data is typically 
+exchanged over an SPI connection although some logic translation may be 
+necessarry. A board-mounted LCD will provide control interfacing and data
+streaming that can interface with the 328 using an array of GPIO's. Lastly, 
+a generic serial communication output can provide us the option to mount our
+device to an external machine and provide a high level of abstraction for a
+more complex software implementation of real-time data analysis and 
+presentation (ex. sending our data stream to an android tablet that can display
+a much more complex array of data and control abilities).
+
 ## Makefile/Compiler
 
 The compiler flags were set up to target the ISP programmer from a linux machine
