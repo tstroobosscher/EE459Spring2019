@@ -2,7 +2,10 @@
 #define FIFO_H
 
 /* for testing */
+
+/*
 #define DEBUG
+*/
 
 #include <stdio.h>
 
