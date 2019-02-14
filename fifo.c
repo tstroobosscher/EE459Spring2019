@@ -8,9 +8,9 @@ void initialize_fifo(struct fifo_t *fifo) {
 	 *	export
 	 */
 
-	fifo->fifo_head = 0;
-	fifo->fifo_tail = 0;
-	fifo->fifo_status = FIFO_EMPTY;
+	fifo->f_head = 0;
+	fifo->f_tail = 0;
+	fifo->f_status = FIFO_EMPTY;
 	return;
 }
 
@@ -20,7 +20,7 @@ void fifo_dump_buf(struct fifo_t *fifo, char *ret, int size) {
 	/*
 	 *	get buf values by reference, wont move the tail pointer
 	 */
-	memcpy(ret, fifo->fifo_buf, size);
+	memcpy(ret, fifo->f_buf, size);
 }
 
 void fifo_dump_mem(struct fifo_t *fifo, FILE *stream) {
@@ -29,7 +29,7 @@ void fifo_dump_mem(struct fifo_t *fifo, FILE *stream) {
 	 */
 
 	fprintf(stream, "fifo status: ");
-	switch(fifo->fifo_status) {
+	switch(fifo->f_status) {
 		case FIFO_FULL	:
 			fprintf(stream, "full\n");
 			break;
@@ -44,11 +44,12 @@ void fifo_dump_mem(struct fifo_t *fifo, FILE *stream) {
 			break; 
 	}
 
-	for(int i = 0; i < ARRAY_SIZE(fifo->fifo_buf); i++){
-		fprintf(stream, "fifo address: %02d, data: 0x%02x", i, fifo->fifo_buf[i]);
-		if(fifo->fifo_head == i)
+	for(int i = 0; i < ARRAY_SIZE(fifo->f_buf); i++){
+		fprintf(stream, "fifo address: %02d, data: 0x%02x", i, 
+			fifo->f_buf[i]);
+		if(fifo->f_head == i)
 			fprintf(stream, " <- head");
-		if(fifo->fifo_tail == i)
+		if(fifo->f_tail == i)
 			fprintf(stream, " <- tail");
 
 		fprintf(stream, "\n");
@@ -73,19 +74,19 @@ static char fifo_write_byte(struct fifo_t *fifo, unsigned char *byte) {
 	 */
 
 	/* fifo ready or empty */
-	if(fifo->fifo_status != FIFO_FULL) {
+	if(fifo->f_status != FIFO_FULL) {
 
 		/* head should be pointing to next available spot */
-		fifo->fifo_buf[fifo->fifo_head] = *byte;
+		fifo->f_buf[fifo->f_head] = *byte;
 
 		/* increment, wrap around buf */
-		fifo->fifo_head++;
-		if(fifo->fifo_head == FIFO_SIZE)
-			fifo->fifo_head = 0;
+		fifo->f_head++;
+		if(fifo->f_head == FIFO_SIZE)
+			fifo->f_head = 0;
 
 		/* check buf status */
-		if(fifo->fifo_head == fifo->fifo_tail)
-			fifo->fifo_status = FIFO_FULL;
+		if(fifo->f_head == fifo->f_tail)
+			fifo->f_status = FIFO_FULL;
 
 		return 0;
 	}
@@ -107,19 +108,19 @@ static char fifo_read_byte(struct fifo_t *fifo, unsigned char *byte) {
 	 */
 
 	/* fifo ready or full */
-	if(fifo->fifo_status != FIFO_EMPTY) {
+	if(fifo->f_status != FIFO_EMPTY) {
 
 		/* tail should be pointing at next available byte to read */
-		*byte = fifo->fifo_buf[fifo->fifo_tail];
+		*byte = fifo->f_buf[fifo->f_tail];
 
 		/* increment tail, wrap around */
-		fifo->fifo_tail++;
-		if(fifo->fifo_tail == FIFO_SIZE)
-			fifo->fifo_tail = 0;
+		fifo->f_tail++;
+		if(fifo->f_tail == FIFO_SIZE)
+			fifo->f_tail = 0;
 
 		/* check buf status */
-		if(fifo->fifo_tail == fifo->fifo_head)
-			fifo->fifo_status = FIFO_EMPTY;
+		if(fifo->f_tail == fifo->f_head)
+			fifo->f_status = FIFO_EMPTY;
 
 		return 0;
 	}

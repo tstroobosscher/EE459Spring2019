@@ -20,10 +20,10 @@ static const enum {
 };
 
 struct fifo_t{
-	char fifo_buf[FIFO_SIZE];
-	unsigned char fifo_head;
-	unsigned char fifo_tail;
-	unsigned char fifo_status;
+	char f_buf[FIFO_SIZE];
+	unsigned char f_head;
+	unsigned char f_tail;
+	unsigned char f_status;
 };
 
 /*

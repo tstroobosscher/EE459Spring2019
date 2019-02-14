@@ -44,13 +44,13 @@ int main() {
 	/* stimulus */
 	initialize_fifo(fifo_ptr);
 
-	if((fifo_ptr->fifo_status == FIFO_EMPTY) && 
-		(fifo_ptr->fifo_head == 0) && 
-		(fifo_ptr->fifo_tail == 0))
+	if((fifo_ptr->f_status == FIFO_EMPTY) && 
+		(fifo_ptr->f_head == 0) && 
+		(fifo_ptr->f_tail == 0))
 		printf("Test 1: Success, Fifo initialized empty, head and tail set to "
 			"zero\n");
 	else
-		printf("Test 1: failure, Fifo status: %d\n", fifo_ptr->fifo_status);
+		printf("Test 1: failure, Fifo status: %d\n", fifo_ptr->f_status);
 
 	///////////////////////////////////////////////////////////////////////////
 	//
@@ -66,9 +66,9 @@ int main() {
 	}
 
 	if((!cmp_fifo_buf(fifo_ptr, dat, FIFO_SIZE)) && 
-		(fifo_ptr->fifo_status == FIFO_FULL) &&
-		(fifo_ptr->fifo_head == 0) && 
-		(fifo_ptr->fifo_tail == 0))
+		(fifo_ptr->f_status == FIFO_FULL) &&
+		(fifo_ptr->f_head == 0) && 
+		(fifo_ptr->f_tail == 0))
 		printf("Test 2: Success, Fifo values all correct\n");
 	else
 		printf("Test 2: Failure, Fifo values incorrect\n");
@@ -86,9 +86,9 @@ int main() {
 	}
 
 	if((!cmp_fifo_buf(fifo_ptr, dat, FIFO_SIZE)) && 
-		(fifo_ptr->fifo_status == FIFO_EMPTY) &&
-		(fifo_ptr->fifo_head == 0) && 
-		(fifo_ptr->fifo_tail == 0))
+		(fifo_ptr->f_status == FIFO_EMPTY) &&
+		(fifo_ptr->f_head == 0) && 
+		(fifo_ptr->f_tail == 0))
 		printf("Test 3: Success, Fifo values all correct\n");
 	else
 		printf("Test 3: Failure, Fifo values incorrect\n");
