@@ -68,7 +68,7 @@ static char fifo_write_byte(struct fifo_t *fifo, unsigned char *byte) {
 	 *	return 0 on success
 	 *
 	 *	param: fifo is the fifo struct pointer
-	 *	param: byte is value-result argument
+	 *	param: byte is a reference argument
 	 *
 	 *	private function, should not be exported
 	 */
