@@ -1,41 +1,46 @@
 #ifndef FIFO_H
 #define FIFO_H
 
+#include <stdio.h>
+
 /*
- *	    Fifo
+ *	    fifo.h
  */
 
+/* fifo is statically allocated */
 #define FIFO_SIZE 16
 
-struct {
-	char buf[FIFO_SIZE];
-	unsigned char head;
-	unsigned char tail;
-} fifo_t;
+static const enum {
+	FIFO_FULL,
+	FIFO_EMPTY,
+	FIFO_READY,
+};
+
+struct fifo_t{
+	char fifo_buf[FIFO_SIZE];
+	unsigned char fifo_head;
+	unsigned char fifo_tail;
+	unsigned char fifo_status;
+};
 
 /*
- *	set the struct pointers and size information for the fifo structure
+ *	set the head and tail for the fifo structure
  */
-void fifo_init(struct fifo_t *fifo, char *buf, int size);
+void fifo_init(struct fifo_t *fifo);
 
 /*
- *	write a single byte to the fifo, increment the head
- *	if fifo is full, return -1
- *	return 0 on success
- *
- *	param: fifo is the fifo struct pointer
- *	param: byte is value-result argument
+ *	debug
  */
-char fifo_write_byte(struct fifo_t *fifo, unsigned char *byte);
+void fifo_dump_buf(struct fifo_t *fifo);
 
 /*
- *	read a single byte the fifo, increment the tail
- *	if fifo is empty, return -1
- *	return 0 on success, assign reference value the read byte
- *
- *	param: fifo is the fifo struct pointer
- *	param: byte is value-result argument
+ *	write string of n bytes to the fifo
  */
-char fifo_read_byte(struct fifo_t *fifo, unsigned char *byte);
+char fifo_writen(struct fifo_t *fifo, void *buf, int nbytes);
+
+/*
+ *	read a string of n bytes to the fifo
+ */
+char fifo_readn(struct fifo_t *fifo, void *buf, int nbytes);
 
 #endif
