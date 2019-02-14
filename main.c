@@ -12,9 +12,13 @@
 
 #include "pins.h"
 #include "utils.h"
+#include "fifo.h"
+
+struct fifo_t rx_fifo;
 
 int main() {
 
+	initialize_fifo(&rx_fifo);
 	initialize_pins();
 	
 	while(1)
