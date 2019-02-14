@@ -12,7 +12,7 @@
  *	} fifo_t;
  */
 
-void fifo_init(struct fifo_t *fifo) {
+void initialize_fifo(struct fifo_t *fifo) {
 	/*
 	 *	set the head, tail, and status for the fifo structure
 	 *

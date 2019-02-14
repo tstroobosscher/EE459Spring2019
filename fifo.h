@@ -26,7 +26,7 @@ struct fifo_t{
 /*
  *	set the head and tail for the fifo structure
  */
-void fifo_init(struct fifo_t *fifo);
+void initialize_fifo(struct fifo_t *fifo);
 
 /*
  *	debug

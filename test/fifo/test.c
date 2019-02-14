@@ -26,7 +26,7 @@ int main() {
 
 	char *ret = malloc(sizeof(dat));
 
-	fifo_init(fifo_ptr);
+	initialize_fifo(fifo_ptr);
 
 	/*************************************************************************\
 	 *
@@ -37,7 +37,7 @@ int main() {
 	if(fifo_ptr->fifo_status == FIFO_EMPTY)
 		printf("Test 1: Success, Fifo initialized empty\n");
 	else
-		printf("Test 1: failure, Fifo status: %d\n", fifo->fifo_status);
+		printf("Test 1: failure, Fifo status: %d\n", fifo_ptr->fifo_status);
 
 	if(fifo_writen(fifo_ptr, dat, ARRAY_SIZE(dat)) < 0) {
 		printf("fifo_writen: failure\n");
