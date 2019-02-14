@@ -60,7 +60,9 @@ cost (1 extra pin per device).
 
 With this in mind, we might be able to rethink some of the architecture. For
 example, we should dedicate the ATMEL Uart to monitor I/O or RS232, and use
-a peripheral spi-uart(<a href="https://www.mouser.com/ProductDetail/Maxim-Integrated/MAX3100CPD%2b?qs=sGAEpiMZZMvslxq79%2fS5eSKNqE2Bo8gitsmTeCTA4pw%3d">
+a peripheral spi-uart(
+<a href="https://www.mouser.com/ProductDetail/Maxim-Integrated/
+MAX3100CPD%2b?qs=sGAEpiMZZMvslxq79%2fS5eSKNqE2Bo8gitsmTeCTA4pw%3d">
 MAX3100</a> ) for ELM327 communication since it only runs at like 34.8Kbps.
 
 This will leave room for input device development, as the major components will
@@ -81,6 +83,14 @@ SD cards use SPI, integrating SPI will eat up 4 pins:
 	<li>CLK
 	<li>CS
 </ul>
+
+We will need a carriage for the card (
+<a href="https://www.mouser.com/ProductDetail/SparkFun/
+BOB-00544?qs=WyAARYrbSnZK7N50UQw0UQ%3D%3D&gclid=EAIaIQobChMI4KPcy5a84AIVjyCtBh33MgsvEAQYAyABEgJzLvD_BwE">
+SD_CARD_HOLDER
+</a> ), and then some resistors and capacitors
+to keep us from breaking the card. Decoupling capacitors: 0.1uF, and then
+current limiting resistors. Ask Weber for advice.
 
 ### Serial Stream
 This will need to stream realtime data over a serial interface that we can
@@ -124,6 +134,8 @@ broken up into 2 submodules, the hardware and the software.
 
 This module follows a request, response architecture, so data is handled 
 synchronously
+
+EDIT: The ELM pin assignments might be changing
 
 UART - 2 pins
 
