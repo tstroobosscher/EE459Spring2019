@@ -1,17 +1,6 @@
 #include "fifo.h"
 #include "utils.h"
 
-#define DEBUG
-
-/*
- *	struct {
- *		char fifo_buf[FIFO_SIZE];
- *		unsigned char fifo_head;
- *		unsigned char fifo_tail;
- *		unsigned char fifo_status;
- *	} fifo_t;
- */
-
 void initialize_fifo(struct fifo_t *fifo) {
 	/*
 	 *	set the head, tail, and status for the fifo structure
@@ -27,35 +16,42 @@ void initialize_fifo(struct fifo_t *fifo) {
 
 #ifdef DEBUG
 
-void fifo_dump_buf(struct fifo_t *fifo) {
+void fifo_dump_buf(struct fifo_t *fifo, char *ret, int size) {
+	/*
+	 *	get buf values by reference, wont move the tail pointer
+	 */
+	memcpy(ret, fifo->fifo_buf, size);
+}
+
+void fifo_dump_mem(struct fifo_t *fifo, FILE *stream) {
 	/* 
 	 * dump the fifo struct contents 
 	 */
 
-	printf("fifo status: ");
+	fprintf(stream, "fifo status: ");
 	switch(fifo->fifo_status) {
 		case FIFO_FULL	:
-			printf("full\n");
+			fprintf(stream, "full\n");
 			break;
 		case FIFO_EMPTY	:
-			printf("empty\n");
+			fprintf(stream, "empty\n");
 			break;
 		case FIFO_READY	:
-			printf("ready\n");
+			fprintf(stream, "ready\n");
 			break;
 		default			:
-			printf("unhandled status\n");
+			fprintf(stream, "unhandled status\n");
 			break; 
 	}
 
 	for(int i = 0; i < ARRAY_SIZE(fifo->fifo_buf); i++){
-		printf("fifo address: %02d, data: 0x%02x", i, fifo->fifo_buf[i]);
+		fprintf(stream, "fifo address: %02d, data: 0x%02x", i, fifo->fifo_buf[i]);
 		if(fifo->fifo_head == i)
-			printf(" <- head");
+			fprintf(stream, " <- head");
 		if(fifo->fifo_tail == i)
-			printf(" <- tail");
+			fprintf(stream, " <- tail");
 
-		printf("\n");
+		fprintf(stream, "\n");
 	}
 
 

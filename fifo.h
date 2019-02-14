@@ -1,6 +1,9 @@
 #ifndef FIFO_H
 #define FIFO_H
 
+/* for testing */
+#define DEBUG
+
 #include <stdio.h>
 
 /*
@@ -28,10 +31,19 @@ struct fifo_t{
  */
 void initialize_fifo(struct fifo_t *fifo);
 
+#ifdef DEBUG
+/*
+ *
+ */
+void fifo_dump_buf(struct fifo_t *fifo, char *ret, int size);
+
+
 /*
  *	debug
  */
-void fifo_dump_buf(struct fifo_t *fifo);
+void fifo_dump_mem(struct fifo_t *fifo, FILE *stream);
+
+#endif
 
 /*
  *	write string of n bytes to the fifo
