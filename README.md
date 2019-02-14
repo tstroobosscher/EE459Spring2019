@@ -60,12 +60,11 @@ cost (1 extra pin per device).
 
 With this in mind, we might be able to rethink some of the architecture. For
 example, we should dedicate the ATMEL Uart to monitor I/O or RS232, and use
-a peripheral spi-uart(
-<a href="https://www.mouser.com/ProductDetail/Maxim-Integrated/MAX3100CPD%2b?qs=sGAEpiMZZMvslxq79%2fS5eSKNqE2Bo8gitsmTeCTA4pw%3d">
-MAX3107</a>) for ELM327 communication since it only runs at like 34.8Kbps.
+a peripheral spi-uart(<a href="https://www.mouser.com/ProductDetail/Maxim-Integrated/MAX3100CPD%2b?qs=sGAEpiMZZMvslxq79%2fS5eSKNqE2Bo8gitsmTeCTA4pw%3d">
+MAX3107</a> ) for ELM327 communication since it only runs at like 34.8Kbps.
 
 This will leave room for input device development, as the major components will
-apready be handled by the same hardware and software.
+apready be handled by the same hardware and software.	
 
 ## Modules
 
