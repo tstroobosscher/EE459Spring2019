@@ -47,7 +47,7 @@ const enum {
  *		13:
  *		14:
  *		15:
- *		16: (SPI /CS)
+ *		16: (SPI /CS) (Only for slave communication)
  *		17: (SPI MOSI)
  *		18: (SPI MISO)
  *		19: (SPI SCK)
