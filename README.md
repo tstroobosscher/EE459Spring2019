@@ -55,6 +55,12 @@ of multiplexed IO (SPI, I2C, UART)
 
 Will need to research the requirements and design this module
 
+SD cards use SPI, integrating SPI will eat up 4 pins:
+	** MOSI
+	** MISO
+	** CLK
+	** CS
+
 ### Serial Stream
 This will need to stream realtime data over a serial interface that we can
 use for both data projection (like on a screen or something) and debugging.
@@ -64,6 +70,28 @@ streaming output.
 Once this module is in place, extending some kind of complex interface over
 this data stream should be pretty straightforward (Bluetooth, Wi-Fi, etc)
 
+If we dont need to handle serial input asynchronously, then it would be 
+possible to multiplex the uart hardware, but it might be a good idea to invest
+the time now so we have that flexibility later on.
+
+Ideally, we could extend the SPI interface used for the flash module and with
+only one more pin we could add another UART interface that would be able to
+support full, asynchronous duplex communication
+
+SPI/I2C UART Extender: 
+<a href="https://www.mouser.com/ProductDetail/Maxim-Integrated/MAX3100CPD%2b?qs=sGAEpiMZZMvslxq79%2fS5eSKNqE2Bo8gitsmTeCTA4pw%3d">
+MAX3107</a>
+
+
+### LCD
+We are looking at different LCD layouts to find the correct option with regards
+to out hardware and software constraints. The boards can be configured a number
+of ways:<ul>
+	<li>Half byte with control, 3 control pins, 4 data pins - 7 total
+	<li>Full byte with control, 3 control pins, 8 data pins - 7 total
+	<li>Serial?
+</ul>>
+
 ### ECU Communication (Hardware and Software)
 We have the broadstrokes of this one laid out. The ELM327 documentation comes
 with more than enough information to lay out a complete circuit. This part just
@@ -72,6 +100,11 @@ needs the parts ordered, the connections routed, and the software written.
 Luckily, we have an assembled 327 circuit that we can start to use for software
 development in parallel to hardware development. Thus, this module can be 
 broken up into 2 submodules, the hardware and the software.
+
+This module follows a request, response architecture, so data is handled 
+synchronously
+
+UART - 2 pins
 
 ### Extra Sensory Information
 Here we can leverage the 328s on board ADC and input support to maximize our

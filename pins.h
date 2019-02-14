@@ -47,10 +47,10 @@ const enum {
  *		13:
  *		14:
  *		15:
- *		16:
- *		17:
- *		18:
- *		19:
+ *		16: (SPI /CS)
+ *		17: (SPI MOSI)
+ *		18: (SPI MISO)
+ *		19: (SPI SCK)
  *		20: (Invalid) AVCC
  *		21:	(Invalid) AREF
  *		22:	(Invalid) GND
