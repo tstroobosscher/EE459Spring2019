@@ -47,6 +47,26 @@ language. It just ends up being confusing later on. But to reiterate, the
 structure definition in pins.c defines the actual memory allocation and pin
 behavior that the board will initialize itself with
 
+## I/O
+Since our application is critical in real-time, we should optimize our
+design for bandwidth. This consideration would suggest using the built-in SPI
+interface on the ATMEL chip, since it is the fastest I/O structure we have.
+
+If we invest some engineering time into developing the SPI interface, we will
+be able to amortize its cost over the breadth of the various I/O devices we
+have planned. This involves planning on integrating hardware that is SPI ready.
+This will be able to handle a large number of complex I/O devices with marginal
+cost (1 extra pin per device).
+
+With this in mind, we might be able to rethink some of the architecture. For
+example, we should dedicate the ATMEL Uart to monitor I/O or RS232, and use
+a peripheral spi-uart(
+<a href="https://www.mouser.com/ProductDetail/Maxim-Integrated/MAX3100CPD%2b?qs=sGAEpiMZZMvslxq79%2fS5eSKNqE2Bo8gitsmTeCTA4pw%3d">
+MAX3107</a>) for ELM327 communication since it only runs at like 34.8Kbps.
+
+This will leave room for input device development, as the major components will
+apready be handled by the same hardware and software.
+
 ## Modules
 
 ### Flash Storage
@@ -56,10 +76,12 @@ of multiplexed IO (SPI, I2C, UART)
 Will need to research the requirements and design this module
 
 SD cards use SPI, integrating SPI will eat up 4 pins:
-	** MOSI
-	** MISO
-	** CLK
-	** CS
+<ul>
+	<li>MOSI
+	<li>MISO
+	<li>CLK
+	<li>CS
+</ul>
 
 ### Serial Stream
 This will need to stream realtime data over a serial interface that we can
@@ -89,8 +111,8 @@ to out hardware and software constraints. The boards can be configured a number
 of ways:<ul>
 	<li>Half byte with control, 3 control pins, 4 data pins - 7 total
 	<li>Full byte with control, 3 control pins, 8 data pins - 7 total
-	<li>Serial?
-</ul>>
+	<li>Serial?/SPI?
+</ul>
 
 ### ECU Communication (Hardware and Software)
 We have the broadstrokes of this one laid out. The ELM327 documentation comes
