@@ -47,10 +47,10 @@ const enum {
  *		13:
  *		14:
  *		15:
- *		16:
- *		17:
- *		18:
- *		19:
+ *		16: (SPI /CS) (Only for slave communication)
+ *		17: (SPI MOSI)
+ *		18: (SPI MISO)
+ *		19: (SPI SCK)
  *		20: (Invalid) AVCC
  *		21:	(Invalid) AREF
  *		22:	(Invalid) GND
@@ -66,10 +66,10 @@ const enum {
 #define PIN_TX 3
 
 void initialize_pins();
-char get_pin(char pin);
-char assert_pin(char pin);
-char deassert_pin(char pin);
-void pulse_pin(char pin);
+char get_pin(unsigned char pin);
+char assert_pin(unsigned char pin);
+char deassert_pin(unsigned char pin);
+void pulse_pin(unsigned char pin);
 void cycle_pins();
 
 #endif
