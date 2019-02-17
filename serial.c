@@ -10,11 +10,25 @@ serial_init - Initialize the USART port
 
 void serial_init(unsigned short); // maybe I should move this to a header file
 void serial_out(char ch);
-char serial_in()
+char serial_in();
 
 int main(void) {
 
 	serial_init(MYUBRR);
+
+	// beginning of the code for part 6.2 of lab 4:
+
+	/*
+
+	while(1) {
+		
+		// need to echo the character received from the computer, back to the computer
+		
+		serial_out();
+	}
+
+
+	*/
 
 }
 
