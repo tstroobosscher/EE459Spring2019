@@ -6,6 +6,37 @@
 #define MYUBRR (FOSC/16/BAUD-1) // Value for UBRR0 register
 
 
+/*
+ *	So it looks like you're pretty close, we just need to link against the 
+ *	main.c file. instead of defining a separate main function, we can just put
+ *	the prototype code in the original main function, and then include "serial.h"
+ *	at the top of that file. The object Makefile is already looking for the
+ *	serial onject file, so once you include the header, you'll be able to call
+ *	these functions from over there.
+ *	
+ *	Put the Macro's up at the top into the header file so that the compiler
+ *	doesn't have to search the compiled code for them when exporting these 
+ *	functions.
+ *	
+ *	One more thing, the standard library functions like printf() and scanf()
+ *	probably wont work correctly without some extra library initialization.
+ *	This is because the AVR system has no stdin or stdout file because it has
+ *	no operating system. So, we could redefine a hardware interface by
+ *	assigning an address to 'extern FILE *stdin = &uart_stream;' but lets just
+ *	try to get the hardware up and running first.
+ *	
+ *	I'm thinking that the best way to test the initialization function is just
+ *	to send data out continuously and then scope it with the oscilloscope. then
+ *	we can hook up the serial monitor and loopback data. So the while loop with
+ *	just pick up whatever char is sitting in the recieve register, and then
+ *	send it out. That way we'll be able to see if any data comes back to the
+ *	console and whether it is actually being processed by the device
+ *	
+ *	Oh also, FOSC is the frequency of the chip that weber gave us, it's like 
+ *	7.12 something Megaherts
+ *
+ */
+
 int main(void) {
 
 	serial_init(MYUBRR);

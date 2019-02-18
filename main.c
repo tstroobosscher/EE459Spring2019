@@ -14,11 +14,11 @@
 #include "utils.h"
 #include "fifo.h"
 
-struct fifo_t rx_fifo;
+struct fifo_t uart_rx_fifo;
 
 int main() {
 
-	initialize_fifo(&rx_fifo);
+	initialize_fifo(&uart_rx_fifo);
 	initialize_pins();
 	
 	while(1)
