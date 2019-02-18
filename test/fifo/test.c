@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#define DEBUG
+
 #include "../../fifo.h"
 #include "../../utils.h"
 
