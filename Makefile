@@ -4,7 +4,9 @@ DEVICE     = atmega328p
 # and this line of code will actually cause bugs in our time sensitive routines
 # (like the UART/Serial code) 
 
-CLOCK      = 16000000
+# 7.3728MHz oscillator !  
+
+CLOCK      = 7372800
 PROGRAMMER = -c usbtiny -p m328 -F
 OBJECTS    = main.o pins.o utils.o fifo.o serial.o
 FUSES      = -U hfuse:w:0xde:m -U lfuse:w:0xff:m -U efuse:w:0x05:m
