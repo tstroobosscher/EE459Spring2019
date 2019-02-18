@@ -9,7 +9,7 @@ extern FILE *stdout;
 
 struct fifo_t fifo;
 
-int cmp_fifo_buf(struct fifo_t *fifo, char *exp, int size) {
+static int cmp_fifo_buf(struct fifo_t *fifo, char *exp, int size) {
 	/*
 	 *	dump buf values and compare to expected buf, ret 0 if same
 	 */
