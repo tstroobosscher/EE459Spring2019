@@ -1,4 +1,9 @@
 DEVICE     = atmega328p
+
+# 16 MHz is the arduino's pcb clock speed. Our clock is much slower than this
+# and this line of code will actually cause bugs in our time sensitive routines
+# (like the UART/Serial code) 
+
 CLOCK      = 16000000
 PROGRAMMER = -c usbtiny -p m328 -F
 OBJECTS    = main.o pins.o utils.o fifo.o serial.o
