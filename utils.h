@@ -5,6 +5,10 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+
+/* 7.3728 Mhz Crystal */
+#define CLOCK_FREQ 7372800
+
 #define ARRAY_SIZE(x) (sizeof((x))/sizeof((x)[0]))
 
 /* avr requires compile-time knowledge of delay times */
