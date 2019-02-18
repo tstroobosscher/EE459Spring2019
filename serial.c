@@ -1,16 +1,10 @@
+#include <stdio.h>
+#include "serial.h"
+
 #define FOSC 16000000           // Clock frequency??
 #define BAUD 9600               // Baud rate used
 #define MYUBRR (FOSC/16/BAUD-1) // Value for UBRR0 register
 
-/*
-serial_init - Initialize the USART port
-*/
-
-// prototypes:
-
-void serial_init(unsigned short); // maybe I should move this to a header file
-void serial_out(char ch);
-char serial_in();
 
 int main(void) {
 
@@ -18,17 +12,23 @@ int main(void) {
 
 	// beginning of the code for part 6.2 of lab 4:
 
-	/*
+	char input;
 
-	while(1) {
+
+	while(1) { // loop forever
 		
 		// need to echo the character received from the computer, back to the computer
-		
-		serial_out();
+
+		if (scanf(%s,input)) {
+
+			serial_out(input); // send the character out
+
+		}
+
+
 	}
 
 
-	*/
 
 }
 
@@ -44,19 +44,19 @@ void serial_init(unsigned short ubrr) {
 // serial_out - Output a byte to the USART0 port
 
 
-void serial_out(char ch)
-{
-while (( UCSR0A & (1 < < UDRE0 )) == 0);
-UDR0 = ch ;
+void serial_out(char ch) {
+
+	while (( UCSR0A & (1 < < UDRE0 )) == 0);
+	UDR0 = ch ;
 } 
 
 
 // serial_in - Read a byte from the USART0 and return it
 
 
-char serial_in()
-{
-while ( !( UCSR0A & (1 << RXC0 )) );
-return UDR0 ;
+char serial_in() {
+
+	while ( !( UCSR0A & (1 << RXC0 )) );
+	return UDR0 ;
 }
 
