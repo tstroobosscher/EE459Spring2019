@@ -153,7 +153,7 @@ to keep us from breaking the card. Decoupling capacitors: 0.1uF, and then
 current limiting resistors. Ask Weber for advice.
 
 I found a good website that explains FAT and SPI interfacing from the atmel to
-an SD card <a hrf="http://codeandlife.com/2012/04/02/simple-fat-and-sd-tutorial-part-1/">
+an SD card <a href="http://codeandlife.com/2012/04/02/simple-fat-and-sd-tutorial-part-1/">
 here </a>
 
 ### Serial Stream
