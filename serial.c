@@ -30,7 +30,7 @@
  *	
  *	I'm thinking that the best way to test the initialization function is just
  *	to send data out continuously and then scope it with the oscilloscope. Then
- *	we can hook up the serial monitor and loopback data. So the while loop with
+ *	we can hook up the serial monitor and loopback data. So the while loop will
  *	just pick up whatever char is sitting in the recieve register, and then
  *	send it out. That way we'll be able to see if any data comes back to the
  *	console and whether it is actually being processed by the device
