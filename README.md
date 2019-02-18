@@ -152,6 +152,10 @@ SD_CARD_HOLDER
 to keep us from breaking the card. Decoupling capacitors: 0.1uF, and then
 current limiting resistors. Ask Weber for advice.
 
+I found a good website that explains FAT and SPI interfacing from the atmel to
+an SD card <a hrf="http://codeandlife.com/2012/04/02/simple-fat-and-sd-tutorial-part-1/">
+here </a>
+
 ### Serial Stream
 This will need to stream realtime data over a serial interface that we can
 use for both data projection (like on a screen or something) and debugging.
