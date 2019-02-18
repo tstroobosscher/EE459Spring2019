@@ -150,7 +150,8 @@ BOB-00544?qs=WyAARYrbSnZK7N50UQw0UQ%3D%3D&gclid=EAIaIQobChMI4KPcy5a84AIVjyCtBh33
 SD_CARD_HOLDER
 </a> ), and then some resistors and capacitors
 to keep us from breaking the card. Decoupling capacitors: 0.1uF, and then
-current limiting resistors. Ask Weber for advice.
+current limiting resistors. Ask Weber for advice. Also, we need to level shift
+between 5 and 3.3, with high frequency response (SPI is in the MHz range)
 
 I found a good website that explains FAT and SPI interfacing from the atmel to
 an SD card <a href="http://codeandlife.com/2012/04/02/simple-fat-and-sd-tutorial-part-1/">
