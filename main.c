@@ -1,5 +1,5 @@
 /*
- *	EE459 Spring 2019 Team 17 - Main
+ *	USC EE459 Spring 2019 Team 17 - Main
  */
  
  // the code is very simple

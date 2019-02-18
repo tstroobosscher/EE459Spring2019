@@ -1,5 +1,11 @@
+/*
+ *	USC EE459 Spring 2019 Team 17 - FIFO Header
+ */
+
 #ifndef FIFO_H
 #define FIFO_H
+
+#include <stdint.h> 
 
 /* for testing */
 
@@ -25,10 +31,10 @@ static const enum {
 };
 
 struct fifo_t{
-	char f_buf[FIFO_SIZE];
-	unsigned char f_head;
-	unsigned char f_tail;
-	unsigned char f_status;
+	uint8_t f_buf[FIFO_SIZE];
+	uint8_t f_head;
+	uint8_t f_tail;
+	uint8_t f_status;
 };
 
 /*

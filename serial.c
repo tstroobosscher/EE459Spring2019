@@ -1,3 +1,7 @@
+/*
+ *	USC EE459 Spring 2019 Team 17 - Serial (UART)
+ */
+
 #include <stdio.h>
 #include "serial.h"
 

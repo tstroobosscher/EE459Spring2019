@@ -1,5 +1,5 @@
 /*
- *	EE459 Team 17 - Pins header
+ *	USC EE459 Spring 2019 Team 17 - Pins header
  */
 
 #ifndef PINS_H

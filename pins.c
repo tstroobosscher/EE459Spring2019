@@ -1,5 +1,5 @@
 /*
- *	EE459 Team 17 - Pins
+ *	USC EE459 Spring 2019 Team 17 - Pins
  */
 
 #include <avr/io.h>
