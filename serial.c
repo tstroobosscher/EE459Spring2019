@@ -7,15 +7,18 @@
 
 
 /*
+ *	February 18, 2019
+ *
  *	So it looks like you're pretty close, we just need to link against the 
- *	main.c file. instead of defining a separate main function, we can just put
+ *	main.c file. Instead of defining a separate main function, we can just put
  *	the prototype code in the original main function, and then include "serial.h"
- *	at the top of that file. The object Makefile is already looking for the
- *	serial onject file, so once you include the header, you'll be able to call
+ *	at the top of that file. The Makefile is already looking for the
+ *	serial object file, so once you include the header, you'll be able to call
  *	these functions from over there.
  *	
- *	Put the Macro's up at the top into the header file so that the compiler
- *	doesn't have to search the compiled code for them when exporting these 
+ *	Also, in order to use the macro values (FOSC, BUAD, etc), we should put
+ *	them at the top of the serial header file so that the compiler
+ *	doesn't have to search the compiled values when exporting these 
  *	functions.
  *	
  *	One more thing, the standard library functions like printf() and scanf()
@@ -26,7 +29,7 @@
  *	try to get the hardware up and running first.
  *	
  *	I'm thinking that the best way to test the initialization function is just
- *	to send data out continuously and then scope it with the oscilloscope. then
+ *	to send data out continuously and then scope it with the oscilloscope. Then
  *	we can hook up the serial monitor and loopback data. So the while loop with
  *	just pick up whatever char is sitting in the recieve register, and then
  *	send it out. That way we'll be able to see if any data comes back to the
@@ -35,6 +38,9 @@
  *	Oh also, FOSC is the frequency of the chip that weber gave us, it's like 
  *	7.12 something Megaherts
  *
+ *
+ *	Nice work we're getting there.
+ *	
  */
 
 int main(void) {
