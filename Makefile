@@ -8,7 +8,7 @@ DEVICE     = atmega328p
 
 CLOCK      = 7372800
 PROGRAMMER = -c usbtiny -p m328 -F
-OBJECTS    = main.o pins.o utils.o fifo.o serial.o
+OBJECTS    = main.o pins.o utils.o fifo.o serial.o fat.o
 FUSES      = -U hfuse:w:0xde:m -U lfuse:w:0xff:m -U efuse:w:0x05:m
 
 # Tune the lines below only if you know what you are doing:

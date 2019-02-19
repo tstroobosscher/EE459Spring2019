@@ -125,6 +125,48 @@ struct FAT16BootSector {
 	uint16_t boot_sector_signature;
 }__attribute((packed));
 
+/*
+ *	FAT16 Entry found in the root directory
+ *	Offset 			Description 			Size (Bytes)
+ *	0x00 			Filename 				8
+ *	0x08 			Filename extension 		3
+ *	0x0B 			File attributes 		1
+ *	0x0C 			Reserved 				10
+ *	0x16 			Time created/modified 	2
+ *	0x18 			Date created/modified 	2
+ *	0x1A 			Starting cluster number	2
+ *	0x1C 			File size (Bytes) 		4
+ */
+
+#define FILENAME_NEVER_USED 0x00
+#define FILENAME_FILE_DELETED 0xE5
+#define FILENAME_FIRST_CHAR_E5 0x05
+
+/* 
+ * if second byte is also 0x2E, cluster number contains the address of the
+ * parent directory, if the parent directory is the root directory, the 
+ * address: 0x0000 is specified here
+ */
+#define FILENAME_DIRECTORY 0x2E
+
+#define FILE_ATTR_RO 0x01
+#define FILE_ATTR_HIDDEN 0x02
+#define FILE_ATTR_SYSTEM 0x04
+#define FILE_ATTR_LABEL 0x08
+#define FILE_ATTR_SUBDIR 0x10
+#define FILE_ATTR_ARCHIVE 0x20
+
+struct FAT16Entry {
+	uint8_t filename[8];
+	uint8_t filename_ext[3];
+	uint8_t file_attr;
+	uint8_t reserved[10];
+	uint16_t time_last_modified;
+	uint16_t date_last_modified;
+	uint16_t cluster_start;
+	uint32_t file_size;
+}__attribute((packed));
+
 #ifdef DEBUG
 void fat_dump_partition_table(struct PartitionTable *pt);
 void fat16_dump_boot_sector(struct FAT16BootSector *bs);
