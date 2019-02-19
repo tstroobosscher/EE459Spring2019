@@ -170,5 +170,6 @@ struct FAT16Entry {
 #ifdef DEBUG
 void fat_dump_partition_table(struct PartitionTable *pt);
 void fat16_dump_boot_sector(struct FAT16BootSector *bs);
+void fat16_dump_entry(struct FAT16Entry *e);
 #endif
 #endif

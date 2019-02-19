@@ -78,4 +78,37 @@ void fat16_dump_boot_sector(struct FAT16BootSector *bs) {
 	printf("	Boot sector signature: 0x%04X\n", bs->boot_sector_signature);
 }
 
+void fat16_dump_entry(struct FAT16Entry *e) {
+	switch(e->filename[0]) {
+		case FILENAME_NEVER_USED :
+			/* unused entry */
+			return;
+		case FILENAME_FILE_DELETED :
+			printf("FAT16 Entry found, Deleted file: [?%.7s.%.3s]\n", e->filename + 1, 
+				e->filename_ext);
+			return;
+		case FILENAME_FIRST_CHAR_E5 :
+			printf("FAT16 Entry found, File starting with 0xE5: [%c%.7s.%.3s]\n", 0xE5, 
+				e->filename + 1, e->filename_ext);
+			break;
+		case FILENAME_DIRECTORY :
+			printf("FAT16 Entry found, Directory: [%.8s.%.3s]\n", e->filename, 
+				e->filename_ext);
+			break;
+		default:
+			printf("FAT16 Entry found, File: [%.8s.%.3s]\n", e->filename, e->filename_ext);
+			break;
+	}
+
+	printf("    Modified: %04d-%02d-%02d %02d:%02d:%02d\n", 
+		(1980 + (e->date_last_modified >> 9)), 
+		((e->date_last_modified >> 5) & 0xF), 
+		(e->date_last_modified & 0x1F), 
+		(e->time_last_modified >> 11), 
+		((e->time_last_modified >> 5) & 0x3F), 
+		(e->time_last_modified & 0x1F));
+	printf("    Start: [%04X]", e->cluster_start);
+	printf("    Size: %d\n", e->file_size);
+}
+
 #endif
