@@ -5,6 +5,8 @@
 #ifndef FAT_H
 #define FAT_H
 
+#define DEBUG
+
 #include <stdint.h>
 
 /*
@@ -51,7 +53,7 @@ struct PartitionTable {
 #define PARTITION_TYPE_FAT16_GT32M 6
 #define PARTITION_TYPE_FAT32_LT2G 11
 #define PARTITION_TYPE_FAT32_LBA 12
-#define PARTITION_TYPE_FAT16_LBA 
+#define PARTITION_TYPE_FAT16_LBA 14
 #define PARTITION_TYPE_EXTENDED_LBA 15
  
 /*
@@ -114,4 +116,7 @@ struct FAT16BootSector {
 	uint16_t boot_sector_signature;
 }__attribute((packed));
 
+#ifdef DEBUG
+void fat_dump_partition_table(struct PartitionTable *pt);
+#endif
 #endif

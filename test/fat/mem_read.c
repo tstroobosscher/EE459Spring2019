@@ -13,9 +13,7 @@ int main() {
 	fread(pt, sizeof(struct PartitionTable), 4, bin);
 
 	for(int i=0; i < 4; i++) {
-		printf("Partition %d, type %02X\n", i, pt[i].partition_type);
-		printf("	Start sector %08X, %d sectors long\n", pt[i].start_sector,
-			pt[i].length_sectors);
+		fat_dump_partition_table(&pt[i]);
 	}
 
 	fclose(bin);
