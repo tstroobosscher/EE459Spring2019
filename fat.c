@@ -53,4 +53,8 @@ void fat_dump_partition_table(struct PartitionTable *pt) {
 		pt->start_sector, pt->length_sectors);
 }
 
+void fat_dump_boot_sector(struct PartitionTable *pt) {
+	
+}
+
 #endif

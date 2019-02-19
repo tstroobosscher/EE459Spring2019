@@ -7,12 +7,12 @@
 int main() {
 	FILE *bin = fopen("test.img", "r");
 
-	struct PartitionTable pt[4];
+	struct PartitionTable pt[PARTITION_TABLE_ENTRIES];
 
-	fseek(bin, 0x1BE, SEEK_SET);
-	fread(pt, sizeof(struct PartitionTable), 4, bin);
+	fseek(bin, PARTITION_TABLE_OFFSET, SEEK_SET);
+	fread(pt, sizeof(struct PartitionTable), PARTITION_TABLE_ENTRIES, bin);
 
-	for(int i=0; i < 4; i++) {
+	for(int i=0; i < PARTITION_TABLE_ENTRIES; i++) {
 		fat_dump_partition_table(&pt[i]);
 	}
 

@@ -9,6 +9,12 @@
 
 #include <stdint.h>
 
+/* always found at this address */
+#define PARTITION_TABLE_OFFSET 0x1BE
+
+/* always has 4 entries */
+#define PARTITION_TABLE_ENTRIES 4
+
 /*
  *	Partition table
  *
