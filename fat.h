@@ -15,6 +15,9 @@
 /* always has 4 entries */
 #define PARTITION_TABLE_ENTRIES 4
 
+/* SD standard */
+#define SECTOR_SIZE_BYTES 512
+
 /*
  *	Partition table
  *
@@ -124,5 +127,6 @@ struct FAT16BootSector {
 
 #ifdef DEBUG
 void fat_dump_partition_table(struct PartitionTable *pt);
+void fat16_dump_boot_sector(struct FAT16BootSector *bs);
 #endif
 #endif
