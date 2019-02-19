@@ -4,17 +4,18 @@
 
 #include <avr/io.h>
 #include <util/delay.h>
+#include <stdint.h>
 
 #include "pins.h"
 #include "utils.h"
 
 /* set pin behavior here (OUTPUT/INPUT), ENA/DIS internal pull ups */
 static const struct atmel_328_pin {
-	unsigned char pin_num;
-	unsigned char port_reg;
-	unsigned char port_num;
-	unsigned char pin_dir;
-	unsigned char pull_up;
+	uint8_t pin_num;
+	uint8_t port_reg;
+	uint8_t port_num;
+	uint8_t pin_dir;
+	uint8_t pull_up;
 } atmega328_pins[] = {
 	0,	ATMEL_PORT_INVAL,	0,	ATMEL_DIR_INVAL, 	ATMEL_PULL_INVAL,
 	1,	ATMEL_PORT_INVAL,	0,	ATMEL_DIR_INVAL, 	ATMEL_PULL_INVAL,

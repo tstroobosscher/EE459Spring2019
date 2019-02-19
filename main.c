@@ -13,8 +13,13 @@
 #include "pins.h"
 #include "utils.h"
 #include "fifo.h"
+#include "fat.h"
 
 struct fifo_t uart_rx_fifo;
+
+struct PartitionTable pt;
+struct FAT16BootSector bs;
+struct FAT16Entry e;
 
 int main() {
 
