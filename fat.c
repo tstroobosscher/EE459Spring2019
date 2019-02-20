@@ -49,7 +49,7 @@ void fat_dump_partition_table(struct PartitionTable *pt) {
 	}
 	printf("	End address in CHS: %02X:%02X:%02X\n", pt->end_chs[0], 
 		pt->end_chs[1], pt->end_chs[2]);
-	printf("	Relative LBA address: %08X, %d sectors long\n", 
+	printf("	Relative LBA address: 0x%08X, %d sectors long\n", 
 		pt->start_sector, pt->length_sectors);
 }
 
@@ -86,15 +86,11 @@ void fat32_dump_boot_sector(struct FAT32BootSector *bs) {
 	printf("	Sectors per cluster: %d\n", bs->sectors_per_cluster);
 	printf("	Number of reserved sectors: %d\n", bs->reserved_sectors);
 	printf("	Number of FATs: %d\n", bs->number_of_fats);
-	printf("	Number of root directory entries: %d\n", bs->root_dir_entries);
-	printf("	Total number of sectors (16): %d\n", bs->total_sectors_16);
 	printf("	Media descriptor: 0x%02X\n", bs->media_descriptor);
-	printf("	Number of FAT sectors: %d\n", bs->fat_sectors);
 	printf("	Number of sectors per track: %d\n", bs->sectors_per_track);
 	printf("	Number of heads: %d\n", bs->number_of_heads);
 	printf("	Number of hidden sectors: %d\n", bs->hidden_sectors);
 	printf("	Total number of sectors (32): %d\n", bs->total_sectors_32);
-
 	printf("	FAT32: number of sectors: %d\n", bs->number_of_sectors);
 	printf("	FAT32: fat flags: %04X\n", bs->fat_flags);
 	printf("	FAT32: fs version number: %d\n", bs->fs_version_number);
@@ -104,7 +100,6 @@ void fat32_dump_boot_sector(struct FAT32BootSector *bs) {
 		bs->sector_number_fsinfo);
 	printf("	FAT32: sector number of backup: %04X\n", 
 		bs->sector_number_backup);
-
 	printf("	Drive number: 0x%02X\n", bs->drive_number);
 	printf("	Current head: 0x%02X\n", bs->current_head);
 	printf("	Boot signature: 0x%02X\n", bs->boot_signature);

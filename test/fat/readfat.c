@@ -11,6 +11,39 @@ void usage() {
 	printf("readfat: usage: readfat <image file>\n");
 }
 
+void dump_bin(void *buf, int size) {
+
+	unsigned char *ptr = (unsigned char*) buf;
+	unsigned char str[17];
+	int i;
+
+	printf("HEXDATA\n\n");
+
+	for(i = 0; i < size; i++) {
+		if(!(i % 16)) {
+			if(i != 0)
+				printf("  %s\n", str);
+			/* output offset */
+			printf("    %04X ", i);
+		}
+
+		printf(" %02X", ptr[i]);
+
+		if(!isprint(ptr[i]))
+			str[i % 16] = '.';
+		else
+			str[i % 16] = ptr[i];
+		str[(i % 16) + 1] = '\0';
+	}
+
+	while((i % 16) != 0) {
+		printf(" ");
+		i++;
+	}
+
+	printf("  %s\n", str);
+}
+
 int main(int argc, const char **argv) {
 
 	const char *pname = *argv;
@@ -23,7 +56,7 @@ int main(int argc, const char **argv) {
 	}
 
 	FILE *bin;
-	if((bin = fopen(*argv, "r")) == NULL) {
+	if((bin = fopen(*argv, "rb")) == NULL) {
 		perror(pname);
 		return -1;
 	}
@@ -36,8 +69,6 @@ int main(int argc, const char **argv) {
 
 	fseek(bin, PARTITION_TABLE_OFFSET, SEEK_SET);
 	fread(pt, sizeof(struct PartitionTable), PARTITION_TABLE_ENTRIES, bin);
-
-	fat_dump_sizes();
 
 	for(int i=0; i < PARTITION_TABLE_ENTRIES; i++) {
 		fat_dump_partition_table(&pt[i]);
@@ -64,7 +95,7 @@ int main(int argc, const char **argv) {
 			(pt[i].partition_type == PARTITION_TYPE_FAT32_LBA)) {
 
 			fseek(bin, SECTOR_SIZE_BYTES * pt[i].start_sector, SEEK_SET);
-			fread(&bs32, sizeof(struct FAT32Entry), 1, bin);
+			fread(&bs32, sizeof(struct FAT32BootSector), 1, bin);
 			fat32_dump_boot_sector(&bs32);
 		}
 		printf("\n");

@@ -157,6 +157,9 @@ I found a good website that explains FAT and SPI interfacing from the atmel to
 an SD card <a href="http://codeandlife.com/2012/04/02/simple-fat-and-sd-tutorial-part-1/">
 here </a>
 
+FAT32 code design and resoureces: <a href="https://www.pjrc.com/tech/8051/ide/fat32.html">
+PJRC FAT32 Walkthrough</a>
+
 ### Serial Stream
 This will need to stream realtime data over a serial interface that we can
 use for both data projection (like on a screen or something) and debugging.
