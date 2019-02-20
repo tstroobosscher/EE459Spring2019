@@ -7,22 +7,24 @@
 
 #include "utils.h"
 
-#define BAUD 19200               // Baud rate used
-#define MYUBRR ((FOSC/16/BAUD)-1) // Value for UBRR0 register
-
+/*
+ *	UART Baud rate
+ */
+#define BAUD 19200
 
 /*
- *	short is a C++ thing, we should really be using width-specific typedefs
- *	like "uint8_t" defined in <stdint.h>
+ *	Value for UBRR0 register
  */
+#define MYUBRR ((FOSC/16/BAUD)-1)
 
-// void serial_init(); 
-// void serial_out(unsigned char ch);
-// unsigned char serial_in();
-// void serial_out_str(char *buf);
+/*
+ *	Static buffer allocation
+ */
+#define BUF_SIZE 32
 
 void initialize_uart(unsigned int ubrr_value);
 char uart_read_char();
 void uart_write_char(char data);
 void write_str(char *buf);
+void uart_check_vowel_consonant();
 #endif

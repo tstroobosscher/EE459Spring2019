@@ -9,9 +9,9 @@
 
 /* for testing */
 
-/*
-#define DEBUG
-*/
+
+//#define DEBUG
+
 
 #ifdef DEBUG
 #include <stdio.h>
