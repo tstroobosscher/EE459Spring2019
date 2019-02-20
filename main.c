@@ -29,16 +29,14 @@ int main() {
 	initialize_pins();
 	serial_init();
 
-	const char* string = "christian";
+	//const char* string = "christian";
 	
 	while(1) {
 
-		uint8_t ch = 0;
+		uint8_t ch = serial_in();
 
-		while (string[ch]) {
-			serial_out(string[ch]);
-			ch++;	
-		}
+		serial_out(ch);
+
 	}
 
 	return(0);
