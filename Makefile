@@ -6,9 +6,10 @@ DEVICE     = atmega328p
 
 # 7.3728MHz oscillator !  
 
-CLOCK      = 7372800
+CLOCK      ?= 7372800
 PROGRAMMER = -c usbtiny -p m328 -F
-ARDUINO_PROGRAMMER = -c arduino -b 115200 -P /dev/tty.usbmodem*
+PORT ?= /dev/tty.usbmodem*
+ARDUINO_PROGRAMMER = -c arduino -b 115200 -P $(PORT)
 OBJECTS    = main.o serial.o fifo.o fat16.o pins.o
 FUSES      = -U hfuse:w:0xde:m -U lfuse:w:0xff:m -U efuse:w:0x05:m
 
