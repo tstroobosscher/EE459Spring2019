@@ -182,12 +182,17 @@ char fat32_dump_entry(struct FAT32Entry *e) {
 	if(e->file_attr & FILE_ATTR_ARCHIVE)
 		printf("    Attribute: ARCHIVE\n");
 
-
+	printf("    Starting cluter address: %08X\n", 
+		fat32_calc_first_cluster(e->first_cluster_addr_high, 
+			e->first_cluster_addr_low));
+	printf("    File size: %d Bytes\n", e->file_size);
 }
 
 void fat_dump_sizes() {
-	printf("fat16 boot sector size : %d\n", (int) sizeof(struct FAT16BootSector));
-	printf("fat32 boot sector size : %d\n", (int) sizeof(struct FAT32BootSector));
+	printf("fat16 boot sector size : %d\n", 
+		(int) sizeof(struct FAT16BootSector));
+	printf("fat32 boot sector size : %d\n", 
+		(int) sizeof(struct FAT32BootSector));
 	printf("fat16 entry size : %d\n", (int) sizeof(struct FAT16Entry));
 	printf("fat32 entry size : %d\n", (int) sizeof(struct FAT32Entry));
 }
