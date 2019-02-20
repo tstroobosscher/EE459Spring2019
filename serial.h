@@ -5,8 +5,10 @@
 #ifndef SERIAL_H
 #define SERIAL_H
 
-#define BAUD 4800               // Baud rate used
-#define MYUBRR (FOSC/16/BAUD-1) // Value for UBRR0 register
+#include "utils.h"
+
+#define BAUD 19200               // Baud rate used
+#define MYUBRR ((FOSC/16/BAUD)-1) // Value for UBRR0 register
 
 
 /*
@@ -14,9 +16,13 @@
  *	like "uint8_t" defined in <stdint.h>
  */
 
-void serial_init(); 
-void serial_out(unsigned char ch);
-unsigned char serial_in();
-void serial_out_str(char* string, char size);
+// void serial_init(); 
+// void serial_out(unsigned char ch);
+// unsigned char serial_in();
+// void serial_out_str(char *buf);
 
+void initialize_uart(unsigned int ubrr_value);
+char uart_read_char();
+void uart_write_char(char data);
+void write_str(char *buf);
 #endif

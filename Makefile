@@ -9,7 +9,7 @@ DEVICE     = atmega328p
 CLOCK      = 7372800
 PROGRAMMER = -c usbtiny -p m328 -F
 ARDUINO_PROGRAMMER = -c arduino -b 115200 -P /dev/tty.usbmodem*
-OBJECTS    = main.o pins.o utils.o fifo.o fat.o serial.o
+OBJECTS    = main.o serial.o fifo.o fat16.o pins.o
 FUSES      = -U hfuse:w:0xde:m -U lfuse:w:0xff:m -U efuse:w:0x05:m
 
 # Tune the lines below only if you know what you are doing:

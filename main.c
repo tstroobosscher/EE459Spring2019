@@ -8,72 +8,51 @@
 
 
 #include <avr/io.h>
-#include <util/delay.h>
-#include <string.h>
 
-
-#include "pins.h"
 #include "utils.h"
-#include "fifo.h"
-#include "fat16.h"
 #include "serial.h"
+#include "fat16.h"
+#include "fifo.h"
 
 struct fifo_t uart_rx_fifo;
 
 struct PartitionTable pt;
 struct FAT16BootSector bs;
-struct FAT16Entry e;
 
 int main() {
-
-	initialize_fifo(&uart_rx_fifo);
 	initialize_pins();
-	serial_init();
+	initialize_uart(MYUBRR);
 
 	char buff[128];
 
-	//const char* string = "christian";
-	
 	while(1) {
 
-		unsigned char ch = serial_in();
+		unsigned char ch = uart_read_char();
 
-		serial_out(ch);
-
-		//DELAY_MS(10);
-
-		//serial_out('i');
-
-
-		/*if ((ch >= 'a') && (ch <= 'z')) {
+		if ((ch >= 'a') && (ch <= 'z')) {
 			switch(ch) {
 				case 'a':
-					sprintf(buff,"You entered a vowel: a");
+					sprintf(buff,"You entered a vowel: a\n\r");
 					break;
 				case 'e':
-					sprintf(buff,"You entered a vowel: e");
+					sprintf(buff,"You entered a vowel: e\n\r");
 					break;
 				case 'i':
-					sprintf(buff,"You entered a vowel: i");
+					sprintf(buff,"You entered a vowel: i\n\r");
 					break;
 				case 'o':
-					sprintf(buff,"You entered a vowel: o");
+					sprintf(buff,"You entered a vowel: o\n\r");
 					break;
 				case 'u':
-					sprintf(buff,"You entered a vowel: u");
+					sprintf(buff,"You entered a vowel: u\n\r");
 					break;
 				default:
-					sprintf(buff, "That was the consonant: %c",ch);
+					sprintf(buff, "That was the consonant: %c\n\r",ch);
 			}
 
-			serial_out_str(buff,strlen(buff));
-
-
-		} */
-
-		//serial_out_str('christian',9);
-		//serial_out('c');
+			write_str(buff);
+		}
 	}
 
 	return(0);
-}
+} 

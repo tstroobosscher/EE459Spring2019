@@ -7,7 +7,6 @@
 #include "utils.h"
 #include <stdint.h>
 #include <avr/io.h>
-#include <util/setbaud.h>
 
 
 /*
@@ -49,46 +48,65 @@
 
 
 
-void serial_init() {
-	UBRR0 = MYUBRR; // Set baud rate
+// void serial_init(unsigned int ubrr_value) {
+//    //Set Baud rate
+//     UBRR0H = (unsigned char)(ubrr_value >> 8);  
+//     UBRR0L = (unsigned char)(ubrr_value & 255);
+//     // Frame Format: asynchronous, no parity, 1 stop bit, char size 8
+//     UCSR0C = (1 << UCSZ01) | (1 << UCSZ00);
+//     //Enable The receiver and transmitter
+//     UCSR0B = (1 << RXEN0) | (1 << TXEN0);
+// }
 
-#ifdef USE_2X
 
-	UCSR0A |= (1 << U2X0);
+// // serial_out - Output a byte to the USART0 port
 
-#else 
-	UCSR0A &= ~(1 << U2X0);
 
-#endif
+// void serial_out(unsigned char ch) {
+// 	while(!(UCSR0A & (1<<UDRE0))) {}
+//     UDR0=ch;
+// }
 
-	UCSR0B |= (1 << TXEN0 ) | (1 << RXEN0 ); // Turn on transmitter and receiver
-	UCSR0C |= (1 << UCSZ01) | (1 << UCSZ00); // Set for async . operation , no parity ,
-	// one stop bit , 8 data bits
+// void serial_out_str(char *buf){
+//     while(*buf) {
+//         serial_out(*buf);
+//         buf++;
+//     }
+// }
+
+
+// // serial_in - Read a byte from the USART0 and return it
+
+
+// unsigned char serial_in() {
+// 	while(!(UCSR0A & (1<<RXC0))) {}
+//     return UDR0;
+// }
+
+void initialize_uart(unsigned int ubrr_value) { // is UBRR>255 supported?
+    //Set Baud rate
+    UBRR0H = (unsigned char)(ubrr_value >> 8);  
+    UBRR0L = (unsigned char)(ubrr_value & 255);
+    // Frame Format: asynchronous, no parity, 1 stop bit, char size 8
+    UCSR0C = (1 << UCSZ01) | (1 << UCSZ00);
+    //Enable The receiver and transmitter
+    UCSR0B = (1 << RXEN0) | (1 << TXEN0);
 }
 
-
-// serial_out - Output a byte to the USART0 port
-
-
-void serial_out(unsigned char ch) {
-
-	while (( UCSR0A & (1 << UDRE0 )) == 0);
-	UDR0 = ch;
+char uart_read_char() { // blocking
+    while(!(UCSR0A & (1<<RXC0))) {}
+    return UDR0;
 }
 
-void serial_out_str(char* string, char size) {
-	for (int i = 0; i < size; i++) {
-		serial_out(string[i]);
-	}
-} 
+void uart_write_char(char data) { // blocking
+    while(!(UCSR0A & (1<<UDRE0))) {}
+    UDR0=data;
+}
 
-
-// serial_in - Read a byte from the USART0 and return it
-
-
-unsigned char serial_in() {
-
-	while ( !( UCSR0A & (1 << RXC0 )) );
-	return UDR0;
+void write_str(char *buf) {
+    while(*buf) {
+        uart_write_char(*buf);
+        buf++;
+    }
 }
 
