@@ -5,7 +5,7 @@
 #ifndef FAT_H
 #define FAT_H
 
-#define DEBUG
+#include "debug.h"
 
 #include <stdint.h>
 

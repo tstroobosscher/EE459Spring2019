@@ -5,12 +5,28 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include "debug.h"
+
+#ifdef ARDUINO
+
+/* 
+ * 16 Mhz Crystal (Arduino)
+ */
+#define FOSC 16000000
+
+#else
 
 /* 
  * 7.3728 Mhz Crystal 
  */
-#define FOSC 16000000//7372800
+#define FOSC 7372800
 
+#endif
+
+
+/* 
+ * Calculate number of arr elements
+ */
 #define ARRAY_SIZE(x) (sizeof((x))/sizeof((x)[0]))
 
 /* 

@@ -5,6 +5,8 @@
 #ifndef FIFO_H
 #define FIFO_H
 
+#include "debug.h"
+
 #include <stdint.h> 
 
 /* for testing */

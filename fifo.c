@@ -4,6 +4,7 @@
 
 #include "fifo.h"
 #include "utils.h"
+#include "debug.h"
 
 void initialize_fifo(struct fifo_t *fifo) {
 	/*

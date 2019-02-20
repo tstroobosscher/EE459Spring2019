@@ -3,10 +3,15 @@
  */
 
 #include "fat.h"
+#include "debug.h"
 
 #ifdef DEBUG
 #include <stdio.h>
 #endif
+
+uint32_t fat32_calc_first_cluster(uint16_t high, uint16_t low) {
+	return (high << 16) | (low);
+}
 
 #ifdef DEBUG
 
@@ -142,10 +147,6 @@ void fat16_dump_entry(struct FAT16Entry *e) {
 		(e->time_last_modified & 0x1F));
 	printf("    Start: [%04X]", e->cluster_start);
 	printf("    Size: %d\n", e->file_size);
-}
-
-uint32_t fat32_calc_first_cluster(uint16_t high, uint16_t low) {
-	return (high << 16) | (low);
 }
 
 char fat32_dump_entry(struct FAT32Entry *e) {

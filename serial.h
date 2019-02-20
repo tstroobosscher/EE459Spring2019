@@ -6,6 +6,7 @@
 #define SERIAL_H
 
 #include "utils.h"
+#include "debug.h"
 
 /*
  *	UART Baud rate

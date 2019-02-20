@@ -13,6 +13,7 @@
 #include "serial.h"
 #include "fat.h"
 #include "fifo.h"
+#include "debug.h"
 
 struct fifo_t uart_rx_fifo;
 
