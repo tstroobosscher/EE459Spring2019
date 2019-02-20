@@ -79,3 +79,7 @@ disasm:	main.elf
 
 cpp:
 	$(COMPILE) -E main.c
+
+.PHONY: utils
+utils:
+	@echo Lines: $(shell git ls-files | xargs cat | wc -l)
