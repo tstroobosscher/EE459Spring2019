@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "../../fat.h"
+#include "../../fat16.h"
 
 int main() {
 	FILE *bin = fopen("test.img", "r");

@@ -14,7 +14,7 @@
 #include "pins.h"
 #include "utils.h"
 #include "fifo.h"
-#include "fat.h"
+#include "fat16.h"
 #include "serial.h"
 
 struct fifo_t uart_rx_fifo;
