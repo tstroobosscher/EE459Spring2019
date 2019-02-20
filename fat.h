@@ -231,6 +231,8 @@ struct FAT32Entry {
 	uint32_t file_size;
 }__attribute((packed));
 
+uint32_t fat32_calc_first_cluster(uint16_t high, uint16_t low);
+
 #ifdef DEBUG
 void fat_dump_partition_table(struct PartitionTable *pt);
 void fat16_dump_boot_sector(struct FAT16BootSector *bs);

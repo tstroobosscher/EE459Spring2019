@@ -1,3 +1,7 @@
+/*
+ *	USC EE459 Spring 2019 Team 17 - FAT16/32 Test code
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

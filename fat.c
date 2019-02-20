@@ -144,6 +144,47 @@ void fat16_dump_entry(struct FAT16Entry *e) {
 	printf("    Size: %d\n", e->file_size);
 }
 
+uint32_t fat32_calc_first_cluster(uint16_t high, uint16_t low) {
+	return (high << 16) | (low);
+}
+
+char fat32_dump_entry(struct FAT32Entry *e) {
+	switch(e->filename[0]) {
+		case FILENAME_NEVER_USED :
+			/* end of directory */
+			return -1;
+		case FILENAME_FILE_DELETED :
+			printf("Deleted FAT32 Entry found: [?%.7s.%.3s]\n", 
+				e->filename + 1, e->filename_ext);
+			return 0;
+		case FILENAME_FIRST_CHAR_E5 :
+			/* Regular file, proceed normally */
+			printf("FAT32 Entry found, Starting with 0xE5: [%c%.7s.%.3s]\n", 
+				0xE5, e->filename + 1, e->filename_ext);
+			break;
+		default:
+			/* Regular file, proceed normally */
+			printf("FAT32 Entry found: [%.8s.%.3s]\n", e->filename, 
+				e->filename_ext);
+			break;
+	}
+
+	if(e->file_attr & FILE_ATTR_RO)
+		printf("    Attribute: READONLY\n");
+	if(e->file_attr & FILE_ATTR_HIDDEN)
+		printf("    Attribute: HIDDEN\n");
+	if(e->file_attr & FILE_ATTR_SYSTEM)
+		printf("    Attribute: SYSTEM\n");
+	if(e->file_attr & FILE_ATTR_LABEL)
+		printf("    Attribute: LABEL\n");
+	if(e->file_attr & FILE_ATTR_SUBDIR)
+		printf("    Attribute: SUBDIR\n");
+	if(e->file_attr & FILE_ATTR_ARCHIVE)
+		printf("    Attribute: ARCHIVE\n");
+
+
+}
+
 void fat_dump_sizes() {
 	printf("fat16 boot sector size : %d\n", (int) sizeof(struct FAT16BootSector));
 	printf("fat32 boot sector size : %d\n", (int) sizeof(struct FAT32BootSector));
