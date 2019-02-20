@@ -11,7 +11,7 @@
 
 #include "utils.h"
 #include "serial.h"
-#include "fat16.h"
+#include "fat.h"
 #include "fifo.h"
 
 struct fifo_t uart_rx_fifo;

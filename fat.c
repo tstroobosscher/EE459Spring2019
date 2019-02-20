@@ -2,7 +2,7 @@
  *	USC EE459 Spring 2019 Team 17 - FAT Routines
  */
 
-#include "fat16.h"
+#include "fat.h"
 
 #ifdef DEBUG
 #include <stdio.h>
@@ -84,11 +84,12 @@ void fat16_dump_entry(struct FAT16Entry *e) {
 			/* unused entry */
 			return;
 		case FILENAME_FILE_DELETED :
-			printf("FAT16 Entry found, Deleted file: [?%.7s.%.3s]\n", e->filename + 1, 
-				e->filename_ext);
+			printf("FAT16 Entry found, Deleted file: [?%.7s.%.3s]\n", 
+				e->filename + 1, e->filename_ext);
 			return;
 		case FILENAME_FIRST_CHAR_E5 :
-			printf("FAT16 Entry found, File starting with 0xE5: [%c%.7s.%.3s]\n", 0xE5, 
+			printf("FAT16 Entry found, File starting with 0xE5: "
+				"[%c%.7s.%.3s]\n", 0xE5, 
 				e->filename + 1, e->filename_ext);
 			break;
 		case FILENAME_DIRECTORY :
@@ -96,7 +97,8 @@ void fat16_dump_entry(struct FAT16Entry *e) {
 				e->filename_ext);
 			break;
 		default:
-			printf("FAT16 Entry found, File: [%.8s.%.3s]\n", e->filename, e->filename_ext);
+			printf("FAT16 Entry found, File: [%.8s.%.3s]\n", e->filename, 
+				e->filename_ext);
 			break;
 	}
 
@@ -109,6 +111,13 @@ void fat16_dump_entry(struct FAT16Entry *e) {
 		(e->time_last_modified & 0x1F));
 	printf("    Start: [%04X]", e->cluster_start);
 	printf("    Size: %d\n", e->file_size);
+}
+
+void fat_dump_sizes() {
+	printf("fat16 boot sector size : %d\n", (int) sizeof(struct FAT16BootSector));
+	printf("fat32 boot sector size : %d\n", (int) sizeof(struct FAT32BootSector));
+	printf("fat16 entry size : %d\n", (int) sizeof(struct FAT16Entry));
+	printf("fat32 entry size : %d\n", (int) sizeof(struct FAT32Entry));
 }
 
 #endif

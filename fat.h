@@ -5,7 +5,7 @@
 #ifndef FAT_H
 #define FAT_H
 
-//#define DEBUG
+#define DEBUG
 
 #include <stdint.h>
 
@@ -125,6 +125,38 @@ struct FAT16BootSector {
 	uint16_t boot_sector_signature;
 }__attribute((packed));
 
+struct FAT32BootSector {
+	uint8_t jmp[3];
+	uint8_t oem[8];
+	uint16_t sector_size;
+	uint8_t sectors_per_cluster;
+	uint16_t reserved_sectors;
+	uint8_t number_of_fats;
+	uint16_t root_dir_entries;
+	uint16_t total_sectors_16;
+	uint8_t media_descriptor;
+	uint16_t fat_sectors;
+	uint16_t sectors_per_track;
+	uint16_t number_of_heads;
+	uint32_t hidden_sectors;
+	uint32_t total_sectors_32;
+	uint32_t number_of_sectors;
+	uint16_t fat_flags;
+	uint16_t fs_version_number;
+	uint32_t cluster_number_root_dir;
+	uint16_t sector_number_fsinfo;
+	uint16_t sector_number_backup;
+	uint8_t reserved[12];
+	uint8_t drive_number;
+	uint8_t current_head;
+	uint8_t boot_signature;
+	uint32_t volume_id;
+	uint8_t volume_label[11];
+	uint8_t fs_type[8];
+	uint8_t boot_code[372];
+	uint16_t boot_sector_signature;
+}__attribute((packed));
+
 /*
  *	FAT16 Entry found in the root directory
  *	Offset 			Description 			Size (Bytes)
@@ -167,9 +199,40 @@ struct FAT16Entry {
 	uint32_t file_size;
 }__attribute((packed));
 
+/*
+ *	FAT32 Entry found in the root directory
+ *	Offset 			Description 			Size (Bytes)
+ *	0x00 			Filename 				8
+ *	0x08 			Filename extension 		3
+ *	0x0B 			File attributes 		1
+ *	0x0C 			Reserved 				1
+ *	0x0D 			FAT creation date/time 	5
+ *	0x12 			Accessed date 			2
+ *	0x14 			High byte cluster addr 	2
+ *	0x16 			Time created/modified 	2
+ *	0x18 			Date created/modified 	2
+ *	0x1A 			Low byte cluster addr	2
+ *	0x1C 			File size (Bytes) 		4
+ */
+
+struct FAT32Entry {
+	uint8_t filename[8];
+	uint8_t filename_ext[3];
+	uint8_t file_attr;
+	uint8_t reserved;
+	uint8_t date_time_creat[5];
+	uint16_t accessed_date;
+	uint16_t first_cluster_addr_high;
+	uint16_t time_last_modified;
+	uint16_t date_last_modified;
+	uint16_t first_cluster_addr_low;
+	uint32_t file_size;
+}__attribute((packed));
+
 #ifdef DEBUG
 void fat_dump_partition_table(struct PartitionTable *pt);
 void fat16_dump_boot_sector(struct FAT16BootSector *bs);
 void fat16_dump_entry(struct FAT16Entry *e);
+void fat_dump_sizes();
 #endif
 #endif
