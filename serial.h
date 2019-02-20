@@ -5,13 +5,17 @@
 #ifndef SERIAL_H
 #define SERIAL_H
 
+#define BAUD 9600               // Baud rate used
+#define MYUBRR (FOSC/16/BAUD-1) // Value for UBRR0 register
+
+
 /*
  *	short is a C++ thing, we should really be using width-specific typedefs
  *	like "uint8_t" defined in <stdint.h>
  */
 
-void serial_init(unsigned short); 
-void serial_out(char ch);
-char serial_in();
+void serial_init(); 
+void serial_out(uint8_t ch);
+uint8_t serial_in();
 
 #endif

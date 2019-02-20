@@ -4,10 +4,10 @@
 
 #include <stdio.h>
 #include "serial.h"
-
-#define FOSC 16000000           // Clock frequency??
-#define BAUD 9600               // Baud rate used
-#define MYUBRR (FOSC/16/BAUD-1) // Value for UBRR0 register
+#include "utils.h"
+#include <stdint.h>
+#include <avr/io.h>
+#include <util/setbaud.h>
 
 
 /*
@@ -47,37 +47,22 @@
  *	
  */
 
-int main(void) {
-
-	serial_init(MYUBRR);
-
-	// beginning of the code for part 6.2 of lab 4:
-
-	char input;
 
 
-	while(1) { // loop forever
-		
-		// need to echo the character received from the computer, back to the computer
+void serial_init() {
+	UBRR0 = MYUBRR; // Set baud rate
 
-		if (scanf(%s,input)) {
+#ifdef USE_2X
 
-			serial_out(input); // send the character out
+	UCSR0A |= (1 << U2X0);
 
-		}
+#else 
+	UCSR0A &= ~(1 << U2X0);
 
+#endif
 
-	}
-
-
-
-}
-
-void serial_init(unsigned short ubrr) {
-	UBRR0 = ubrr ; // Set baud rate
-	UCSR0B |= (1 << TXEN0 ); // Turn on transmitter
-	UCSR0B |= (1 << RXEN0 ); // Turn on receiver
-	UCSR0C = (3 << UCSZ00 ); // Set for async . operation , no parity ,
+	UCSR0B |= (1 << TXEN0 ) | (1 << RXEN0 ); // Turn on transmitter and receiver
+	UCSR0C |= (1 << UCSZ01) | (1 << UCSZ00); // Set for async . operation , no parity ,
 	// one stop bit , 8 data bits
 }
 
@@ -85,19 +70,19 @@ void serial_init(unsigned short ubrr) {
 // serial_out - Output a byte to the USART0 port
 
 
-void serial_out(char ch) {
+void serial_out(uint8_t ch) {
 
-	while (( UCSR0A & (1 < < UDRE0 )) == 0);
-	UDR0 = ch ;
+	while (( UCSR0A & (1 << UDRE0 )) == 0);
+	UDR0 = ch;
 } 
 
 
 // serial_in - Read a byte from the USART0 and return it
 
 
-char serial_in() {
+uint8_t serial_in() {
 
 	while ( !( UCSR0A & (1 << RXC0 )) );
-	return UDR0 ;
+	return UDR0;
 }
 
