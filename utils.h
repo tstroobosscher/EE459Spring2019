@@ -9,7 +9,7 @@
 /* 
  * 7.3728 Mhz Crystal 
  */
-#define FOSC 7372800
+#define FOSC 16000000//7372800
 
 #define ARRAY_SIZE(x) (sizeof((x))/sizeof((x)[0]))
 

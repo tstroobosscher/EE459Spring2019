@@ -140,6 +140,7 @@ struct FAT32BootSector {
 	uint16_t number_of_heads;
 	uint32_t hidden_sectors;
 	uint32_t total_sectors_32;
+
 	uint32_t number_of_sectors;
 	uint16_t fat_flags;
 	uint16_t fs_version_number;
@@ -147,13 +148,14 @@ struct FAT32BootSector {
 	uint16_t sector_number_fsinfo;
 	uint16_t sector_number_backup;
 	uint8_t reserved[12];
+
 	uint8_t drive_number;
 	uint8_t current_head;
 	uint8_t boot_signature;
 	uint32_t volume_id;
 	uint8_t volume_label[11];
 	uint8_t fs_type[8];
-	uint8_t boot_code[372];
+	uint8_t boot_code[420];
 	uint16_t boot_sector_signature;
 }__attribute((packed));
 
@@ -232,6 +234,7 @@ struct FAT32Entry {
 #ifdef DEBUG
 void fat_dump_partition_table(struct PartitionTable *pt);
 void fat16_dump_boot_sector(struct FAT16BootSector *bs);
+void fat32_dump_boot_sector(struct FAT32BootSector *bs);
 void fat16_dump_entry(struct FAT16Entry *e);
 void fat_dump_sizes();
 #endif

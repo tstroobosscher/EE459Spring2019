@@ -65,6 +65,7 @@ int main(int argc, const char **argv) {
 
 			fseek(bin, SECTOR_SIZE_BYTES * pt[i].start_sector, SEEK_SET);
 			fread(&bs32, sizeof(struct FAT32Entry), 1, bin);
+			fat32_dump_boot_sector(&bs32);
 		}
 		printf("\n");
 	}
