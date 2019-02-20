@@ -33,7 +33,7 @@ int main() {
 	
 	while(1) {
 
-		uint8_t ch = serial_in();
+		char ch = serial_in();
 
 		serial_out(ch);
 

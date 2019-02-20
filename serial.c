@@ -70,7 +70,7 @@ void serial_init() {
 // serial_out - Output a byte to the USART0 port
 
 
-void serial_out(uint8_t ch) {
+void serial_out(char ch) {
 
 	while (( UCSR0A & (1 << UDRE0 )) == 0);
 	UDR0 = ch;
@@ -80,7 +80,7 @@ void serial_out(uint8_t ch) {
 // serial_in - Read a byte from the USART0 and return it
 
 
-uint8_t serial_in() {
+char serial_in() {
 
 	while ( !( UCSR0A & (1 << RXC0 )) );
 	return UDR0;

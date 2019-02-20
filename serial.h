@@ -5,7 +5,7 @@
 #ifndef SERIAL_H
 #define SERIAL_H
 
-#define BAUD 9600               // Baud rate used
+#define BAUD 19200               // Baud rate used
 #define MYUBRR (FOSC/16/BAUD-1) // Value for UBRR0 register
 
 
@@ -15,7 +15,7 @@
  */
 
 void serial_init(); 
-void serial_out(uint8_t ch);
-uint8_t serial_in();
+void serial_out(char ch);
+char serial_in();
 
 #endif
