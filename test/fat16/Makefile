@@ -12,7 +12,7 @@ CC = gcc -Wall
 
 BINARY_FLAGS = -o
 
-SOURCE = mem_read.c $(TOP_DIR)/fat.c
+SOURCE = mem_read.c $(TOP_DIR)/fat16.c
 
 BINARY = mem_read
 

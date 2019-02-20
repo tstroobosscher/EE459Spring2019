@@ -2,7 +2,7 @@
  *	USC EE459 Spring 2019 Team 17 - FAT Routines
  */
 
-#include "fat.h"
+#include "fat16.h"
 
 #ifdef DEBUG
 #include <stdio.h>
