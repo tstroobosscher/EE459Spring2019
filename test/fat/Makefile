@@ -12,7 +12,7 @@ CC = gcc -Wall
 
 BINARY_FLAGS = -o
 
-SOURCE = readfat.c $(TOP_DIR)/fat.c
+SOURCE = readfat.c $(TOP_DIR)/fat.c $(TOP_DIR)/utils.c
 
 BINARY = readfat
 

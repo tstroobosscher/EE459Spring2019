@@ -34,4 +34,8 @@
  */
 #define DELAY_MS(x) (_delay_ms(x))
 
+#ifdef DEBUG
+void dump_bin(void *buf, int size);
+#endif
+
 #endif

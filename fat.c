@@ -187,6 +187,8 @@ char fat32_dump_entry(struct FAT32Entry *e) {
 		fat32_calc_first_cluster(e->first_cluster_addr_high, 
 			e->first_cluster_addr_low));
 	printf("    File size: %d Bytes\n", e->file_size);
+
+	return 0;
 }
 
 void fat_dump_sizes() {
