@@ -47,4 +47,9 @@ void dump_bin(void *buf, int size) {
 
 #endif
 
+void log(const char *msg) {
+	/* print msg to uart console */
+	uart_write_str(msg);
+}
+
 /* TODO: flush uart buffers */

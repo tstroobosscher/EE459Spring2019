@@ -38,4 +38,6 @@
 void dump_bin(void *buf, int size);
 #endif
 
+void log(const char *msg);
+
 #endif

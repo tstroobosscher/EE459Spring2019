@@ -10,7 +10,7 @@
 #include "debug.h"
 #include "uart.h"
 
-static void initialize_slave_select(uint8_t pin) {
+static void spi_initialize_slave_select(uint8_t pin) {
 	/*
 	 *	Initialize slave select pin with active high
 	 */
@@ -33,7 +33,7 @@ void initialize_spi() {
 	/* div 16 */
 	SPCR |= (1 << SPR1);
 
-	initialize_slave_select(PIN_SS_SD);
+	spi_initialize_slave_select(PIN_SS_SD);
 }
 
 int8_t spi_device_enable(uint8_t dev) {
