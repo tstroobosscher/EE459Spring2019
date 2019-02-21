@@ -13,6 +13,10 @@ uint32_t fat32_calc_first_cluster(uint16_t high, uint16_t low) {
 	return (high << 16) | (low);
 }
 
+uint32_t fat32_calc_lba_from_cluster(uint32_t cluster_begin_lba, uint32_t sectors_per_cluster, uint32_t cluster_number) {
+	return cluster_begin_lba + (cluster_number - 2) * sectors_per_cluster;
+}
+
 #ifdef DEBUG
 
 void fat_dump_partition_table(struct PartitionTable *pt) {
@@ -54,7 +58,7 @@ void fat_dump_partition_table(struct PartitionTable *pt) {
 	}
 	printf("	End address in CHS: %02X:%02X:%02X\n", pt->end_chs[0], 
 		pt->end_chs[1], pt->end_chs[2]);
-	printf("	Relative LBA address: 0x%08X, %d sectors long\n", 
+	printf("	Relative LBA address: 0x%08X, %u sectors long\n", 
 		pt->start_sector, pt->length_sectors);
 }
 
@@ -62,18 +66,18 @@ void fat16_dump_boot_sector(struct FAT16BootSector *bs) {
 	printf("FAT16 boot sector found, jump code: %02X:%02X:%02X\n", bs->jmp[0], 
 		bs->jmp[1], bs->jmp[2]);
 	printf("	OEM code: [%.8s]\n", bs->oem);
-	printf("	Sector size (Bytes): %d\n", bs->sector_size);
-	printf("	Sectors per cluster: %d\n", bs->sectors_per_cluster);
-	printf("	Number of reserved sectors: %d\n", bs->reserved_sectors);
-	printf("	Number of FATs: %d\n", bs->number_of_fats);
-	printf("	Number of root directory entries: %d\n", bs->root_dir_entries);
-	printf("	Total number of sectors (16): %d\n", bs->total_sectors_16);
+	printf("	Sector size (Bytes): %u\n", bs->sector_size);
+	printf("	Sectors per cluster: %u\n", bs->sectors_per_cluster);
+	printf("	Number of reserved sectors: %u\n", bs->reserved_sectors);
+	printf("	Number of FATs: %u\n", bs->number_of_fats);
+	printf("	Number of root directory entries: %u\n", bs->root_dir_entries);
+	printf("	Total number of sectors (16): %u\n", bs->total_sectors_16);
 	printf("	Media descriptor: 0x%02X\n", bs->media_descriptor);
-	printf("	Number of FAT sectors: %d\n", bs->fat_sectors);
-	printf("	Number of sectors per track: %d\n", bs->sectors_per_track);
-	printf("	Number of heads: %d\n", bs->number_of_heads);
-	printf("	Number of hidden sectors: %d\n", bs->hidden_sectors);
-	printf("	Total number of sectors (32): %d\n", bs->total_sectors_32);
+	printf("	Sectors per FAT (N.A. 32): %u\n", bs->sectors_per_fat_lt32);
+	printf("	Number of sectors per track: %u\n", bs->sectors_per_track);
+	printf("	Number of heads: %u\n", bs->number_of_heads);
+	printf("	Number of hidden sectors: %u\n", bs->hidden_sectors);
+	printf("	Total number of sectors (32): %u\n", bs->total_sectors_32);
 	printf("	Drive number: 0x%02X\n", bs->drive_number);
 	printf("	Current head: 0x%02X\n", bs->current_head);
 	printf("	Boot signature: 0x%02X\n", bs->boot_signature);
@@ -87,19 +91,20 @@ void fat32_dump_boot_sector(struct FAT32BootSector *bs) {
 	printf("FAT32 boot sector found, jump code: %02X:%02X:%02X\n", bs->jmp[0], 
 		bs->jmp[1], bs->jmp[2]);
 	printf("	OEM code: [%.8s]\n", bs->oem);
-	printf("	Sector size (Bytes): %d\n", bs->sector_size);
-	printf("	Sectors per cluster: %d\n", bs->sectors_per_cluster);
-	printf("	Number of reserved sectors: %d\n", bs->reserved_sectors);
-	printf("	Number of FATs: %d\n", bs->number_of_fats);
+	printf("	Sector size (Bytes): %u\n", bs->sector_size);
+	printf("	Sectors per cluster: %u\n", bs->sectors_per_cluster);
+	printf("	Number of reserved sectors: %u\n", bs->reserved_sectors);
+	printf("	Number of FATs: %u\n", bs->number_of_fats);
 	printf("	Media descriptor: 0x%02X\n", bs->media_descriptor);
-	printf("	Number of sectors per track: %d\n", bs->sectors_per_track);
-	printf("	Number of heads: %d\n", bs->number_of_heads);
-	printf("	Number of hidden sectors: %d\n", bs->hidden_sectors);
-	printf("	Total number of sectors (32): %d\n", bs->total_sectors_32);
-	printf("	FAT32: number of sectors: %d\n", bs->number_of_sectors);
+	printf("	Sectors per FAT (N.A. 32): %u\n", bs->sectors_per_fat_lt32);
+	printf("	Number of sectors per track: %u\n", bs->sectors_per_track);
+	printf("	Number of heads: %u\n", bs->number_of_heads);
+	printf("	Number of hidden sectors: %u\n", bs->hidden_sectors);
+	printf("	Total number of sectors (32): %u\n", bs->total_sectors_32);
+	printf("	FAT32: Sectors per FAT: %u\n", bs->sectors_per_fat_32);
 	printf("	FAT32: fat flags: %04X\n", bs->fat_flags);
-	printf("	FAT32: fs version number: %d\n", bs->fs_version_number);
-	printf("	FAT32: cluster address of root dir: %d\n", 
+	printf("	FAT32: fs version number: %u\n", bs->fs_version_number);
+	printf("	FAT32: cluster address of root dir: %u\n", 
 		bs->cluster_number_root_dir);
 	printf("	FAT32: sector number of FSInfo: %04X\n", 
 		bs->sector_number_fsinfo);
@@ -146,7 +151,7 @@ void fat16_dump_entry(struct FAT16Entry *e) {
 		((e->time_last_modified >> 5) & 0x3F), 
 		(e->time_last_modified & 0x1F));
 	printf("    Start: [%04X]", e->cluster_start);
-	printf("    Size: %d\n", e->file_size);
+	printf("    Size: %u\n", e->file_size);
 }
 
 char fat32_dump_entry(struct FAT32Entry *e) {
@@ -164,9 +169,16 @@ char fat32_dump_entry(struct FAT32Entry *e) {
 				0xE5, e->filename + 1, e->filename_ext);
 			break;
 		default:
-			/* Regular file, proceed normally */
-			printf("FAT32 Entry found: [%.8s.%.3s]\n", e->filename, 
-				e->filename_ext);
+			/* LFN's not yet implemented */
+			if((e->file_attr & 0x0F) == 0x0F) {
+				printf("FAT32 Entry found: LFN\n");
+				printf("    LFN's not yet implemented :(\n");
+				return 0;
+			}
+			else
+				/* Regular file, proceed normally */
+				printf("FAT32 Entry found: [%.8s.%.3s]\n", e->filename, 
+					e->filename_ext);
 			break;
 	}
 
@@ -183,21 +195,36 @@ char fat32_dump_entry(struct FAT32Entry *e) {
 	if(e->file_attr & FILE_ATTR_ARCHIVE)
 		printf("    Attribute: ARCHIVE\n");
 
-	printf("    Starting cluter address: %08X\n", 
+	printf("    Starting cluter address: 0x%08X\n", 
 		fat32_calc_first_cluster(e->first_cluster_addr_high, 
 			e->first_cluster_addr_low));
-	printf("    File size: %d Bytes\n", e->file_size);
+	printf("    File size: %u Bytes\n", e->file_size);
 
 	return 0;
 }
 
+void dump_sector_addr(struct FAT32BootSector *bs, struct PartitionTable *pt) {
+	uint32_t fat_begin_lba = pt->start_sector + 
+		bs->reserved_sectors;
+	uint32_t cluster_begin_lba = pt->start_sector + 
+		bs->reserved_sectors + 
+		(bs->number_of_fats * bs->sectors_per_fat_32);
+	uint8_t sectors_per_cluster = bs->sectors_per_cluster;
+	uint32_t root_dir_first_cluster = bs->cluster_number_root_dir;
+
+	printf("    fat_begin_lba: 0x%08X, byte offset: %0X\n", fat_begin_lba, fat_begin_lba * bs->sector_size	);
+	printf("    cluster_begin_lba: 0x%08X, byte offset: %0X\n", cluster_begin_lba, cluster_begin_lba * bs->sector_size	);
+	printf("    sectors_per_cluster: %u\n", sectors_per_cluster);
+	printf("    root_dir_first_cluster: 0x%08X\n", root_dir_first_cluster);
+}
+
 void fat_dump_sizes() {
-	printf("fat16 boot sector size : %d\n", 
+	printf("fat16 boot sector size : %u\n", 
 		(int) sizeof(struct FAT16BootSector));
-	printf("fat32 boot sector size : %d\n", 
+	printf("fat32 boot sector size : %u\n", 
 		(int) sizeof(struct FAT32BootSector));
-	printf("fat16 entry size : %d\n", (int) sizeof(struct FAT16Entry));
-	printf("fat32 entry size : %d\n", (int) sizeof(struct FAT32Entry));
+	printf("fat16 entry size : %u\n", (int) sizeof(struct FAT16Entry));
+	printf("fat32 entry size : %u\n", (int) sizeof(struct FAT32Entry));
 }
 
 #endif

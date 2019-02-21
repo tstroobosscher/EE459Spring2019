@@ -18,6 +18,16 @@
 /* SD standard */
 #define SECTOR_SIZE_BYTES 512
 
+/* Number of bytes in an FAT entry */
+#define FAT_ENTRY_SIZE 4
+
+/*
+ *	Logical Block Addressing Note:
+ *	
+ *	LBA for SSD's just numbers the sectors sequentially starting at 0
+ *	So, for example, the MBR sector is just LBA = 0
+ */
+
 /*
  *	Partition table
  *
@@ -37,7 +47,7 @@ struct PartitionTable {
 	uint8_t start_chs[3];
 	uint8_t partition_type;
 	uint8_t end_chs[3];
-	uint32_t start_sector;
+	uint32_t start_sector; /* LBA begin */
 	uint32_t length_sectors;
 }__attribute((packed));
 
@@ -77,12 +87,12 @@ struct PartitionTable {
  *	0x011			Number of root entries				2
  *	0x013			Number of sectors (<= 32MiB)		2
  *	0x015			Media descriptor (removable?)		1
- *	0x016			Number of sectors for FAT 			2
+ *	0x016			Number of sectors per FAT (!32)		2
  *	0x018			Number of sectors per track (CHS)	2
  *	0x01A			Number of heads (CHS)				2
  *	0x01C			Number of hidden sectors 			4
  *	0x020			Total number of sectors (> 32MiB)	4
- *	0x024			FAT32: Number of sectors 			4
+ *	0x024			FAT32: Sectors per fat (32)			4
  *	0x028			FAT32: Flags for FAT 				2
  *	0x02A			FAT32: File system version number 	2
  *	0x02C			FAT32: Cluster number for root dir 	4
@@ -109,7 +119,7 @@ struct FAT16BootSector {
 	uint16_t root_dir_entries;
 	uint16_t total_sectors_16;
 	uint8_t media_descriptor;
-	uint16_t fat_sectors;
+	uint16_t sectors_per_fat_lt32;
 	uint16_t sectors_per_track;
 	uint16_t number_of_heads;
 	uint32_t hidden_sectors;
@@ -135,13 +145,13 @@ struct FAT32BootSector {
 	uint16_t root_dir_entries;
 	uint16_t total_sectors_16;
 	uint8_t media_descriptor;
-	uint16_t fat_sectors;
+	uint16_t sectors_per_fat_lt32;
 	uint16_t sectors_per_track;
 	uint16_t number_of_heads;
 	uint32_t hidden_sectors;
 	uint32_t total_sectors_32;
 
-	uint32_t number_of_sectors;
+	uint32_t sectors_per_fat_32;
 	uint16_t fat_flags;
 	uint16_t fs_version_number;
 	uint32_t cluster_number_root_dir;
@@ -232,12 +242,15 @@ struct FAT32Entry {
 }__attribute((packed));
 
 uint32_t fat32_calc_first_cluster(uint16_t high, uint16_t low);
+uint32_t fat32_calc_lba_from_cluster(uint32_t cluster_begin_lba, uint32_t sectors_per_cluster, uint32_t cluster_number);
 
 #ifdef DEBUG
 void fat_dump_partition_table(struct PartitionTable *pt);
 void fat16_dump_boot_sector(struct FAT16BootSector *bs);
 void fat32_dump_boot_sector(struct FAT32BootSector *bs);
 void fat16_dump_entry(struct FAT16Entry *e);
+char fat32_dump_entry(struct FAT32Entry *e);
 void fat_dump_sizes();
+void dump_sector_addr(struct FAT32BootSector *bs, struct PartitionTable *pt);
 #endif
 #endif

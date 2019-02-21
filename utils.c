@@ -7,6 +7,7 @@
 
 #ifdef DEBUG
 #include <stdio.h>
+#include <ctype.h>
 #endif
 
 #ifdef DEBUG
