@@ -33,8 +33,8 @@ const enum {
 /*
  *	Pin assignments:
  *		1:	(Invalid) Reset
- *		2:	(UART) RX
- *		3:	(UART) TX
+ *		2:	UART RX
+ *		3:	UART TX
  *		4:
  *		5:
  *		6:
@@ -47,10 +47,10 @@ const enum {
  *		13:
  *		14:
  *		15:
- *(D10)	16: (SPI /CS) (Only for slave communication)
- *(D11)	17: (SPI MOSI)
- *(D12)	18: (SPI MISO)
- *(D13)	19: (SPI SCK)
+ *(D10)	16: SD Card SPI Select
+ *(D11)	17: SPI MOSI
+ *(D12)	18: SPI MISO
+ *(D13)	19: SPI SCK
  *		20: (Invalid) AVCC
  *		21:	(Invalid) AREF
  *		22:	(Invalid) GND

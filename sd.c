@@ -8,10 +8,6 @@
 #include "spi.h"
 #include "pins.h"
 
-void sd_select() {
-	/* clear SPI SS bits, set SD (active low) */
-}
-
 void initialize_sd() {
 
 	/* start off not selected (active low) */
@@ -26,4 +22,24 @@ void initialize_sd() {
 	//spi_write_char();
 }
 
+void sd_command(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t bytes, 
+	uint8_t *buf) {
+	/*
+	 *	expecting a response of bytes length
+	 *	buf must be at least bytes long
+	 */
 
+	spi_device_enable(PIN_SS_SD);
+
+    spi_write_char(cmd);
+    spi_write_char(arg>>24);
+    spi_write_char(arg>>16);
+    spi_write_char(arg>>8);
+    spi_write_char(arg);
+    spi_write_char(crc);
+                
+    for(uint8_t i = 0; i < bytes; i++)
+        buf[i] = spi_write_char(0xFF);
+                
+    sd_disable();
+}
