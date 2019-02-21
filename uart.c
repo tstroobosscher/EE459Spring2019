@@ -8,6 +8,23 @@
 #include <stdint.h>
 #include <avr/io.h>
 
+char uart_read_char() {
+    while(!(UCSR0A & (1 << RXC0))) {}
+    return UDR0;
+}
+
+void uart_write_char(char data) {
+    while(!(UCSR0A & (1 << UDRE0))) {}
+    UDR0=data;
+}
+
+void uart_write_str(char *buf) {
+    while(*buf) {
+        uart_write_char(*buf);
+        buf++;
+    }
+}
+
 void initialize_uart(unsigned int ubrr_value) {
     /*
      * Set Baud rate
@@ -24,23 +41,12 @@ void initialize_uart(unsigned int ubrr_value) {
      *	Enable The receiver and transmitter
      */
     UCSR0B = (1 << RXEN0) | (1 << TXEN0);
-}
 
-char uart_read_char() {
-    while(!(UCSR0A & (1 << RXC0))) {}
-    return UDR0;
-}
-
-void uart_write_char(char data) {
-    while(!(UCSR0A & (1 << UDRE0))) {}
-    UDR0=data;
-}
-
-void uart_write_str(char *buf) {
-    while(*buf) {
-        uart_write_char(*buf);
-        buf++;
-    }
+    /* 
+     *	flush output buffer, kind of a hack, should really be checking
+     *	buffer status
+     */
+    uart_write_str("\n\r\n\r");
 }
 
 void uart_check_vowel_consonant(){

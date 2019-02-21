@@ -27,6 +27,7 @@ int main() {
 	initialize_uart(MYUBRR);
 	initialize_spi();
 	initialize_fifo(&uart_rx_fifo);
+	initialize_sd();
 
 	while(1) {
 		uart_check_vowel_consonant();

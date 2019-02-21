@@ -47,9 +47,20 @@ void dump_bin(void *buf, int size) {
 
 #endif
 
-void log(const char *msg) {
-	/* print msg to uart console */
-	uart_write_str(msg);
+uint32_t bind_args(uint8_t arg0, uint8_t arg1, uint8_t arg2, uint8_t arg3) {
+	return (arg0 << 24) | (arg1 << 16) | (arg2 << 8) | (arg3);
+
+}
+
+int8_t byte_in_arr(uint8_t byte, void *buf, uint32_t size) {
+	for(uint32_t i = 0; i < size; i++) {
+		/* dereferencing a void pointer is undefined */
+		uint8_t *ch = (uint8_t *) buf;
+		if(byte == *ch)
+			return 0;
+		buf++;
+	}
+	return -1;
 }
 
 /* TODO: flush uart buffers */
