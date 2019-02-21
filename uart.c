@@ -3,7 +3,7 @@
  */
 
 #include <stdio.h>
-#include "serial.h"
+#include "uart.h"
 #include "utils.h"
 #include <stdint.h>
 #include <avr/io.h>

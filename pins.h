@@ -47,10 +47,10 @@ const enum {
  *		13:
  *		14:
  *		15:
- *		16: (SPI /CS) (Only for slave communication)
- *		17: (SPI MOSI)
- *		18: (SPI MISO)
- *		19: (SPI SCK)
+ *(D10)	16: (SPI /CS) (Only for slave communication)
+ *(D11)	17: (SPI MOSI)
+ *(D12)	18: (SPI MISO)
+ *(D13)	19: (SPI SCK)
  *		20: (Invalid) AVCC
  *		21:	(Invalid) AREF
  *		22:	(Invalid) GND
@@ -64,6 +64,10 @@ const enum {
 
 #define PIN_RX 2
 #define PIN_TX 3
+#define PIN_CS 16
+#define PIN_MOSI 17
+#define PIN_MISO 18 /* input ! */
+#define PIN_SCK 19
 
 void initialize_pins();
 char get_pin(unsigned char pin);

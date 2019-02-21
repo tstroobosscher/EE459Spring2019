@@ -5,12 +5,12 @@
 #include "utils.h"
 #include "debug.h"
 
-#ifdef DEBUG
+#ifdef DEBUG_86
 #include <stdio.h>
 #include <ctype.h>
 #endif
 
-#ifdef DEBUG
+#ifdef DEBUG_86
 
 void dump_bin(void *buf, int size) {
 

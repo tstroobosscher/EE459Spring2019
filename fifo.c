@@ -19,7 +19,7 @@ void initialize_fifo(struct fifo_t *fifo) {
 	return;
 }
 
-#ifdef DEBUG
+#ifdef DEBUG_86
 
 void fifo_dump_buf(struct fifo_t *fifo, char *ret, int size) {
 	/*

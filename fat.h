@@ -244,7 +244,7 @@ struct FAT32Entry {
 uint32_t fat32_calc_first_cluster(uint16_t high, uint16_t low);
 uint32_t fat32_calc_lba_from_cluster(uint32_t cluster_begin_lba, uint32_t sectors_per_cluster, uint32_t cluster_number);
 
-#ifdef DEBUG
+#ifdef DEBUG_86
 void fat_dump_partition_table(struct PartitionTable *pt);
 void fat16_dump_boot_sector(struct FAT16BootSector *bs);
 void fat32_dump_boot_sector(struct FAT32BootSector *bs);

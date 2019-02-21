@@ -5,7 +5,7 @@
 #include "fat.h"
 #include "debug.h"
 
-#ifdef DEBUG
+#ifdef DEBUG_86
 #include <stdio.h>
 #endif
 
@@ -13,11 +13,12 @@ uint32_t fat32_calc_first_cluster(uint16_t high, uint16_t low) {
 	return (high << 16) | (low);
 }
 
-uint32_t fat32_calc_lba_from_cluster(uint32_t cluster_begin_lba, uint32_t sectors_per_cluster, uint32_t cluster_number) {
+uint32_t fat32_calc_lba_from_cluster(uint32_t cluster_begin_lba, 
+	uint32_t sectors_per_cluster, uint32_t cluster_number) {
 	return cluster_begin_lba + (cluster_number - 2) * sectors_per_cluster;
 }
 
-#ifdef DEBUG
+#ifdef DEBUG_86
 
 void fat_dump_partition_table(struct PartitionTable *pt) {
 	printf("Partition entry found, first byte: %02X\n", pt->boot_byte);
@@ -212,8 +213,10 @@ void dump_sector_addr(struct FAT32BootSector *bs, struct PartitionTable *pt) {
 	uint8_t sectors_per_cluster = bs->sectors_per_cluster;
 	uint32_t root_dir_first_cluster = bs->cluster_number_root_dir;
 
-	printf("    fat_begin_lba: 0x%08X, byte offset: %0X\n", fat_begin_lba, fat_begin_lba * bs->sector_size	);
-	printf("    cluster_begin_lba: 0x%08X, byte offset: %0X\n", cluster_begin_lba, cluster_begin_lba * bs->sector_size	);
+	printf("    fat_begin_lba: 0x%08X, byte offset: %0X\n", fat_begin_lba, 
+		fat_begin_lba * bs->sector_size	);
+	printf("    cluster_begin_lba: 0x%08X, byte offset: %0X\n", 
+		cluster_begin_lba, cluster_begin_lba * bs->sector_size	);
 	printf("    sectors_per_cluster: %u\n", sectors_per_cluster);
 	printf("    root_dir_first_cluster: 0x%08X\n", root_dir_first_cluster);
 }

@@ -10,10 +10,11 @@
 #include <avr/io.h>
 
 #include "utils.h"
-#include "serial.h"
+#include "uart.h"
 #include "fat.h"
 #include "fifo.h"
 #include "debug.h"
+#include "spi.h"
 
 struct fifo_t uart_rx_fifo;
 
@@ -23,8 +24,9 @@ struct FAT16Entry e;
 
 int main() {
 	initialize_pins();
-	initialize_fifo(&uart_rx_fifo);
 	initialize_uart(MYUBRR);
+	initialize_spi();
+	initialize_fifo(&uart_rx_fifo);
 
 	while(1) {
 		uart_check_vowel_consonant();

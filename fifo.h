@@ -15,7 +15,7 @@
 //#define DEBUG
 
 
-#ifdef DEBUG
+#ifdef DEBUG_86
 #include <stdio.h>
 #endif
 
@@ -44,7 +44,7 @@ struct fifo_t{
  */
 void initialize_fifo(struct fifo_t *fifo);
 
-#ifdef DEBUG
+#ifdef DEBUG_86
 /*
  *
  */

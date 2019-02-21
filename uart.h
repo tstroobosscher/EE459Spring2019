@@ -2,8 +2,8 @@
  *	USC EE459 Spring 2019 Team 17 - Serial (UART) header
  */
 
-#ifndef SERIAL_H
-#define SERIAL_H
+#ifndef UART_H
+#define UART_H
 
 #include "utils.h"
 #include "debug.h"
