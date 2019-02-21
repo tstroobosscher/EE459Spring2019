@@ -46,3 +46,5 @@ void dump_bin(void *buf, int size) {
 }
 
 #endif
+
+/* TODO: flush uart buffers */
