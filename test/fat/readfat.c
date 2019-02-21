@@ -103,10 +103,9 @@ int main(int argc, const char **argv) {
 
 				uint32_t res;
 				uint32_t position = ftell(bin);
-				fseek(bin, (fat_begin_lba) * bs32.sector_size + 32*e32.file_cluster, SEEK_SET);
-				uint32_t buf[100];
-				fread(&buf, sizeof(buf), 1, bin);
-				dump_bin(&buf, sizeof(buf));
+				fseek(bin, (fat_begin_lba) * bs32.sector_size + FAT_ENTRY_SIZE*file_cluster, SEEK_SET);
+				fread(&res, sizeof(res), 1, bin);
+				printf("    first FAT entry: 0x%08X\n", res);
 				fseek(bin, position, SEEK_SET);
 			}
 		}

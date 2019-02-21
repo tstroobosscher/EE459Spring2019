@@ -160,6 +160,18 @@ here </a>
 FAT32 code design and resoureces: <a href="https://www.pjrc.com/tech/8051/ide/fat32.html">
 PJRC FAT32 Walkthrough</a>
 
+So the FAT32 system is mostely mapped out in the test directory. Partitions are
+found at the MBR, the boot sector is read and the data is setup for the file
+system. The files are mounted at the root directory, and are laid on top of the
+cluster sector. The clusters are tracked in the FAT data structure.
+
+Writing a file:<ul>
+	<li>Initialize file system, read MBR, Boot Sector, check for FAT32 LBA
+	<li>Traverse the FAT and find the next open cluster, return if fulls
+	<li>Write directory entry, write data to cluster
+	<li>update directory entry
+</ul>
+
 ### Serial Stream
 This will need to stream realtime data over a serial interface that we can
 use for both data projection (like on a screen or something) and debugging.
