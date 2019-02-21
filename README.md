@@ -308,3 +308,8 @@ This just pulls in other peoples changes into your own local repository.
 | February 14, 2019 | 2ff6edde | 3.6% | 8.1% |
 | February 19, 2019 | a9bf3ceb | 3.6% | 35.4% |
 | February 19, 2019 | ea79e88a | 9.5% | 42.9% |
+
+## Issues
+Programming the board while using SPI devices can cause bus contention and can
+interfere with the actual binary uploading. The ISP should have a lock on the 
+SPI bus, all other devices should be held at high impedance. Tri-state buffer?
