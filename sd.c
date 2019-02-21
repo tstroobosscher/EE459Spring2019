@@ -37,14 +37,12 @@ void initialize_sd() {
 	for(uint8_t i = 0; i < 10; i++)
 		spi_write_char(0xFF);
 
-	uart_write_str("trace\n\r");
-
 	/* enable sd card */
 #ifdef DEBUG_328
 	if(spi_device_enable(SPI_SD_CARD) < 0)
-		uart_write_str("spi: ERROR: unable to assert SD Slave Select\n\r");
+		uart_write_str("sd: ERROR: unable to assert SD slave select\n\r");
 	else
-		uart_write_str("spi: succesfully asserted SPI SS\n\r");
+		uart_write_str("sd: succesfully asserted SD slave select\n\r");
 #else
 	spi_device_enable(SPI_SD_CARD);
 #endif
