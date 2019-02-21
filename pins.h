@@ -64,16 +64,16 @@ const enum {
 
 #define PIN_RX 2
 #define PIN_TX 3
-#define PIN_CS 16
+#define PIN_SS_SD 16
 #define PIN_MOSI 17
 #define PIN_MISO 18 /* input ! */
 #define PIN_SCK 19
 
 void initialize_pins();
-char get_pin(unsigned char pin);
-char assert_pin(unsigned char pin);
-char deassert_pin(unsigned char pin);
-void pulse_pin(unsigned char pin);
+int8_t pin_get(uint8_t pin);
+int8_t pin_high(uint8_t pin);
+int8_t pin_low(uint8_t pin);
+void pulse_pin(uint8_t pin);
 void cycle_pins();
 
 #endif

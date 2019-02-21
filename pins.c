@@ -53,7 +53,7 @@ void initialize_pins() {
 	/*
 	 *	Here we are assuming that internal pull ups are off by default
 	 */
-	for(unsigned char i = 0; i < ARRAY_SIZE(atmega328_pins); i++) {
+	for(uint8_t i = 0; i < ARRAY_SIZE(atmega328_pins); i++) {
 		if(atmega328_pins[i].port_reg != ATMEL_PORT_INVAL) {
 			if(atmega328_pins[i].pin_dir == ATMEL_OUTPUT) {
 				switch(atmega328_pins[i].port_reg) {
@@ -105,7 +105,7 @@ void initialize_pins() {
 }
 
 /* export */
-char get_pin(unsigned char pin) {
+int8_t pin_get(uint8_t pin) {
 	/*
 	 *  return 1 if pin 1, 0 if 0, and -1 if error
 	 *	########### Not tested yet ############
@@ -131,7 +131,7 @@ char get_pin(unsigned char pin) {
 }
 
 /* export */
-char assert_pin(unsigned char pin) {
+int8_t pin_high(uint8_t pin) {
 	/*
 	 *	need to search through the pin database to map ports to physical pins
 	 *	we can either iterate through the db and look for the pin_num,
@@ -161,7 +161,7 @@ char assert_pin(unsigned char pin) {
 }
 
 /* export */
-char deassert_pin(unsigned char pin) {
+int8_t pin_low(uint8_t pin) {
 	if(pin < ARRAY_SIZE(atmega328_pins)  || pin > 0)
 		if(atmega328_pins[pin].port_reg != ATMEL_PORT_INVAL)
 			if(atmega328_pins[pin].pin_dir == ATMEL_OUTPUT)
@@ -183,19 +183,19 @@ char deassert_pin(unsigned char pin) {
 }
 
 /* export */
-void pulse_pin(unsigned char pin) {
+void pulse_pin(uint8_t pin) {
 	/*
 	 *	assert the pin, wait, deassert
 	 *	delay time must be known at compile time
 	 */
-	assert_pin(pin);
+	pin_high(pin);
 	DELAY_MS(PULSE_WIDTH_MS);
-	deassert_pin(pin);
+	pin_low(pin);
 }
 
 /* export */
 void cycle_pins() {
-	for(unsigned char i = 0; i < ARRAY_SIZE(atmega328_pins); i++)
+	for(uint8_t i = 0; i < ARRAY_SIZE(atmega328_pins); i++)
 		if(atmega328_pins[i].port_reg != ATMEL_PORT_INVAL)
 			pulse_pin(i);
 }

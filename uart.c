@@ -36,7 +36,7 @@ void uart_write_char(char data) {
     UDR0=data;
 }
 
-void write_str(char *buf) {
+void uart_write_str(char *buf) {
     while(*buf) {
         uart_write_char(*buf);
         buf++;
@@ -68,6 +68,6 @@ void uart_check_vowel_consonant(){
 				sprintf(buf, "That was the consonant: %c\n\r", ch);
 		}
 
-		write_str(buf);
+		uart_write_str(buf);
 	}
 }

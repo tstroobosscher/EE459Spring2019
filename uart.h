@@ -26,6 +26,6 @@
 void initialize_uart(unsigned int ubrr_value);
 char uart_read_char();
 void uart_write_char(char data);
-void write_str(char *buf);
+void uart_write_str(char *buf);
 void uart_check_vowel_consonant();
 #endif

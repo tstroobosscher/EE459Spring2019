@@ -10,18 +10,19 @@
 #include "debug.h"
 #include "uart.h"
 
-void initialize_spi() {
-
-
-	/* start off not selected (active low) */
+static void initialize_slave_select(uint8_t pin) {
+	/*
+	 *	Initialize slave select pin with active high
+	 */
 #ifdef DEBUG_328
-	if(assert_pin(PIN_CS) < 0)
-		write_str("spi: ERROR: unable to assert SPI SS\n\r");
-	else
-		write_str("spi: succesfully asserted SPI SS\n\r");
+	if(assert_pin(pin) < 0)
+		uart_write_str("spi: unable to initialize slave select pin");
 #else
-	assert_pin(PIN_CS);
+	pin_high(pin);
 #endif
+}
+
+void initialize_spi() {
 
 	/* initialize SPI hardware,  */
 	SPCR |= (1 << SPE);
@@ -32,6 +33,8 @@ void initialize_spi() {
 	/* div 16 */
 	SPCR |= (1 << SPR1);
 }
+
+
 
 uint8_t spi_write_char(uint8_t ch) {
     SPDR = ch;
