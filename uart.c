@@ -27,12 +27,12 @@ void initialize_uart(unsigned int ubrr_value) {
 }
 
 char uart_read_char() {
-    while(!(UCSR0A & (1<<RXC0))) {}
+    while(!(UCSR0A & (1 << RXC0))) {}
     return UDR0;
 }
 
 void uart_write_char(char data) {
-    while(!(UCSR0A & (1<<UDRE0))) {}
+    while(!(UCSR0A & (1 << UDRE0))) {}
     UDR0=data;
 }
 

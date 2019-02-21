@@ -5,8 +5,6 @@
 #ifndef SPI_H
 #define SPI_H
 
-#include "pins.h"
-
 void initialize_spi();
 uint8_t spi_write_char(uint8_t ch);
 

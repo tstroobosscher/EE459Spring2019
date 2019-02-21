@@ -82,4 +82,4 @@ cpp:
 
 .PHONY: utils
 utils:
-	@echo Lines: $(shell git ls-files | grep -v resources | xargs cat | wc -l)
+	@echo Lines: $(shell git ls-files | grep -v resources | grep -v test.img | xargs cat | wc -l)
