@@ -72,9 +72,11 @@ int8_t spi_device_disable(uint8_t dev) {
 uint8_t spi_write_char(uint8_t ch) {
     SPDR = ch;
     while(!(SPSR & (1 << SPIF))) {
+
 #ifdef DEBUG_328
     	uart_write_str("spi: transfer not complete\n\r");
 #endif
+    	
     }
     return SPDR;
 }
