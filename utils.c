@@ -63,4 +63,9 @@ int8_t byte_in_arr(uint8_t byte, void *buf, uint32_t size) {
 	return -1;
 }
 
+// void log(char *msg) {
+// 	uart_write_str(msg);
+// 	uart_write_str("\n\r");
+// }
+
 /* TODO: flush uart buffers */

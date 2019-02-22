@@ -10,6 +10,15 @@
 #include "pins.h"
 #include "utils.h"
 
+void dump_sd_resp(uint8_t *buf) {
+	uint8_t err[64];
+	snprintf(err, 64, "bytes received: 0x%02X, 0x%02X, 0x%02X, 0x%02X, "
+		"0x%02X, 0x%02X, 0x%02X, 0x%02X", buf[0], buf[1], buf[2], 
+		buf[3], buf[4], buf[5], buf[6], buf[7]);
+	uart_write_str(err);
+	uart_write_str("\n\r");
+}
+
 void initialize_sd() {
 	uint8_t buf[8];
 
@@ -53,18 +62,26 @@ void initialize_sd() {
 
 #ifdef DEBUG_328
 	if(byte_in_arr(0x01, buf, 8) < 0){
-
-		uint8_t err[64];
-		uart_write_str("sd: ERROR: sd initialization failed\n\r");
-		snprintf(err, 64, "bytes received: 0x%02X, 0x%02X, 0x%02X, 0x%02X, "
-			"0x%02X, 0x%02X, 0x%02X, 0x%02X\n\r", buf[0], buf[1], buf[2], 
-			buf[3], buf[4], buf[5], buf[6], buf[7]);
-		uart_write_str(err);
-	}
-	else
-		uart_write_str("sd: succesfully initialized sd card\n\r");
+		uart_write_str("sd: ERROR: CMD0 returned incorrectly\n\r");
+		dump_sd_resp(buf);
+	} else
+		uart_write_str("sd: CMD0 returned correctly\n\r");
 #endif
 
+	uint8_t j = 0;
+
+cmd1:
+	sd_command(CMD1, bind_args(NOARG, NOARG, NOARG, NOARG), NOCRC, 8, buf);
+
+	if(byte_in_arr(0x00, buf, 8) < 0) {
+		uart_write_str("sd: CMD1 returned incorrectly, retrying\n\r");
+		dump_sd_resp(buf);
+		j++;
+		if(j==10)
+			return;
+		goto cmd1;
+	} else
+		uart_write_str("sd: CMD1 returned correctly\n\r");
 }
 
 void sd_command(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t bytes, 
@@ -89,4 +106,10 @@ void sd_command(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t bytes,
         buf[i] = spi_write_char(0xFF);
                 
     spi_device_disable(SPI_SD_CARD);
+}
+
+int8_t sd_set_block_len() {
+	uint8_t buf[8];
+	sd_command(CMD16, bind_args(0x00, 0x00, 0x02, 0x00), NOCRC, 8, buf);
+
 }

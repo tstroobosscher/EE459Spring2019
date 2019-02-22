@@ -38,8 +38,14 @@ void initialize_spi() {
 	/* master device */
 	SPCR |= (1 << MSTR); 
 
-	/* div 16 */
-	SPCR |= (1 << SPR1);
+	/*
+	 *	We will need to see how fast we can use SPI, the board might cause
+	 *	the signals to slow down and force us to lower our maximum transfer 
+	 *	speed
+	 *	
+	 *	No division results in a SPI speed of FOSC/4
+	 */
+
 }
 
 int8_t spi_device_enable(uint8_t dev) {
@@ -76,7 +82,7 @@ uint8_t spi_write_char(uint8_t ch) {
 #ifdef DEBUG_328
     	uart_write_str("spi: transfer not complete\n\r");
 #endif
-    	
+
     }
     return SPDR;
 }

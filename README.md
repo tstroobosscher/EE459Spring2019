@@ -172,6 +172,9 @@ Writing a file:<ul>
 	<li>update directory entry
 </ul>
 
+<a href="https://luckyresistor.me/cat-protector/software/sdcard-2/"> SD Card 
+Command Tutorial </a>
+
 ### Serial Stream
 This will need to stream realtime data over a serial interface that we can
 use for both data projection (like on a screen or something) and debugging.
