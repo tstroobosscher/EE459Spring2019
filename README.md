@@ -175,6 +175,18 @@ Writing a file:<ul>
 <a href="https://luckyresistor.me/cat-protector/software/sdcard-2/"> SD Card 
 Command Tutorial </a>
 
+SD Init Procedure: <ul>
+	<li>Chip Select (Active Low)</li>
+	<li>Cycle clock > 74 times</li>
+	<li>Deselect Chip (Active Low)</li>
+	<li>Send CMD0, Continue until IDLE flag only set, timeout if necessary</li>
+	<li>Send CMD8, If Illegal flag set, V1. else fail; if response byte has check pattern, V2, else fail</li>
+	<li>Send ACMD41, if V2 arg = 0x40000000, else arg = 0, until ret 0x00, or timeout</li>
+	<li>if V2, check ocr, if either of the highest two bits are set, SDHC</li>
+	<li>Set block length to 512</li>
+	<li>deselect chip</li>
+</ul>
+
 ### Serial Stream
 This will need to stream realtime data over a serial interface that we can
 use for both data projection (like on a screen or something) and debugging.
