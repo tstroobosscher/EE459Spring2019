@@ -18,6 +18,7 @@
  *	Application Command 	CMD55 	0 				R1
  *	Read OCR 				CMD58 	… 				R3
  */
+#define CMD_RESP_BYTES 8
 
 #define CMD0 0x40
 #define NOARG 0x00

@@ -53,14 +53,28 @@ uint32_t bind_args(uint8_t arg0, uint8_t arg1, uint8_t arg2, uint8_t arg3) {
 }
 
 int8_t byte_in_arr(uint8_t byte, void *buf, uint32_t size) {
+	/*
+	 *	return pos of byte in arr, 0 if not, logic is inconsistent but
+	 *	its readable
+	 */
+
 	for(uint32_t i = 0; i < size; i++) {
 		/* dereferencing a void pointer is undefined */
 		uint8_t *ch = (uint8_t *) buf;
 		if(byte == *ch)
-			return 0;
+			return 1;
 		buf++;
 	}
-	return -1;
+	return 0;
+}
+
+void dump_nbytes(uint8_t *buf, uint8_t nbytes) {
+	uart_write_str("bytes received: ");
+	for(uint8_t i = 0; i < nbytes; i++) {
+		uart_write_str("0x");
+		uart_write_char(buf[i]);
+	}
+	uart_write_str("\n\r");
 }
 
 // void log(char *msg) {

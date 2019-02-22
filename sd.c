@@ -10,17 +10,8 @@
 #include "pins.h"
 #include "utils.h"
 
-void dump_sd_resp(uint8_t *buf) {
-	uint8_t err[64];
-	snprintf(err, 64, "bytes received: 0x%02X, 0x%02X, 0x%02X, 0x%02X, "
-		"0x%02X, 0x%02X, 0x%02X, 0x%02X", buf[0], buf[1], buf[2], 
-		buf[3], buf[4], buf[5], buf[6], buf[7]);
-	uart_write_str(err);
-	uart_write_str("\n\r");
-}
-
-void initialize_sd() {
-	uint8_t buf[8];
+int8_t initialize_sd() {
+	uint8_t buf[CMD_RESP_BYTES];
 
 	/*	
 	 *	1. disable slave select
@@ -33,40 +24,35 @@ void initialize_sd() {
 	 */
 
 	/* disable sd card */
-#ifdef DEBUG_328
 	if(spi_device_disable(SPI_SD_CARD) < 0)
-		uart_write_str("sd: ERROR: unable to deassert SD slave select\n\r");
-	else
-		uart_write_str("sd: succesfully deasserted SD slave select\n\r");
-#else
-	spi_device_disable(SPI_SD_CARD);
-#endif
+
+		/* sanity check */
+		return -1;
 
 	/* 80 clocks, init card */
 	for(uint8_t i = 0; i < 10; i++)
 		spi_write_char(0xFF);
 
 	/* enable sd card */
-#ifdef DEBUG_328
 	if(spi_device_enable(SPI_SD_CARD) < 0)
-		uart_write_str("sd: ERROR: unable to assert SD slave select\n\r");
-	else
-		uart_write_str("sd: succesfully asserted SD slave select\n\r");
-#else
-	spi_device_enable(SPI_SD_CARD);
-#endif
 
-	sd_command(CMD0, bind_args(NOARG, NOARG, NOARG, NOARG), CMD0_CRC, 8, buf);
+		/* sanity check */
+		return -1;
+
+	/* start the clock, must find the correct response in time */
+	timein()
+
+	do {
+		/* send CMD0, get 8 bytes back */
+		sd_command(CMD0, bind_args(NOARG, NOARG, NOARG, NOARG), 
+		CMD0_CRC, CMD_RESP_BYTES, buf);
+
+		/* too late */
+		if(timeout())
+			return -1;
+	} while(!byte_in_arr(0x01, buf, CMD_RESP_BYTES));
 
 	/* need to check if 0x01 is in the ret array */
-
-#ifdef DEBUG_328
-	if(byte_in_arr(0x01, buf, 8) < 0){
-		uart_write_str("sd: ERROR: CMD0 returned incorrectly\n\r");
-		dump_sd_resp(buf);
-	} else
-		uart_write_str("sd: CMD0 returned correctly\n\r");
-#endif
 
 	uint8_t j = 0;
 
@@ -75,7 +61,7 @@ cmd1:
 
 	if(byte_in_arr(0x00, buf, 8) < 0) {
 		uart_write_str("sd: CMD1 returned incorrectly, retrying\n\r");
-		dump_sd_resp(buf);
+		dump_nbytes(buf, CMD_RESP_BYTES);
 		j++;
 		if(j==10)
 			return;
@@ -92,8 +78,6 @@ void sd_command(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t bytes,
 	 *	
 	 *	SPI SD does not use crc, just default 0xFF once SPI is init'd
 	 */
-
-	spi_device_enable(SPI_SD_CARD);
 
     spi_write_char(cmd);
     spi_write_char(arg>>24);
