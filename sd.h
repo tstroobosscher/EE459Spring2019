@@ -7,6 +7,18 @@
 
 #define BLOCK_SIZE 512
 
+/*
+ *	Command 				ID 		Argument 		Response
+ *	Go Idle State 			CMD0 	0 				R1
+ *	Send If Cond 			CMD8 	… 				R7
+ *	Stop Transmission 		CMD12 	0 				R1
+ *	Set Block Length 		CMD16 	Length 			R1
+ *	Read Single Block 		CMD17 	Block 			R1
+ *	Read Multiple Blocks 	CMD18 	Start Block 	R1
+ *	Application Command 	CMD55 	0 				R1
+ *	Read OCR 				CMD58 	… 				R3
+ */
+
 #define CMD0 0x40
 #define NOARG 0x00
 #define CMD0_CRC 0x95
