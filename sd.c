@@ -4,11 +4,13 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <avr/io.h>
 
 #include "sd.h"
 #include "spi.h"
 #include "pins.h"
 #include "utils.h"
+#include "time.h"
 
 static void sd_command(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t bytes, 
 	uint8_t *buf) {
@@ -34,6 +36,10 @@ static void sd_command(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t bytes,
 
 int8_t initialize_sd() {
 	uint8_t buf[CMD_RESP_BYTES];
+
+	/* lock timer resources */
+	struct atmel_328_time tout;
+	initialize_timer(&tout, TCNT2);
 
 	/*	
 	 *	1. disable slave select
@@ -62,7 +68,7 @@ int8_t initialize_sd() {
 		return -1;
 
 	/* start the clock, must find the correct response in time */
-	timein()
+	int trials = 0;
 
 	do {
 		/* send CMD0, get 8 bytes back */
@@ -70,7 +76,7 @@ int8_t initialize_sd() {
 		CMD0_CRC, CMD_RESP_BYTES, buf);
 
 		/* too late */
-		if(timeout())
+		if(++trials > 10)
 			return -1;
 
 	/* check if 0x01 is in the ret array */

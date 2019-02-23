@@ -10,7 +10,7 @@ CLOCK      ?= 7372800
 PROGRAMMER = -c usbtiny -p m328 -F
 PORT ?= /dev/tty.usbmodem*
 ARDUINO_PROGRAMMER = -c arduino -b 115200 -P $(PORT)
-OBJECTS    = main.o uart.o fifo.o fat.o pins.o spi.o sd.o utils.o
+OBJECTS    = main.o uart.o fifo.o fat.o pins.o spi.o sd.o utils.o time.o
 FUSES      = -U hfuse:w:0xde:m -U lfuse:w:0xff:m -U efuse:w:0x05:m
 
 # Tune the lines below only if you know what you are doing:

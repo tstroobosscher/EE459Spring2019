@@ -16,7 +16,7 @@ static const struct atmel_328_pin {
 	uint8_t port_num;
 	uint8_t pin_dir;
 	uint8_t pull_up;
-} atmega328_pins[] = {
+}__attribute((packed)) atmega328_pins[] = {
 	0,	ATMEL_PORT_INVAL,	0,	ATMEL_DIR_INVAL, 	ATMEL_PULL_INVAL,
 	1,	ATMEL_PORT_INVAL,	0,	ATMEL_DIR_INVAL, 	ATMEL_PULL_INVAL,
 	2,	ATMEL_PORT_D,		0,	ATMEL_INPUT, 		ATMEL_PULL_DIS,

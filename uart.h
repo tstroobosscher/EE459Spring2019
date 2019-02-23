@@ -18,11 +18,6 @@
  */
 #define MYUBRR ((FOSC/16/BAUD)-1)
 
-/*
- *	Static buffer allocation
- */
-#define BUF_SIZE 32
-
 void initialize_uart(unsigned int ubrr_value);
 char uart_read_char();
 void uart_write_char(char data);
