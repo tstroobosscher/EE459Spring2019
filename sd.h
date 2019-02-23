@@ -45,6 +45,8 @@
 
 #define CMD55 0X37
 
+#define CMD58 0X3A
+
 #define R1_IDLE_STATE (1 << 0)
 #define R1_ERASE_RESET (1 << 1)
 #define R1_ILLEGAL_COMMAND (1 << 2)

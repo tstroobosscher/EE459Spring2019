@@ -47,9 +47,13 @@ void dump_bin(void *buf, int size) {
 
 #endif
 
+/* gnu avr gcc does not like this function - very weak */
 uint32_t bind_args(uint8_t arg0, uint8_t arg1, uint8_t arg2, uint8_t arg3) {
-	return (arg0 << 24) | (arg1 << 16) | (arg2 << 8) | (arg3);
 
+	/* convert to 32 bit buffers */
+	uint32_t args[4] = {arg0, arg1, arg2, arg3};
+
+	return ((args[0] << 24) | (args[1] << 16) | (args[2] << 8) | (args[3]));
 }
 
 int8_t byte_in_arr(uint8_t byte, void *buf, uint32_t size) {
@@ -68,10 +72,12 @@ int8_t byte_in_arr(uint8_t byte, void *buf, uint32_t size) {
 	return 0;
 }
 
-void dump_nbytes(uint8_t *buf, uint8_t nbytes) {
+void dump_nbytes(void *buf, uint8_t nbytes) {
+	uint8_t *ptr = (uint8_t*) buf;
+
 	for(uint8_t i = 0; i < nbytes; i++) {
 		uint8_t hex[6];
-		snprintf(hex, 6, "0x%02X ", buf[i]);
+		snprintf(hex, 6, "0x%02X ", ptr[i]);
 		uart_write_str(hex);
 	}
 	uart_write_str("\n\r");

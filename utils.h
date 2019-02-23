@@ -6,7 +6,7 @@
 #define UTILS_H
 
 #include <stdint.h>
-#include <util/delay.h>
+#include <avr/delay.h>
 
 #include "debug.h"
 
@@ -48,7 +48,7 @@ void dump_bin(void *buf, int size);
 
 uint32_t bind_args(uint8_t arg0, uint8_t arg1, uint8_t arg2, uint8_t arg3);
 int8_t byte_in_arr(uint8_t byte, void *buf, uint32_t size);
-void dump_nbytes(uint8_t *buf, uint8_t size);
+void dump_nbytes(void *buf, uint8_t size);
 void dump_byte(uint8_t byte);
 void trace();
 

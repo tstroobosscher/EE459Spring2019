@@ -21,9 +21,6 @@ static inline int8_t sd_wake_up() {
 		/* sanity check */
 		return -1;
 
-	
-	trace();
-
 	/* 80 clocks, init card */
 	for(uint8_t i = 0; i < 10; i++)
 		spi_write_char(0xFF);
@@ -101,23 +98,9 @@ static int8_t sd_is_busy() {
 int8_t initialize_sd(struct sd_ctx *sd) {
 	uint8_t buf[CMD_RESP_BYTES];
 
-	/* enable sd card */
-	if(spi_device_enable(SPI_SD_CARD) < 0)
+	if(sd_wake_up() < 0)
 
-		/* sanity check */
-		return -1;
-
-	
-	trace();
-
-	/* 80 clocks, init card */
-	for(uint8_t i = 0; i < 10; i++)
-		spi_write_char(0xFF);
-
-	/* disable sd card */
-	if(spi_device_disable(SPI_SD_CARD) < 0)
-
-		/* sanity check */
+		/* unhandled error */
 		return -1;
 
 	/* start the clock, must find the correct response in time */
@@ -158,9 +141,11 @@ int8_t initialize_sd(struct sd_ctx *sd) {
 	/* application command, lead with cmd55 */
 	sd_command(CMD55, bind_args(NOARG, NOARG, NOARG, NOARG), NOCRC, 
 		CMD_RESP_BYTES, buf);
-	sd_command(ACMD41, (sd->sd_type == SD_TYPE_2) ? 
-		bind_args(0x40, NOARG, NOARG, NOARG) : 
-		bind_args(NOARG, NOARG, NOARG, NOARG), NOCRC, CMD_RESP_BYTES, buf);
+
+	sd_command(ACMD41, sd->sd_type == SD_TYPE_2 ? 
+		(bind_args(0x40, NOARG, NOARG, NOARG)) : 
+		(bind_args(NOARG, NOARG, NOARG, NOARG)), 
+		NOCRC, CMD_RESP_BYTES, buf);
 
 	return 0;
 
