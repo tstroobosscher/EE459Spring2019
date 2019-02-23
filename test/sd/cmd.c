@@ -1,5 +1,6 @@
 #include <avr/io.h>
 
+#include "../../utils.h"
 void USARTInit(unsigned int ubrr_value) { // is UBRR>255 supported?
 	//Set Baud rate
 	UBRR0H = (unsigned char)(ubrr_value >> 8);  
@@ -86,6 +87,15 @@ void SD_command(unsigned char cmd, unsigned long arg, unsigned char crc, unsigne
 	SPI_write(arg>>8);
 	SPI_write(arg);
 	SPI_write(crc);
+
+	uwrite_str("sd: cmd sent: ");
+    dump_byte(cmd);
+    dump_byte(arg >> 24);
+    dump_byte(arg >> 16);
+    dump_byte(arg >> 8);
+    dump_byte(arg);
+    dump_byte(crc);
+    uwrite_str("\r\n");
 		
 	for(i=0; i<read; i++)
 		buffer[i] = SPI_write(0xFF);

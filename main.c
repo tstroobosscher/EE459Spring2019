@@ -16,6 +16,7 @@
 #include "debug.h"
 #include "spi.h"
 #include "time.h"
+#include "sd.h"
 
 struct fifo_t uart_rx_fifo;
 
@@ -25,21 +26,21 @@ struct FAT16Entry e;
 
 struct atmel_328_time timer;
 
+struct sd_ctx sd;
+
 int main() {
 	initialize_pins();
 	initialize_uart(MYUBRR);
 	initialize_spi();
 	initialize_fifo(&uart_rx_fifo);
-	if(initialize_sd() < 0)
-		uart_write_str("main: unable to initialise SD\r\n");
+	if(initialize_sd(&sd) < 0)
+		uart_write_str("main: unable to initialize SD\r\n");
 	// initialize_timer(&timer, TIMER1);
 	// TCCR1A |= (1 << WGM01);
 	// TCCR1B |= (1 << CS12) | (1 << CS10);
 
-	while(1) {
-		dump_time(&timer);
-		DELAY_MS(100);
-	}
+	uart_write_str("main\r\n");
+	while(1) {}
 
 	return(0);
 } 

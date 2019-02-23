@@ -266,6 +266,11 @@ I have no idea what this would entail, but it wouldn't hurt to do some research
 on the topic to see if there are any open source libraries that we could 
 possibly take inspiration from.
 
+<a href="https://www.nongnu.org/avr-libc/user-manual/pgmspace.html">
+Moving data space into program space </a>
+It is possible but it requires some abstraction of the read/write operations
+because the addresses will be different
+
 # Draft of our Block Diagram
 
 <img src="resources/EE459_Diagram.png">

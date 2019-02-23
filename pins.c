@@ -5,6 +5,7 @@
 #include <avr/io.h>
 #include <util/delay.h>
 #include <stdint.h>
+#include <avr/pgmspace.h>
 
 #include "pins.h"
 #include "utils.h"

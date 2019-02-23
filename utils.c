@@ -69,12 +69,22 @@ int8_t byte_in_arr(uint8_t byte, void *buf, uint32_t size) {
 }
 
 void dump_nbytes(uint8_t *buf, uint8_t nbytes) {
-	uart_write_str("bytes received: ");
 	for(uint8_t i = 0; i < nbytes; i++) {
-		uart_write_str("0x");
-		uart_write_char(buf[i]);
+		uint8_t hex[6];
+		snprintf(hex, 6, "0x%02X ", buf[i]);
+		uart_write_str(hex);
 	}
 	uart_write_str("\n\r");
+}
+
+void dump_byte(uint8_t byte) {
+	uint8_t hex[6];
+	snprintf(hex, 6, "0x%02X ", byte);
+	uart_write_str(hex);
+}
+
+void trace() {
+	uart_write_str("trace\r\n");
 }
 
 // void log(char *msg) {

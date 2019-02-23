@@ -39,6 +39,31 @@
  */
 #define CMD8 0x48
 
+#define CMD8_CRC 0x87
+
 #define CMD16 0x50
+
+#define CMD55 0X37
+
+#define R1_IDLE_STATE (1 << 0)
+#define R1_ERASE_RESET (1 << 1)
+#define R1_ILLEGAL_COMMAND (1 << 2)
+#define R1_CRC_ERROR (1 << 3)
+#define R1_ERASE_SEQ_ERROR (1 << 4)
+#define R1_ADDRESS_ERR (1 << 5)
+#define R1_PARAMETER_ERR (1 << 6)
+
+#define ACMD41 0x29
+
+int8_t initialize_sd();
+
+static const enum {
+	SD_TYPE_1,
+	SD_TYPE_2,
+};
+
+struct sd_ctx {
+	uint8_t sd_type;
+};
 
 #endif
