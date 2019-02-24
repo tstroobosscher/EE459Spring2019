@@ -80,3 +80,9 @@ uint8_t spi_write_char(uint8_t ch) {
     while(!(SPSR & (1 << SPIF))) {}
     return SPDR;
 }
+
+uint8_t spi_read_char() {
+	SPDR = 0xFF;
+    while(!(SPSR & (1 << SPIF))) {}
+    return SPDR;
+}

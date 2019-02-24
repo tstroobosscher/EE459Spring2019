@@ -52,20 +52,11 @@ static uint8_t sd_command(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t bytes,
     spi_write_char(arg);
     spi_write_char(crc);
 
-
-    uart_write_str("sd: cmd sent: ");
-    dump_byte(cmd);
-    dump_byte(arg >> 24);
-    dump_byte(arg >> 16);
-    dump_byte(arg >> 8);
-    dump_byte(arg);
-    dump_byte(crc);
-    uart_write_str("\r\n");
-
+    /* bytes == NULL */
     if(!bytes){
-    	for(uint8_t i = 0; i < 8 && (buf[i] = spi_write_char(0xFF)); i++){}
+    	do {
 
-    	return buf[i]
+    	} while(!((buf[i] = spi_write_char(0xFF)) & 0x80))
 
     } else
         for(uint8_t i = 0; i < bytes; i++)
