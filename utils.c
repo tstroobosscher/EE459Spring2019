@@ -77,42 +77,42 @@ int8_t byte_in_arr(uint8_t byte, void *buf, uint32_t size) {
 void dump_nbytes(void *buf, uint8_t nbytes) {
 	uint8_t *ptr = (uint8_t*) buf;
 
-	// for(uint8_t i = 0; i < nbytes; i++) {
-	// 	uint8_t hex[6];
-	// 	snprintf(hex, 6, "0x%02X ", ptr[i]);
-	// 	uart_write_str(hex);
+	for(uint8_t i = 0; i < nbytes; i++) {
+		uint8_t hex[6];
+		snprintf(hex, 6, "0x%02X ", ptr[i]);
+		uart_write_str(hex);
+	}
+	uart_write_str("\n\r");
+
+	// unsigned char *ptr = (unsigned char*) buf;
+	// unsigned char str[17];
+	// int i;
+
+	// uart_write_str("HEXDATA\n\n");
+
+	// for(i = 0; i < size; i++) {
+	// 	if(!(i % 16)) {
+	// 		if(i != 0)
+	// 			sprintf("  %s\n", str);
+	// 		/* output offset */
+	// 		printf("    %04X ", i);
+	// 	}
+
+	// 	printf(" %02X", ptr[i]);
+
+	// 	if(!isprint(ptr[i]))
+	// 		str[i % 16] = '.';
+	// 	else
+	// 		str[i % 16] = ptr[i];
+	// 	str[(i % 16) + 1] = '\0';
 	// }
-	// uart_write_str("\n\r");
 
-	unsigned char *ptr = (unsigned char*) buf;
-	unsigned char str[17];
-	int i;
+	// while((i % 16) != 0) {
+	// 	printf(" ");
+	// 	i++;
+	// }
 
-	uart_write_str("HEXDATA\n\n");
-
-	for(i = 0; i < size; i++) {
-		if(!(i % 16)) {
-			if(i != 0)
-				sprintf("  %s\n", str);
-			/* output offset */
-			printf("    %04X ", i);
-		}
-
-		printf(" %02X", ptr[i]);
-
-		if(!isprint(ptr[i]))
-			str[i % 16] = '.';
-		else
-			str[i % 16] = ptr[i];
-		str[(i % 16) + 1] = '\0';
-	}
-
-	while((i % 16) != 0) {
-		printf(" ");
-		i++;
-	}
-
-	printf("  %s\n", str);
+	// printf("  %s\n", str);
 }
 
 void dump_byte(uint8_t byte) {

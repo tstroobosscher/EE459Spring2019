@@ -34,6 +34,14 @@ static inline int8_t sd_wake_up() {
 	return 0;
 }
 
+static int8_t sd_is_busy() {
+	/* true/false logic */
+	if(spi_read_char() == 0xFF)
+		return 0;
+	else
+		return 1;
+}
+
 static uint8_t sd_command(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t bytes, 
 	uint8_t *buf) {
 	/*
@@ -52,18 +60,59 @@ static uint8_t sd_command(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t bytes,
     spi_write_char(arg);
     spi_write_char(crc);
 
-    /* bytes == NULL */
+    /* bytes == 0, return the flagged response */
     if(!bytes){
+    	uint8_t ret;
+    	uint8_t trials = 0;
+
+    	UART_DBG("CMD ");
+    	UART_DBG_HEX(cmd);
+    	UART_DBG(" ");
+
     	do {
 
-    	} while(!((buf[i] = spi_write_char(0xFF)) & 0x80))
+    		ret = spi_read_char();
+
+    		UART_DBG_HEX(ret);
+    		UART_DBG(" ");
+
+    		if(++trials >= MAX_CMD_TRIALS)
+
+    			/* MSB set is an error response */
+    			return 0xFF;
+
+    	} while((ret & 0x80) == 0x80);
+
+    	UART_DBG("\r\n");
+
+    	/* MSB is unset */
+    	return ret;
 
     } else
         for(uint8_t i = 0; i < bytes; i++)
-        	buf[i] = spi_write_char(0xFF);
+        	buf[i] = spi_read_char();
                 
     /* cs needs to be toggled between each command */
     spi_device_disable(SPI_SD_CARD);
+
+    /* return is not checked with reference parameters */
+    return 0xFF;
+}
+
+static uint8_t sd_acommand(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t bytes, 
+	uint8_t *buf) {
+
+	/* application command, lead with cmd55 */
+	if(sd_command(CMD55, bind_args(NOARG, NOARG, NOARG, NOARG), NOCRC, 
+		0, NULL) == 0xFF) {
+
+			UART_DBG("sd: CMD55 failure\r\n");
+			return 0xFF;
+	}
+
+	while(sd_is_busy()){}
+
+	return sd_command(cmd, arg, crc, bytes, buf);
 }
 
 static uint8_t sd_get_resp_byte(uint8_t *buf, uint8_t size) {
@@ -84,83 +133,177 @@ static int8_t sd_find_resp_byte(uint8_t *buf, uint8_t size) {
 	return -1;
 }
 
-static int8_t sd_is_busy() {
-	/* true/false logic */
-	if(spi_write_char(0xFF) == 0xFF)
-		return 0;
-	else
-		return 1;
+static void sd_get_bytes(uint32_t bytes, uint8_t *buf) {
+
+	spi_device_enable(SPI_SD_CARD);
+	
+	UART_DBG("sd: spi received: ");
+
+	for(uint8_t i = 0; i < bytes; i++) {
+		buf[i] = spi_read_char();
+		UART_DBG_HEX(buf[i]);
+		UART_DBG(" ");
+	}
+
+	UART_DBG("\r\n");
+
+	spi_device_disable(SPI_SD_CARD);
 }
 
 int8_t initialize_sd(struct sd_ctx *sd) {
 	uint8_t buf[CMD_RESP_BYTES];
+	uint8_t ret;
+	int trials;
 
 	if(sd_wake_up() < 0)
 
 		/* unhandled error */
 		return -1;
 
-	/* start the clock, must find the correct response in time */
-	int trials = 0;
+	UART_DBG("sd: sd card woken up\r\n");
 
-	do {
-		/* send CMD0, get 8 bytes back */
-		sd_command(CMD0, bind_args(NOARG, NOARG, NOARG, NOARG), 
-		CMD0_CRC, CMD_RESP_BYTES, buf);
+	/* start the clock, must find the correct response in time */
+	trials = 0;  
+
+	/* send CMD0, get IDLE state */
+	while(sd_command(CMD0, bind_args(NOARG, NOARG, NOARG, NOARG), 
+		CMD0_CRC, 0, NULL) != 0x01) {
+
+		UART_DBG("sd: CMD0 error\r\n");
 
 		/* too late */
-		if(++trials > 10)
+		if(++trials > MAX_CMD_TRIALS)
 			goto failure;
+	}
 
-	/* check if 0x01 is in the ret array */
-	} while(!byte_in_arr(0x01, buf, CMD_RESP_BYTES));
+	while(sd_is_busy()) {
+		/* need timeout */
 
-	/* send CMD8, get 8 bytes back, check voltage level */
-	sd_command(CMD8, bind_args(NOARG, NOARG, 0x01, 0xAA), CMD8_CRC, 
-		CMD_RESP_BYTES, buf);
+		UART_DBG("sd: card is busy\r\n");
+	}
 
-	if(sd_get_resp_byte(buf, CMD_RESP_BYTES) & R1_ILLEGAL_COMMAND) {
-		/* type 1 SD card */
-		uart_write_str("sd: type 1 sd card\r\n");
+	UART_DBG("sd: CMD0 succesful\r\n");
+
+	trials = 0;
+
+	/* send CMD8, get resp byte */
+	while((ret = sd_command(CMD8, bind_args(NOARG, NOARG, 0x01, 0xAA), 
+		CMD8_CRC, 0, NULL)) != 0x01) {
+
+		UART_DBG("sd: CMD8 error\r\n");
+
+		if(++trials > MAX_CMD_TRIALS)
+			goto failure;
+	}
+
+	UART_DBG("sd: CMD8 succesful\r\n");
+
+	/* SD type 1 cards will return illegal and idle */
+	if(ret == (R1_IDLE_STATE | R1_ILLEGAL_COMMAND)){
+
+		UART_DBG("sd: type 1 sd card\r\n");
+
 		sd->sd_type = SD_TYPE_1;
-	} else {
-		if(!byte_in_arr(0x01, buf, CMD_RESP_BYTES))
-			/* unhandled error */
-			goto failure;
-		if(!byte_in_arr(0xAA, buf, CMD_RESP_BYTES)) {
-			/* unhandled error */
-			goto failure;
-		} else
+	}
+	
+	/* command received correctly */
+	else if(ret == R1_IDLE_STATE) {
+
+		UART_DBG("sd: checking voltage\r\n");
+
+		/* get the response byte R7 */
+		sd_get_bytes(CMD_RESP_BYTES, buf);
+
+		/* check for confirmation byte */
+		if(buf[3] == 0xAA) {
+
 			/* type 2 sd card */
 			uart_write_str("sd: type 2 sd card\r\n");
 			sd->sd_type = SD_TYPE_2;
-	}	
+		
+		} else {
 
-	/* application command, lead with cmd55 */
-	sd_command(CMD55, bind_args(NOARG, NOARG, NOARG, NOARG), NOCRC, 
-		CMD_RESP_BYTES, buf);
+			UART_DBG("sd: CMD8 response error: ");
+			UART_DBG_HEX(buf[0]);
+			UART_DBG(" ");
+			UART_DBG_HEX(buf[1]);
+			UART_DBG(" ");
+			UART_DBG_HEX(buf[2]);
+			UART_DBG(" ");
+			UART_DBG_HEX(buf[3]);
+			UART_DBG("\r\n");
 
-	sd_command(ACMD41, sd->sd_type == SD_TYPE_2 ? 
+			/* unhandled error */
+			goto failure;
+		}
+	}
+
+	/* unhandled error */
+	else {
+
+		UART_DBG("sd: unhandled CMD8 return: ");
+		UART_DBG_HEX(ret);
+		UART_DBG("\r\n");
+
+		goto failure;
+	}
+
+	trials = 0;
+
+	/* look for ready state, not idle state, keep trying until found */
+	while(sd_acommand(ACMD41, sd->sd_type == SD_TYPE_2 ? 
 		(bind_args(0x40, NOARG, NOARG, NOARG)) : 
 		(bind_args(NOARG, NOARG, NOARG, NOARG)), 
-		NOCRC, CMD_RESP_BYTES, buf);
+		NOCRC, 0, NULL) != 0x00) {
+
+		UART_DBG("sd: ACMD41 error\r\n");
+
+		while(sd_is_busy()){}
+
+		if(++trials > MAX_CMD_TRIALS)
+			goto failure;
+	}
+
+	trials = 0;
+
+	while(sd_is_busy()){}
 
 	if(sd->sd_type == SD_TYPE_2) {
 
 		/* check OCR register for SDHC */
-		sd_command(CMD58, bind_args(NOARG, NOARG, NOARG, NOARG), NOCRC,
-			CMD_RESP_BYTES, buf);
+		while((ret = sd_command(CMD58, bind_args(NOARG, NOARG, NOARG, NOARG), 
+			NOCRC, 0, NULL)) != 0x00) {
 
-		if((sd_get_resp_byte(buf, CMD_RESP_BYTES) & 0xC0) == 0xC0) {
+			UART_DBG("sd: CMD58 error\r\n");
+
+			if(++trials > MAX_CMD_TRIALS)
+				goto failure;
+		}
+
+		sd_get_bytes(CMD_RESP_BYTES, buf);
+		UART_DBG("sd: CMD58 response: ");
+		UART_DBG_HEX(buf[0]);
+		UART_DBG(" ");
+		UART_DBG_HEX(buf[1]);
+		UART_DBG(" ");
+		UART_DBG_HEX(buf[2]);
+		UART_DBG(" ");
+		UART_DBG_HEX(buf[3]);
+		UART_DBG("\r\n");
+
+		if((buf[0] & 0xC0) == 0xC0) {
+			
 			/* SDHC */
 			sd->sd_type = SD_TYPE_SDHC;
-			uart_write_str("sd: SDHC card\r\n");
+			UART_DBG("sd: SDHC card\r\n");
 		}
 	}
 
 	return 0;
 
 failure:
+	
+	/* just to be sure we aren't locking up the SPI bus */
 	spi_device_disable(SPI_SD_CARD);
 	return -1;
 

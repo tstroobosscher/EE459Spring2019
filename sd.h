@@ -26,7 +26,7 @@
 
 #define NOCRC 0xFF
 
-#define CMD1 0x41
+#define CMD1 0x40 | 0
 
 /**
  *	Voltage check command
@@ -37,16 +37,17 @@
  *	
  *	0x00 0x00 0x01 0xAA
  */
-#define CMD8 0x48
+#define CMD8 0x40 | 8
 
 #define CMD8_CRC 0x87
 
-#define CMD16 0x50
+#define CMD16 0x40 | 16
 
-#define CMD55 0X37
+#define CMD55 0X40 | 55
 
-#define CMD58 0X3A
+#define CMD58 0X40 | 58
 
+#define R1_READY_STATE 0
 #define R1_IDLE_STATE (1 << 0)
 #define R1_ERASE_RESET (1 << 1)
 #define R1_ILLEGAL_COMMAND (1 << 2)
@@ -55,7 +56,9 @@
 #define R1_ADDRESS_ERR (1 << 5)
 #define R1_PARAMETER_ERR (1 << 6)
 
-#define ACMD41 0x29
+#define ACMD41 0x40 | 41
+
+#define MAX_CMD_TRIALS 8
 
 int8_t initialize_sd();
 

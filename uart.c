@@ -25,6 +25,18 @@ void uart_write_str(char *buf) {
     }
 }
 
+void uart_write_hex(uint8_t n) {
+    if(((n>>4) & 15) < 10)
+        uart_write_char('0' + ((n>>4)&15));
+    else
+        uart_write_char('A' + ((n>>4)&15) - 10);
+    n <<= 4;
+    if(((n>>4) & 15) < 10)
+        uart_write_char('0' + ((n>>4)&15));
+    else
+        uart_write_char('A' + ((n>>4)&15) - 10);
+}
+
 void initialize_uart(unsigned int ubrr_value) {
     /*
      * Set Baud rate
