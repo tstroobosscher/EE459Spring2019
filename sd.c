@@ -34,7 +34,7 @@ static inline int8_t sd_wake_up() {
 	return 0;
 }
 
-static void sd_command(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t bytes, 
+static uint8_t sd_command(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t bytes, 
 	uint8_t *buf) {
 	/*
 	 *	expecting a response of bytes length
@@ -61,9 +61,15 @@ static void sd_command(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t bytes,
     dump_byte(arg);
     dump_byte(crc);
     uart_write_str("\r\n");
-                
-    for(uint8_t i = 0; i < bytes; i++)
-        buf[i] = spi_write_char(0xFF);
+
+    if(!bytes){
+    	for(uint8_t i = 0; i < 8 && (buf[i] = spi_write_char(0xFF)); i++){}
+
+    	return buf[i]
+
+    } else
+        for(uint8_t i = 0; i < bytes; i++)
+        	buf[i] = spi_write_char(0xFF);
                 
     /* cs needs to be toggled between each command */
     spi_device_disable(SPI_SD_CARD);
@@ -118,6 +124,7 @@ int8_t initialize_sd(struct sd_ctx *sd) {
 	/* check if 0x01 is in the ret array */
 	} while(!byte_in_arr(0x01, buf, CMD_RESP_BYTES));
 
+	/* send CMD8, get 8 bytes back, check voltage level */
 	sd_command(CMD8, bind_args(NOARG, NOARG, 0x01, 0xAA), CMD8_CRC, 
 		CMD_RESP_BYTES, buf);
 
@@ -146,6 +153,19 @@ int8_t initialize_sd(struct sd_ctx *sd) {
 		(bind_args(0x40, NOARG, NOARG, NOARG)) : 
 		(bind_args(NOARG, NOARG, NOARG, NOARG)), 
 		NOCRC, CMD_RESP_BYTES, buf);
+
+	if(sd->sd_type == SD_TYPE_2) {
+
+		/* check OCR register for SDHC */
+		sd_command(CMD58, bind_args(NOARG, NOARG, NOARG, NOARG), NOCRC,
+			CMD_RESP_BYTES, buf);
+
+		if((sd_get_resp_byte(buf, CMD_RESP_BYTES) & 0xC0) == 0xC0) {
+			/* SDHC */
+			sd->sd_type = SD_TYPE_SDHC;
+			uart_write_str("sd: SDHC card\r\n");
+		}
+	}
 
 	return 0;
 

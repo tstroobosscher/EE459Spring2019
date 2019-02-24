@@ -5,14 +5,14 @@
 /*
  *	Set for debug builds - Desktop
  */
-//#define DEBUG_86
+#define DEBUG_86
 
 /*
  *	Set for debug builds - Chip
  */
-#define DEBUG_328
+//#define DEBUG_328
 
 /* 
  * Changes clock speed to 16MHz 
  */
-#define ARDUINO
+//#define ARDUINO

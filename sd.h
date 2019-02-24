@@ -62,6 +62,7 @@ int8_t initialize_sd();
 static const enum {
 	SD_TYPE_1,
 	SD_TYPE_2,
+	SD_TYPE_SDHC,
 };
 
 struct sd_ctx {

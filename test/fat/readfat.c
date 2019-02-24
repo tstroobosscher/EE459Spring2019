@@ -95,6 +95,8 @@ int main(int argc, const char **argv) {
 				if(fat32_dump_entry(&e32) < 0)
 					break;
 				uint32_t file_cluster = fat32_calc_first_cluster(e32.first_cluster_addr_high, e32.first_cluster_addr_low);
+				printf("    entry byte addr: %lu\n", bs32.sector_size * fat32_calc_lba_from_cluster(cluster_begin_lba, sectors_per_cluster, file_cluster));
+				printf("    entry byte addr: 0x%08X\n", bs32.sector_size * fat32_calc_lba_from_cluster(cluster_begin_lba, sectors_per_cluster, file_cluster));
 				fseek(bin, bs32.sector_size * fat32_calc_lba_from_cluster(cluster_begin_lba, sectors_per_cluster, file_cluster), SEEK_SET);
 				uint8_t buf[100];
 				fread(&buf, sizeof(buf), 1, bin);

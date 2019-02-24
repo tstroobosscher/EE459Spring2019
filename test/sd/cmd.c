@@ -88,14 +88,14 @@ void SD_command(unsigned char cmd, unsigned long arg, unsigned char crc, unsigne
 	SPI_write(arg);
 	SPI_write(crc);
 
-	uwrite_str("sd: cmd sent: ");
-    dump_byte(cmd);
-    dump_byte(arg >> 24);
-    dump_byte(arg >> 16);
-    dump_byte(arg >> 8);
-    dump_byte(arg);
-    dump_byte(crc);
-    uwrite_str("\r\n");
+	// uwrite_str("sd: cmd sent: ");
+ //    dump_byte(cmd);
+ //    dump_byte(arg >> 24);
+ //    dump_byte(arg >> 16);
+ //    dump_byte(arg >> 8);
+ //    dump_byte(arg);
+ //    dump_byte(crc);
+ //    uwrite_str("\r\n");
 		
 	for(i=0; i<read; i++)
 		buffer[i] = SPI_write(0xFF);
@@ -139,41 +139,74 @@ int main() {
 	while(1) {
 		switch(USARTReadChar()) {
 		case '1':
-			SD_command(0x40, 0x00000000, 0x95, 8);
+			/* CMD0 */
+			SD_command(0x40 | 0, 0x00000000, 0x95, 8);
 			CS_DISABLE();	
 			CS_ENABLE();
 			break;
 		case '2':
-			SD_command(0x41, 0x00000000, 0xF9, 8);
+			/* CMD1 */
+			SD_command(0x40 | 1, 0x00000000, 0xF9, 8);
 			CS_DISABLE();
 			CS_ENABLE();
 			break;
 		case '3':
-			SD_command(0x50, 0x00000200, 0xFF, 8);
+			/* CMD16 */
+			SD_command(0x40 | 16, 512, 0xFF, 8);
 			CS_DISABLE();
 			CS_ENABLE();
 			break;
 		case '4':
-			SD_command(0x48, 0x000001AA, 0x87, 8);
+			/* CMD8 */
+			SD_command(0x40 | 8, 0x000001AA, 0x87, 8);
 			CS_DISABLE();
 			CS_ENABLE();
 			break;
 		case '5':
-			SD_command(0x69, 0x00000000, 0xFF, 8);
+			/* CMD58 */
+			SD_command(0x40 | 58, 0x00000000, 0xFD, 8);
 			CS_DISABLE();
 			CS_ENABLE();
 			break;
 		case '6':
-			SD_command(0x29, 0X40000000, 0xFF, 8);
+			/* ACMD41 */
+			SD_command(0x40 | 41, 0X40000000, 0xFF, 8);
 			CS_DISABLE();
 			CS_ENABLE();
 			break;
 		case '7':
-			SD_command(0X3A, 0x00000000, 0xFF, 8);
+			/* CMD55 */
+			SD_command(0x40 | 55, 0x00000000, 0xFF, 8);
 			CS_DISABLE();
 			CS_ENABLE();
 			break;
 
+		case '8':
+			/* CMD17 */
+			// SD_command(0x40 | 17, 0x00000000, 0xFF, 8);
+			// CS_DISABLE();
+			// CS_ENABLE();
+			SPI_write(0x40 | 17);
+			SPI_write(0x00);
+			SPI_write(0x00);
+			SPI_write(0x7E);
+			SPI_write(0x78);
+			SPI_write(0xFF);
+			for(uint8_t i = 0; i < 10 && (SPI_write(0xFF) == 0xFF); i++) {}
+			CS_DISABLE();
+			CS_ENABLE();
+			uint8_t buf;
+
+			do {
+				buf = SPI_write(0xFF);
+				USARTWriteChar(' ');
+				uwrite_hex(buf);
+			} while(buf == 0xFF);
+
+			for(uint16_t i = 0; i < 512; i++)
+				USARTWriteChar(SPI_write(0xFF));
+			
+			break;
 		}
 	}	
 	

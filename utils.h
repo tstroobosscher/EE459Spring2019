@@ -6,9 +6,12 @@
 #define UTILS_H
 
 #include <stdint.h>
-#include <avr/delay.h>
 
 #include "debug.h"
+
+#ifndef DEBUG_86
+#include <avr/delay.h>
+#endif
 
 #ifdef ARDUINO
 
