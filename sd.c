@@ -8,7 +8,6 @@
 
 #include "sd.h"
 #include "spi.h"
-#include "pins.h"
 #include "utils.h"
 #include "time.h"
 #include "uart.h"
@@ -60,6 +59,8 @@ static uint8_t sd_command(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t bytes,
     spi_write_char(arg);
     spi_write_char(crc);
 
+    DELAY_MS(100);
+
     /* bytes == 0, return the flagged response */
     if(!bytes){
     	uint8_t ret;
@@ -79,9 +80,9 @@ static uint8_t sd_command(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t bytes,
     		if(++trials >= MAX_CMD_TRIALS)
 
     			/* MSB set is an error response */
-    			return 0xFF;
+    			return R1_RESPONSE_ERR;
 
-    	} while((ret & 0x80) == 0x80);
+    	} while((ret & RET_MSB_MASK) == RET_MSB_MASK);
 
     	UART_DBG("\r\n");
 
@@ -104,7 +105,7 @@ static uint8_t sd_acommand(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t bytes
 
 	/* application command, lead with cmd55 */
 	if(sd_command(CMD55, bind_args(NOARG, NOARG, NOARG, NOARG), NOCRC, 
-		0, NULL) == 0xFF) {
+		0, NULL) == R1_RESPONSE_ERR) {
 
 			UART_DBG("sd: CMD55 failure\r\n");
 			return 0xFF;
@@ -133,13 +134,13 @@ static int8_t sd_find_resp_byte(uint8_t *buf, uint8_t size) {
 	return -1;
 }
 
-static void sd_get_bytes(uint32_t bytes, uint8_t *buf) {
+static void sd_get_bytes(uint16_t bytes, uint8_t *buf) {
 
 	spi_device_enable(SPI_SD_CARD);
 	
 	UART_DBG("sd: spi received: ");
 
-	for(uint8_t i = 0; i < bytes; i++) {
+	for(uint16_t i = 0; i < bytes; i++) {
 		buf[i] = spi_read_char();
 		UART_DBG_HEX(buf[i]);
 		UART_DBG(" ");
@@ -150,6 +151,38 @@ static void sd_get_bytes(uint32_t bytes, uint8_t *buf) {
 	spi_device_disable(SPI_SD_CARD);
 }
 
+static int8_t sd_init_read_sector(uint32_t arg) {
+	uint16_t trials = 0;
+
+	spi_device_enable(SPI_SD_CARD);
+
+    spi_write_char(CMD17);
+    spi_write_char(arg>>24);
+    spi_write_char(arg>>16);
+    spi_write_char(arg>>8);
+    spi_write_char(arg);
+    spi_write_char(0xFF);
+
+    /* data read token */
+    while(spi_read_char() != 0xFE) {
+
+    	UART_DBG("sd: CMD17 error\r\n");
+
+    	DELAY_MS(100);
+
+    	/* data access can take up to 2 sec, need timeout */
+    	if(++trials > 1000) {
+
+    		spi_device_disable(SPI_SD_CARD);
+    		return -1;
+    	}
+    }
+
+    spi_device_disable(SPI_SD_CARD);
+    return 0;
+}
+
+/* export */
 int8_t initialize_sd(struct sd_ctx *sd) {
 	uint8_t buf[CMD_RESP_BYTES];
 	uint8_t ret;
@@ -167,7 +200,7 @@ int8_t initialize_sd(struct sd_ctx *sd) {
 
 	/* send CMD0, get IDLE state */
 	while(sd_command(CMD0, bind_args(NOARG, NOARG, NOARG, NOARG), 
-		CMD0_CRC, 0, NULL) != 0x01) {
+		CMD0_CRC, 0, NULL) != R1_IDLE_STATE) {
 
 		UART_DBG("sd: CMD0 error\r\n");
 
@@ -187,8 +220,8 @@ int8_t initialize_sd(struct sd_ctx *sd) {
 	trials = 0;
 
 	/* send CMD8, get resp byte */
-	while((ret = sd_command(CMD8, bind_args(NOARG, NOARG, 0x01, 0xAA), 
-		CMD8_CRC, 0, NULL)) != 0x01) {
+	while((ret = sd_command(CMD8, bind_args(NOARG, NOARG, 0x01, 
+		CMD8_RESPONSE_PATTERN), CMD8_CRC, 0, NULL)) != R1_IDLE_STATE) {
 
 		UART_DBG("sd: CMD8 error\r\n");
 
@@ -215,10 +248,10 @@ int8_t initialize_sd(struct sd_ctx *sd) {
 		sd_get_bytes(CMD_RESP_BYTES, buf);
 
 		/* check for confirmation byte */
-		if(buf[3] == 0xAA) {
+		if(buf[3] == CMD8_RESPONSE_PATTERN) {
 
 			/* type 2 sd card */
-			uart_write_str("sd: type 2 sd card\r\n");
+			UART_DBG("sd: type 2 sd card\r\n");
 			sd->sd_type = SD_TYPE_2;
 		
 		} else {
@@ -252,9 +285,9 @@ int8_t initialize_sd(struct sd_ctx *sd) {
 
 	/* look for ready state, not idle state, keep trying until found */
 	while(sd_acommand(ACMD41, sd->sd_type == SD_TYPE_2 ? 
-		(bind_args(0x40, NOARG, NOARG, NOARG)) : 
+		(bind_args(SDHC_HIGH_SPEED_FLAG, NOARG, NOARG, NOARG)) : 
 		(bind_args(NOARG, NOARG, NOARG, NOARG)), 
-		NOCRC, 0, NULL) != 0x00) {
+		NOCRC, 0, NULL) != R1_READY_STATE) {
 
 		UART_DBG("sd: ACMD41 error\r\n");
 
@@ -272,7 +305,7 @@ int8_t initialize_sd(struct sd_ctx *sd) {
 
 		/* check OCR register for SDHC */
 		while((ret = sd_command(CMD58, bind_args(NOARG, NOARG, NOARG, NOARG), 
-			NOCRC, 0, NULL)) != 0x00) {
+			NOCRC, 0, NULL)) != R1_READY_STATE) {
 
 			UART_DBG("sd: CMD58 error\r\n");
 
@@ -291,8 +324,8 @@ int8_t initialize_sd(struct sd_ctx *sd) {
 		UART_DBG_HEX(buf[3]);
 		UART_DBG("\r\n");
 
-		if((buf[0] & 0xC0) == 0xC0) {
-			
+		if((buf[0] & SDHC_OCR_MASK) == SDHC_OCR_MASK) {
+
 			/* SDHC */
 			sd->sd_type = SD_TYPE_SDHC;
 			UART_DBG("sd: SDHC card\r\n");
@@ -307,4 +340,23 @@ failure:
 	spi_device_disable(SPI_SD_CARD);
 	return -1;
 
+}
+
+/* export */
+int16_t sd_get_sector(struct sd_ctx * sd, uint32_t addr, uint8_t *buf, 
+	uint16_t size) {
+	uint8_t trials = 0;
+
+	if(sd_init_read_sector(addr) < 0) {
+
+		UART_DBG("sd: unable to initialize sector\r\n");
+
+		return -1;
+	}
+
+	UART_DBG("sd: sector ready\r\n");
+
+	sd_get_bytes(size, buf);
+
+	return 0;
 }

@@ -3,10 +3,11 @@
  */
 
 #include <stdio.h>
-#include "uart.h"
-#include "utils.h"
 #include <stdint.h>
 #include <avr/io.h>
+
+#include "uart.h"
+#include "utils.h"
 
 char uart_read_char() {
     while(!(UCSR0A & (1 << RXC0))) {}

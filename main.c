@@ -28,6 +28,8 @@ struct atmel_328_time timer;
 
 struct sd_ctx sd;
 
+uint8_t sector[SECTOR_SIZE];
+
 int main() {
 	initialize_pins();
 	initialize_uart(MYUBRR);
@@ -39,7 +41,12 @@ int main() {
 	// TCCR1A |= (1 << WGM01);
 	// TCCR1B |= (1 << CS12) | (1 << CS10);
 
-	uart_write_str("main\r\n");
+	if(sd_get_sector(&sd, 0x7E78, sector, SECTOR_SIZE) < 0)
+		uart_write_str("main: unable to read sector\r\n");
+	else
+
+	dump_bin(sector, SECTOR_SIZE);
+
 	while(1) {}
 
 	return(0);

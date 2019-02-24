@@ -10,7 +10,7 @@
 /*
  *	Set for debug builds - Chip
  */
-#define DEBUG_328
+//#define DEBUG_328
 
 /* 
  * Changes clock speed to 16MHz 
@@ -18,9 +18,13 @@
 #define ARDUINO
 
 #ifdef DEBUG_328
+
 #define UART_DBG(x) uart_write_str(x)
 #define UART_DBG_HEX(x) uart_write_hex(x)
+
 #else
+
 #define UART_DBG(x)
 #define UART_DBG_HEX(x)
+
 #endif

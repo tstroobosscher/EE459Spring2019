@@ -5,7 +5,26 @@
 #ifndef SD_H
 #define SD_H
 
-#define BLOCK_SIZE 512
+#define SECTOR_SIZE 512
+
+#define CMD_RESP_BYTES 8
+
+#define MAX_CMD_TRIALS 8
+
+#define R1_READY_STATE 0
+#define R1_IDLE_STATE (1 << 0)
+#define R1_ERASE_RESET (1 << 1)
+#define R1_ILLEGAL_COMMAND (1 << 2)
+#define R1_CRC_ERROR (1 << 3)
+#define R1_ERASE_SEQ_ERROR (1 << 4)
+#define R1_ADDRESS_ERR (1 << 5)
+#define R1_PARAMETER_ERR (1 << 6)
+#define R1_RESPONSE_ERR 0xFF
+
+#define SDHC_OCR_MASK 0xC0
+#define RET_MSB_MASK 0x80
+#define CMD8_RESPONSE_PATTERN 0xAA
+#define SDHC_HIGH_SPEED_FLAG 0x40
 
 /*
  *	Command 				ID 		Argument 		Response
@@ -18,17 +37,8 @@
  *	Application Command 	CMD55 	0 				R1
  *	Read OCR 				CMD58 	… 				R3
  */
-#define CMD_RESP_BYTES 8
 
-#define CMD0 0x40
-#define NOARG 0x00
-#define CMD0_CRC 0x95
-
-#define NOCRC 0xFF
-
-#define CMD1 0x40 | 0
-
-/**
+/*
  *	Voltage check command
  *	6 byte:
  *	bit    |48|46| 45-40 | 39-20| 19-16   | 15-8
@@ -37,30 +47,22 @@
  *	
  *	0x00 0x00 0x01 0xAA
  */
-#define CMD8 0x40 | 8
 
+#define NOARG 0x00
+
+#define CMD0_CRC 0x95
 #define CMD8_CRC 0x87
+#define NOCRC 0xFF
 
+#define CMD0 0x40
+#define CMD1 0x40 | 0
+#define CMD8 0x40 | 8
 #define CMD16 0x40 | 16
-
+#define CMD17 0x40 | 17
 #define CMD55 0X40 | 55
-
 #define CMD58 0X40 | 58
 
-#define R1_READY_STATE 0
-#define R1_IDLE_STATE (1 << 0)
-#define R1_ERASE_RESET (1 << 1)
-#define R1_ILLEGAL_COMMAND (1 << 2)
-#define R1_CRC_ERROR (1 << 3)
-#define R1_ERASE_SEQ_ERROR (1 << 4)
-#define R1_ADDRESS_ERR (1 << 5)
-#define R1_PARAMETER_ERR (1 << 6)
-
 #define ACMD41 0x40 | 41
-
-#define MAX_CMD_TRIALS 8
-
-int8_t initialize_sd();
 
 static const enum {
 	SD_TYPE_1,
@@ -71,5 +73,10 @@ static const enum {
 struct sd_ctx {
 	uint8_t sd_type;
 };
+
+int8_t initialize_sd();
+
+int16_t sd_get_sector(struct sd_ctx * sd, uint32_t addr, uint8_t *buf, 
+	uint16_t size);
 
 #endif

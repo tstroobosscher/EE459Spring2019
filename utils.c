@@ -74,45 +74,59 @@ int8_t byte_in_arr(uint8_t byte, void *buf, uint32_t size) {
 
 #ifndef DEBUG_86
 
-void dump_nbytes(void *buf, uint8_t nbytes) {
+void dump_nbytes(void *buf, uint16_t nbytes) {
 	uint8_t *ptr = (uint8_t*) buf;
 
-	for(uint8_t i = 0; i < nbytes; i++) {
+	for(uint16_t i = 0; i < nbytes; i++) {
 		uint8_t hex[6];
 		snprintf(hex, 6, "0x%02X ", ptr[i]);
 		uart_write_str(hex);
 	}
 	uart_write_str("\n\r");
+}
 
-	// unsigned char *ptr = (unsigned char*) buf;
-	// unsigned char str[17];
-	// int i;
+void dump_bin(void *bin, uint16_t nbytes) {
+	uint8_t *ptr = (uint8_t*) bin;
+	
+	const uint8_t buf_size = 18;
 
-	// uart_write_str("HEXDATA\n\n");
+	uint8_t ascii[buf_size];
+	uint16_t i;
 
-	// for(i = 0; i < size; i++) {
-	// 	if(!(i % 16)) {
-	// 		if(i != 0)
-	// 			sprintf("  %s\n", str);
-	// 		/* output offset */
-	// 		printf("    %04X ", i);
-	// 	}
+	uart_write_str("HEXDATA\r\n\r\n");
 
-	// 	printf(" %02X", ptr[i]);
+	for(i = 0; i < nbytes; i++) {
+		if(!(i % 16)) {
+			if(i != 0)
+				uart_write_str("  ");
+				uart_write_str(ascii);
+				uart_write_str("\r\n");
 
-	// 	if(!isprint(ptr[i]))
-	// 		str[i % 16] = '.';
-	// 	else
-	// 		str[i % 16] = ptr[i];
-	// 	str[(i % 16) + 1] = '\0';
-	// }
+			/* output offset */
+			uart_write_str("  ");
+			uart_write_hex(i >> 8);
+			uart_write_hex(i);
+			uart_write_str("  ");
+		}
 
-	// while((i % 16) != 0) {
-	// 	printf(" ");
-	// 	i++;
-	// }
+		uart_write_str(" ");
+		uart_write_hex(ptr[i]);
 
-	// printf("  %s\n", str);
+		if(!isprint(ptr[i]))
+			ascii[i % 16] = '.';
+		else
+			ascii[i % 16] = ptr[i];
+
+		ascii[(i % 16) + 1] = '\0';
+	}
+
+	while((i % 16) != 0) {
+		uart_write_str(" ");
+		i++;
+	}
+
+	uart_write_str("  ");
+	uart_write_str(ascii);
 }
 
 void dump_byte(uint8_t byte) {

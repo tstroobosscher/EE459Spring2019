@@ -10,6 +10,11 @@
  *		read()
  *		write()
  *		seek()
+ *		
+ *		SYNOPSIS
+ *
+ *          int fseek(FILE *stream, long offset, int whence);
  */
 
+fseek
 
