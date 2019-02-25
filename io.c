@@ -13,6 +13,18 @@
  *	and getting bytes, everything else can be handled at the byte level
  */
 
+uint8_t initialize_io(struct io_ctx *io, struct sd_ctx *sd) {
+	/* get first sector, set sector pointer */
+
+	if(sd_get_sector(sd, 0, io->sector_buf, sd->sd_sector_size) < 0)
+		return -1;
+
+	io->sector_addr = 0;
+	io->byte_addr = 0;
+
+	return 0;
+}
+
 int8_t io_get_byte(struct io_ctx *io, struct sd_ctx *sd, uint32_t offset,
 	uint8_t *buf) {
 
@@ -55,6 +67,12 @@ int8_t io_get_byte(struct io_ctx *io, struct sd_ctx *sd, uint32_t offset,
 	}
 
 	*buf = io->sector_buf[sector_offset];
+
+	io->byte_addr = sector_addr + sector_offset;
+
+	UART_DBG("io: byte received: ");
+	UART_DBG_HEX(*buf);
+	UART_DBG("\r\n");
 
 	return 0;
 }
