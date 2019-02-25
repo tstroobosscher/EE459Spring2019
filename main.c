@@ -20,13 +20,16 @@
 #include "io.h"
 #include "pins.h"
 
-struct fifo_t uart_rx_fifo;
+const uint32_t macbeth_sect_addr = 0x00007E78;
+const uint32_t macbeth_byte_addr = 0x00FCF000;
+
+//struct fifo_t uart_rx_fifo;
 
 struct PartitionTable pt;
-struct FAT32BootSector bs;
-struct FAT32Entry e;
+//struct FAT32BootSector bs;
+//struct FAT32Entry e;
 
-struct atmel_328_time timer;
+//struct atmel_328_time timer;
 
 struct sd_ctx sd;
 
@@ -36,21 +39,56 @@ int main() {
 	initialize_pins();
 	initialize_uart(MYUBRR);
 	initialize_spi();
-	initialize_fifo(&uart_rx_fifo);
+	//initialize_fifo(&uart_rx_fifo);
 	if(initialize_sd(&sd) < 0)
 		uart_write_str("main: unable to initialize SD\r\n");
 	// initialize_timer(&timer, TIMER1);
 	// TCCR1A |= (1 << WGM01);
 	// TCCR1B |= (1 << CS12) | (1 << CS10);
 
+	// if(sd.sd_status == SD_ENABLED) {
+	// 	if(sd_get_sector(&sd, macbeth_sect_addr, sd_io.sector_buf, 
+	// 		sd.sd_sector_size) < 0)
+	// 		uart_write_str("main: unable to read sector\r\n");
+	// 	else
+	// 		dump_bin(sd_io.sector_buf, sd.sd_sector_size);
+	// }
+
 	while(1) {
-		if(sd.sd_status == SD_ENABLED)
-			for(int i = 0; i < 32; i++)
-				if(sd_get_sector(&sd, 0x7E78 + i, sd_io.sector_buf, 
-					sd.sd_sector_size) < 0)
-					uart_write_str("main: unable to read sector\r\n");
-				else
-					dump_bin(sd_io.sector_buf, sd.sd_sector_size);
+
+
+	 // // 	if(sd.sd_status == SD_ENABLED) {
+		// // 	for(uint16_t i = 0; i < 1000; i++) {
+		// // 		if(io_get_byte(&sd_io, &sd, macbeth_byte_addr + i, &byte) < 0) {
+		// // 			uart_write_str("main: byte read error\r\n");
+		// // 			byte = 0x00;
+		// // 		} 
+
+		// // 		if(byte == '\n')
+		// // 			uart_write_str("\r\n");
+		// // 		else {
+		// // 			if(isascii(byte)) {
+		// // 				uart_write_char(byte);
+		// // 			} else {
+		// // 				uart_write_char(".");
+		// // 			}
+		// // 		}
+
+		// // 		DELAY_MS(10);
+		// // 	}
+		// // }
+	 
+		if(sd.sd_status == SD_ENABLED) {
+			if(io_read_nbytes(&sd_io, &sd, &pt, macbeth_byte_addr, 
+				sizeof(struct PartitionTable)) < 0) {
+				uart_write_str("main: error reading nbytes\r\n");
+			}
+
+			uart_write_str("data:\r\n");
+			dump_bin(&pt, sizeof(struct PartitionTable));
+		}
+
+		DELAY_MS(1000);
 	}
 
 	return(0);

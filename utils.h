@@ -49,12 +49,14 @@ void dump_bin(void *buf, int size);
  */
 #define BUF_SIZE 32
 
+#ifndef DEBUG_86
 uint32_t bind_args(uint8_t arg0, uint8_t arg1, uint8_t arg2, uint8_t arg3);
 int8_t byte_in_arr(uint8_t byte, void *buf, uint32_t size);
 void dump_nbytes(void *buf, uint16_t size);
 void dump_bin(void *buf, uint16_t nbytes);
 void dump_byte(uint8_t byte);
 void trace();
+#endif
 
 //void log(char *msg);
 

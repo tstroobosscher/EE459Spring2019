@@ -6,26 +6,43 @@
 
 #include "io.h"
 #include "sd.h"
+#include "uart.h"
 
 /*
- *	here we need to implement the POSIX file io functions:
- *		open()
- *		read()
- *		write()
- *		seek()
- *		
- *		SYNOPSIS
- *
- *          int fseek(FILE *stream, long offset, int whence);
+ *	the strategy is to abstract the flash reading and writing to placing
+ *	and getting bytes, everything else can be handled at the byte level
  */
 
-int8_t io_seek_sector(struct io_ctx *io, struct sd_ctx *sd, uint64_t offset) {
+int8_t io_get_byte(struct io_ctx *io, struct sd_ctx *sd, uint32_t offset,
+	uint8_t *buf) {
+
 	/*
 	 *	get the target argument, see if a new sector needs to be brought in
+	 *	
+	 *	place the requested byte into the reference buffer
+	 *	
+	 *	return success or failure
 	 */
 
-	/* sector addrress is the byte address divided by the sector size */
-	uint64_t sector_addr = offset / sd->sd_sector_size;
+	UART_DBG("io: byte offset: 0x");
+	UART_DBG_HEX(offset >> 24);
+	UART_DBG_HEX(offset >> 16);
+	UART_DBG_HEX(offset >> 8);
+	UART_DBG_HEX(offset);
+	UART_DBG("\r\n");
+
+	/* sector address is the byte address divided by the sector size */
+	uint32_t sector_addr = (offset >> 9);
+
+	UART_DBG("io: sector address: 0x");
+	UART_DBG_HEX(sector_addr >> 24);
+	UART_DBG_HEX(sector_addr >> 16);
+	UART_DBG_HEX(sector_addr >> 8);
+	UART_DBG_HEX(sector_addr);
+	UART_DBG("\r\n");
+
+	/* intra sector address of the specified byte */
+	uint32_t sector_offset = offset % sd->sd_sector_size;
 
 	/* current sector is not the required sector, get the correct one */
 	if(sector_addr != io->sector_addr) {
@@ -33,8 +50,25 @@ int8_t io_seek_sector(struct io_ctx *io, struct sd_ctx *sd, uint64_t offset) {
 			sd->sd_sector_size) < 0 ) {
 			return -1;
 		}
+
+		io->sector_addr = sector_addr;
 	}
+
+	*buf = io->sector_buf[sector_offset];
 
 	return 0;
 }
 
+uint8_t io_read_nbytes(struct io_ctx *io, struct sd_ctx *sd, void *buf, 
+	uint32_t offset, uint32_t nbytes) {
+
+	uint8_t *ptr = (uint8_t *) buf;
+
+	for(uint32_t i = 0; i < nbytes; i++) {
+		if(io_get_byte(io, sd, offset + i, &ptr[i]) < 0)
+			return -1;
+	}
+
+	return 0;
+
+}

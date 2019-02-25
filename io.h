@@ -29,4 +29,9 @@ struct io_ctx {
 	uint16_t sector_crc;
 };
 
+int8_t io_get_byte(struct io_ctx *io, struct sd_ctx *sd, uint32_t offset,
+	uint8_t *buf);
+uint8_t io_read_nbytes(struct io_ctx *io, struct sd_ctx *sd, void *buf, 
+	uint32_t offset, uint32_t nbytes);
+
 #endif
