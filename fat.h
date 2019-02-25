@@ -257,6 +257,6 @@ void dump_sector_addr(struct FAT32BootSector *bs, struct PartitionTable *pt);
 struct fat32_ctx {
 	struct PartitionTable pt[4];
 	
-}
+};
 
 #endif
