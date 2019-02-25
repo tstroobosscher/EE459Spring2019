@@ -93,7 +93,7 @@ int8_t initialize_fat32(struct fat32_ctx *fat32, struct io_ctx *io, struct sd_ct
 	if(sd->sd_status == SD_DISABLED) 
 		return 0;
 
-	if(io_read_nbytes(io, pt, PARTITION_TABLE_OFFSET, 
+	if(io_read_nbytes(io, &pt, PARTITION_TABLE_OFFSET, 
 		sizeof(struct PartitionTable) * PARTITION_TABLE_ENTRIES) < 0) {
 		UART_DBG("fat32: error reading partition table\r\n");
 		return -1;
