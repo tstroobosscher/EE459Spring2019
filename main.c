@@ -26,7 +26,7 @@ const uint32_t macbeth_byte_addr = 0x00FCF000;
 //struct fifo_t uart_rx_fifo;
 
 struct PartitionTable pt[PARTITION_TABLE_ENTRIES];
-//struct FAT32BootSector bs;
+struct FAT32BootSector bs;
 //struct FAT32Entry e;
 
 //struct atmel_328_time timer;
@@ -65,6 +65,30 @@ int main() {
 		}
 
 		dump_bin(&pt, sizeof(struct PartitionTable) * PARTITION_TABLE_ENTRIES);
+
+		/* parse the partition table */
+		for(uint8_t i = 0; i < PARTITION_TABLE_ENTRIES; i++) {
+			if((pt[i].partition_type == PARTITION_TYPE_FAT16_LT32M) || 
+			(pt[i].partition_type == PARTITION_TYPE_FAT16_GT32M) ||
+			(pt[i].partition_type == PARTITION_TYPE_FAT16_LBA)) {
+
+				UART_DBG("main: FAT16\r\n");
+
+			} else if((pt[i].partition_type == PARTITION_TYPE_FAT32_LT2G) || 
+			(pt[i].partition_type == PARTITION_TYPE_FAT32_LBA)) {
+
+				UART_DBG("main: FAT32\r\n");
+
+				/* read the boot sector */
+				if(io_read_nbytes(&sd_io, &sd, &bs, 
+					sd.sd_sector_size * pt[i].start_sector, 
+					sizeof(struct FAT32BootSector)) < 0) {
+					uart_write_str("main: error FAT32 boot sector\r\n");
+				}
+
+				dump_bin(&bs, sizeof(struct FAT32BootSector));
+			}
+		}
 	}
 
 	while(1) {

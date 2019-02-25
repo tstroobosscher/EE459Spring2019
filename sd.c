@@ -16,7 +16,7 @@
 //#define UART_DBG(x)
 //#define UART_DBG_HEX(x)
 
-static inline int8_t sd_wake_up() {
+static __attribute__((always inline)) int8_t sd_wake_up() {
 	/* enable sd card */
 	if(spi_device_enable(SPI_SD_CARD) < 0)
 
@@ -36,7 +36,7 @@ static inline int8_t sd_wake_up() {
 	return 0;
 }
 
-static int8_t sd_is_busy() {
+static __attribute__((always inline)) int8_t sd_is_busy() {
 
 	/* true/false logic */
 	if(spi_read_char() == 0xFF)
@@ -45,8 +45,8 @@ static int8_t sd_is_busy() {
 		return 1;
 }
 
-static uint8_t sd_command(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t bytes, 
-	uint8_t *buf) {
+static __attribute__((always inline)) uint8_t sd_command(uint8_t cmd, 
+	uint32_t arg, uint8_t crc, uint8_t bytes, uint8_t *buf) {
 	/*
 	 *	expecting a response of bytes length
 	 *	buf must be at least bytes long
@@ -116,8 +116,8 @@ static uint8_t sd_command(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t bytes,
     return 0xFF;
 }
 
-static uint8_t sd_acommand(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t bytes, 
-	uint8_t *buf) {
+static __attribute__((always inline)) uint8_t sd_acommand(uint8_t cmd, 
+	uint32_t arg, uint8_t crc, uint8_t bytes, uint8_t *buf) {
 
 	/* application command, lead with cmd55 */
 	if(sd_command(CMD55, bind_args(NOARG, NOARG, NOARG, NOARG), NOCRC, 
@@ -133,7 +133,8 @@ static uint8_t sd_acommand(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t bytes
 	return sd_command(cmd, arg, crc, bytes, buf);
 }
 
-static uint8_t sd_get_resp_byte(uint8_t *buf, uint8_t size) {
+static __attribute__((always inline)) uint8_t sd_get_resp_byte(uint8_t *buf, 
+	uint8_t size) {
 	for(uint8_t i = 0; i < size; i++)
 		if(buf[i] & 0x80)
 			continue;
@@ -142,7 +143,8 @@ static uint8_t sd_get_resp_byte(uint8_t *buf, uint8_t size) {
 	return 0xFF;
 }
 
-static int8_t sd_find_resp_byte(uint8_t *buf, uint8_t size) {
+static __attribute__((always inline)) int8_t sd_find_resp_byte(uint8_t *buf, 
+	uint8_t size) {
 	for(uint8_t i = 0; i < size; i++)
 		if(buf[i] & 0x80)
 			continue;
@@ -151,7 +153,8 @@ static int8_t sd_find_resp_byte(uint8_t *buf, uint8_t size) {
 	return -1;
 }
 
-static void sd_get_bytes(uint16_t bytes, uint8_t *buf) {
+static __attribute__((always inline)) void sd_get_bytes(uint16_t bytes, 
+	uint8_t *buf) {
 
 	spi_device_enable(SPI_SD_CARD);
 	
@@ -171,7 +174,8 @@ static void sd_get_bytes(uint16_t bytes, uint8_t *buf) {
 	spi_device_disable(SPI_SD_CARD);
 }
 
-static int8_t sd_init_read_sector(uint32_t arg) {
+static __attribute__((always inline)) int8_t sd_init_read_sector(
+	uint32_t arg) {
 	uint16_t trials = 0;
 
 	spi_device_enable(SPI_SD_CARD);
