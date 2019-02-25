@@ -13,6 +13,9 @@
 #include "uart.h"
 #include "debug.h"
 
+#define UART_DBG(x)
+#define UART_DBG_HEX(x)
+
 static __attribute__((always inline)) int8_t sd_wake_up() {
 	/* enable sd card */
 	if(spi_device_enable(SPI_SD_CARD) < 0)

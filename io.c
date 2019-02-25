@@ -13,6 +13,9 @@
  *	and getting bytes, everything else can be handled at the byte level
  */
 
+#define UART_DBG(x)
+#define UART_DBG_HEX(x)
+
 uint8_t initialize_io(struct io_ctx *io, struct sd_ctx *sd) {
 	/* get first sector, set sector pointer */
 
@@ -21,13 +24,13 @@ uint8_t initialize_io(struct io_ctx *io, struct sd_ctx *sd) {
 
 	io->sector_addr = 0;
 	io->byte_addr = 0;
+	io->sd = sd;
 
 	return 0;
 }
 
 static __attribute__((always inline)) 
-	int8_t io_get_byte(struct io_ctx *io, struct sd_ctx *sd, uint32_t offset,
-	uint8_t *buf) {
+	int8_t io_get_byte(struct io_ctx *io, uint32_t offset, uint8_t *buf) {
 
 	/*
 	 *	get the target argument, see if a new sector needs to be brought in
@@ -55,12 +58,12 @@ static __attribute__((always inline))
 	UART_DBG("\r\n");
 
 	/* intra sector address of the specified byte */
-	uint32_t sector_offset = offset % sd->sd_sector_size;
+	uint32_t sector_offset = offset % io->sd->sd_sector_size;
 
 	/* current sector is not the required sector, get the correct one */
 	if(sector_addr != io->sector_addr) {
-		if(sd_get_sector(sd, sector_addr, io->sector_buf, 
-			sd->sd_sector_size) < 0 ) {
+		if(sd_get_sector(io->sd, sector_addr, io->sector_buf, 
+			io->sd->sd_sector_size) < 0 ) {
 			return -1;
 		}
 
@@ -79,13 +82,15 @@ static __attribute__((always inline))
 }
 
 /* export one function, inline the subequent ones */
-uint8_t io_read_nbytes(struct io_ctx *io, struct sd_ctx *sd, void *buf, 
+uint8_t io_read_nbytes(struct io_ctx *io, void *buf, 
 	uint32_t offset, uint32_t nbytes) {
 
 	uint8_t *ptr = (uint8_t *) buf;
 
+	UART_DBG("trace\r\n");
+
 	for(uint32_t i = 0; i < nbytes; i++) {
-		if(io_get_byte(io, sd, offset + i, &ptr[i]) < 0)
+		if(io_get_byte(io, offset + i, &ptr[i]) < 0)
 			return -1;
 	}
 

@@ -22,6 +22,11 @@
 #define FAT_ENTRY_SIZE 4
 
 /*
+ *	lets just get the relevant information from the fat structs, save to the
+ *	context, and then discard everything we don't need (CHS, timestamps, etc)
+ */
+
+/*
  *	Logical Block Addressing Note:
  *	
  *	LBA for SSD's just numbers the sectors sequentially starting at 0
@@ -241,22 +246,23 @@ struct FAT32Entry {
 	uint32_t file_size;
 }__attribute((packed));
 
-uint32_t fat32_calc_first_cluster(uint16_t high, uint16_t low);
-uint32_t fat32_calc_lba_from_cluster(uint32_t cluster_begin_lba, uint32_t sectors_per_cluster, uint32_t cluster_number);
-
-#ifdef DEBUG_86
-void fat_dump_partition_table(struct PartitionTable *pt);
-void fat16_dump_boot_sector(struct FAT16BootSector *bs);
-void fat32_dump_boot_sector(struct FAT32BootSector *bs);
-void fat16_dump_entry(struct FAT16Entry *e);
-char fat32_dump_entry(struct FAT32Entry *e);
-void fat_dump_sizes();
-void dump_sector_addr(struct FAT32BootSector *bs, struct PartitionTable *pt);
-#endif
-
 struct fat32_ctx {
-	struct PartitionTable pt[4];
-	
+	/* partition info */
+	uint8_t partition_type;
+	uint32_t start_sector;
+	uint32_t length_sectors;
+
+	/* fat info */
+	uint16_t reserved_sectors;
+	uint8_t number_of_fats;
+	uint32_t sectors_per_fat_32;
+	uint8_t sectors_per_cluster;
+	uint32_t cluster_number_root_dir;
+
+	/* filesystem info */
+	uint32_t cluster_begin_sector;
+	uint32_t root_dir_sector;
+	uint32_t fat_begin_sector;
 };
 
 #endif

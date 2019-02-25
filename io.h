@@ -27,9 +27,15 @@ struct io_ctx {
 
 	/* sector checksum */
 	uint16_t sector_crc;
+
+	/* 
+	 * 	same as in sd, but we need to layer the abstraction and we aren't 
+	 * 	assuming the block size will always be 512 
+	 */
+	struct sd_ctx *sd;
 };
 
-uint8_t io_read_nbytes(struct io_ctx *io, struct sd_ctx *sd, void *buf, 
-	uint32_t offset, uint32_t nbytes);
+uint8_t io_read_nbytes(struct io_ctx *io, void *buf, uint32_t offset, 
+	uint32_t nbytes);
 
 #endif
