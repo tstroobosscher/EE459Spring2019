@@ -40,7 +40,7 @@ static const enum {
 	TIMER0,
 	TIMER1,
 	TIMER2,
-};
+} atmel_timer;
 
 struct atmel_328_time {
 	uint16_t timer_value;

@@ -86,7 +86,7 @@ int8_t initialize_fat32(struct fat32_ctx *fat32, struct io_ctx *io, struct sd_ct
 	/* read the partition table */
 
 	struct PartitionTable pt[PARTITION_TABLE_ENTRIES];
-	memset(pt, 0, sizeof(struct PartitionTable) * PARTITION_TABLE_ENTRIES);
+	memset(&pt, 0, sizeof(struct PartitionTable) * PARTITION_TABLE_ENTRIES);
 	struct FAT32BootSector bs;
 	memset(&bs, 0, sizeof(struct FAT32BootSector));
 
@@ -99,7 +99,7 @@ int8_t initialize_fat32(struct fat32_ctx *fat32, struct io_ctx *io, struct sd_ct
 		return -1;
 	}
 
-	dump_bin(pt, sizeof(struct PartitionTable) * PARTITION_TABLE_ENTRIES);
+	dump_bin(&pt, sizeof(struct PartitionTable) * PARTITION_TABLE_ENTRIES);
 
 	/* lets just worry about the first partition */
 	fat32->partition_type = pt[0].partition_type;

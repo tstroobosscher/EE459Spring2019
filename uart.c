@@ -83,24 +83,24 @@ void uart_check_vowel_consonant(){
 	if ((ch >= 'a') && (ch <= 'z')) {
 		switch(ch) {
 			case 'a':
-				sprintf(buf,"You entered a vowel: a\n\r");
+				sprintf((char *) buf,"You entered a vowel: a\n\r");
 				break;
 			case 'e':
-				sprintf(buf,"You entered a vowel: e\n\r");
+				sprintf((char *) buf,"You entered a vowel: e\n\r");
 				break;
 			case 'i':
-				sprintf(buf,"You entered a vowel: i\n\r");
+				sprintf((char *) buf,"You entered a vowel: i\n\r");
 				break;
 			case 'o':
-				sprintf(buf,"You entered a vowel: o\n\r");
+				sprintf((char *) buf,"You entered a vowel: o\n\r");
 				break;
 			case 'u':
-				sprintf(buf,"You entered a vowel: u\n\r");
+				sprintf((char *) buf,"You entered a vowel: u\n\r");
 				break;
 			default:
-				sprintf(buf, "That was the consonant: %c\n\r", ch);
+				sprintf((char *) buf, "That was the consonant: %c\n\r", ch);
 		}
 
-		uart_write_str(buf);
+		uart_write_str((char *) buf);
 	}
 }

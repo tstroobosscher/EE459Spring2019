@@ -5,9 +5,11 @@
 #ifndef FAT_H
 #define FAT_H
 
-#include "debug.h"
-
 #include <stdint.h>
+
+#include "debug.h"
+#include "io.h"
+#include "sd.h"
 
 /* always found at this address */
 #define PARTITION_TABLE_OFFSET 0x1BE
@@ -264,5 +266,10 @@ struct fat32_ctx {
 	uint32_t root_dir_sector;
 	uint32_t fat_begin_sector;
 };
+
+int8_t initialize_fat32(struct fat32_ctx *fat32, struct io_ctx *io, 
+	struct sd_ctx *sd);
+
+int8_t fat32_parse_entry(struct FAT32Entry *e);
 
 #endif

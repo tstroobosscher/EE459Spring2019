@@ -14,21 +14,21 @@ const enum {
 	ATMEL_PORT_C,
 	ATMEL_PORT_D,
 	ATMEL_PORT_INVAL,
-};
+} amtel_328_port;
 
 /* DDRX */
 const enum {
 	ATMEL_INPUT,
 	ATMEL_OUTPUT,
 	ATMEL_DIR_INVAL,
-};
+} atmel_328_ddr_status;
 
 /* Internal Pull-Ups */
 const enum {
 	ATMEL_PULL_ENA,
 	ATMEL_PULL_DIS,
 	ATMEL_PULL_INVAL,
-};
+} atmel_328_pull_status;
 
 /*
  *	Pin assignments:

@@ -16,7 +16,7 @@ static const enum {
 	FIFO_FULL,
 	FIFO_EMPTY,
 	FIFO_READY,
-};
+} fifo_status;
 
 struct fifo_t {
 	uint8_t f_buf[FIFO_SIZE];

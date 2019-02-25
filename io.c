@@ -82,12 +82,10 @@ static __attribute__((always inline))
 }
 
 /* export one function, inline the subequent ones */
-uint8_t io_read_nbytes(struct io_ctx *io, void *buf, 
-	uint32_t offset, uint32_t nbytes) {
+uint8_t io_read_nbytes(struct io_ctx *io, void *buf, uint32_t offset, 
+	uint32_t nbytes) {
 
 	uint8_t *ptr = (uint8_t *) buf;
-
-	UART_DBG("trace\r\n");
 
 	for(uint32_t i = 0; i < nbytes; i++) {
 		if(io_get_byte(io, offset + i, &ptr[i]) < 0)

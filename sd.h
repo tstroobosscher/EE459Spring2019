@@ -68,12 +68,12 @@ static const enum {
 	SD_TYPE_1,
 	SD_TYPE_2,
 	SD_TYPE_SDHC,
-};
+} sd_type;
 
 static const enum {
 	SD_ENABLED,
 	SD_DISABLED,
-};
+} sd_status;
 
 struct sd_ctx {
 	uint8_t sd_type;
