@@ -57,6 +57,8 @@ static uint8_t sd_command(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t bytes,
 
 	spi_device_enable(SPI_SD_CARD);
 
+	while(sd_is_busy()){}
+
     spi_write_char(cmd);
     spi_write_char(arg>>24);
     spi_write_char(arg>>16);
@@ -164,6 +166,9 @@ static int8_t sd_init_read_sector(uint32_t arg) {
 
 	spi_device_enable(SPI_SD_CARD);
 
+	/* reading in succession needs waiting */
+	while(sd_is_busy()){}
+
     spi_write_char(CMD17);
     spi_write_char(arg>>24);
     spi_write_char(arg>>16);
@@ -171,13 +176,12 @@ static int8_t sd_init_read_sector(uint32_t arg) {
     spi_write_char(arg);
     spi_write_char(0xFF);
 
+    DELAY_MS(1);
+
     /* data read token */
     while(spi_read_char() != 0xFE) {
 
     	UART_DBG("sd: CMD17 error\r\n");
-
-    	/* not sure why but this needs to be here or the read will fail */
-    	DELAY_MS(1);
 
     	/* data access can take up to 2 sec, need timeout */
     	if(++trials > 1000) {
@@ -342,6 +346,7 @@ int8_t initialize_sd(struct sd_ctx *sd) {
 	}
 
 	sd->sd_status = SD_ENABLED;
+	sd->sd_sector_size = SECTOR_SIZE;
 	return 0;
 
 failure:

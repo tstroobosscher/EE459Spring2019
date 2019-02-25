@@ -127,6 +127,7 @@ void dump_bin(void *bin, uint16_t nbytes) {
 
 	uart_write_str("  ");
 	uart_write_str(ascii);
+	uart_write_str("\r\n");
 }
 
 void dump_byte(uint8_t byte) {

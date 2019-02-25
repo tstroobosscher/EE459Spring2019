@@ -15,12 +15,18 @@
  */
 
 struct io_ctx {
+
+	/* pointer to current sector */
 	uint16_t sector_addr;
 
+	/* pointer to current byte */
+	uint64_t byte_addr;
+
+	/* sector buffer */
 	uint8_t sector_buf[SECTOR_SIZE];
 
+	/* sector checksum */
 	uint16_t sector_crc;
 };
-
 
 #endif

@@ -78,6 +78,7 @@ static const enum {
 struct sd_ctx {
 	uint8_t sd_type;
 	uint8_t sd_status;
+	uint16_t sd_sector_size;
 };
 
 int8_t initialize_sd();

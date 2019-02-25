@@ -10,7 +10,7 @@
 #include "debug.h"
 
 #ifndef DEBUG_86
-#include <avr/delay.h>
+#include <util/delay.h>
 #endif
 
 #ifdef ARDUINO

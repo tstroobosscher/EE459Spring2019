@@ -18,6 +18,7 @@
 #include "time.h"
 #include "sd.h"
 #include "io.h"
+#include "pins.h"
 
 struct fifo_t uart_rx_fifo;
 
@@ -42,13 +43,15 @@ int main() {
 	// TCCR1A |= (1 << WGM01);
 	// TCCR1B |= (1 << CS12) | (1 << CS10);
 
-	if(sd.sd_status == SD_ENABLED)
-		if(sd_get_sector(&sd, 0x7E78, sd_io.sector_buf, SECTOR_SIZE) < 0)
-			uart_write_str("main: unable to read sector\r\n");
-		else
-			dump_bin(sd_io.sector_buf, SECTOR_SIZE);
-
-	while(1) {}
+	while(1) {
+		if(sd.sd_status == SD_ENABLED)
+			for(int i = 0; i < 32; i++)
+				if(sd_get_sector(&sd, 0x7E78 + i, sd_io.sector_buf, 
+					sd.sd_sector_size) < 0)
+					uart_write_str("main: unable to read sector\r\n");
+				else
+					dump_bin(sd_io.sector_buf, sd.sd_sector_size);
+	}
 
 	return(0);
 } 
