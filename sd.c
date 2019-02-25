@@ -34,6 +34,7 @@ static inline int8_t sd_wake_up() {
 }
 
 static int8_t sd_is_busy() {
+
 	/* true/false logic */
 	if(spi_read_char() == 0xFF)
 		return 0;
@@ -48,6 +49,10 @@ static uint8_t sd_command(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t bytes,
 	 *	buf must be at least bytes long
 	 *	
 	 *	SPI SD does not use crc, just default 0xFF once SPI is init'd
+	 *	
+	 *	This function does employ a staic delay to help the commands return
+	 *	correctly, but it is only used during the init function, so the
+	 *	overhead incurred happens once
 	 */
 
 	spi_device_enable(SPI_SD_CARD);
@@ -59,7 +64,8 @@ static uint8_t sd_command(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t bytes,
     spi_write_char(arg);
     spi_write_char(crc);
 
-    DELAY_MS(100);
+    /* tested 2/24/19 - delay less than 7ms causes init to fail */
+    DELAY_MS(7);
 
     /* bytes == 0, return the flagged response */
     if(!bytes){
@@ -168,7 +174,8 @@ static int8_t sd_init_read_sector(uint32_t arg) {
 
     	UART_DBG("sd: CMD17 error\r\n");
 
-    	DELAY_MS(100);
+    	/* not sure why but this needs to be here or the read will fail */
+    	DELAY_MS(1);
 
     	/* data access can take up to 2 sec, need timeout */
     	if(++trials > 1000) {
