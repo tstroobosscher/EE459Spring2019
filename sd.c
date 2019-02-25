@@ -83,6 +83,8 @@ static uint8_t sd_command(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t bytes,
     		UART_DBG_HEX(ret);
     		UART_DBG(" ");
 
+    		DELAY_MS(1);
+
     		if(++trials >= MAX_CMD_TRIALS)
 
     			/* MSB set is an error response */
@@ -198,7 +200,7 @@ int8_t initialize_sd(struct sd_ctx *sd) {
 	if(sd_wake_up() < 0)
 
 		/* unhandled error */
-		return -1;
+		goto failure;
 
 	UART_DBG("sd: sd card woken up\r\n");
 
@@ -339,12 +341,15 @@ int8_t initialize_sd(struct sd_ctx *sd) {
 		}
 	}
 
+	sd->sd_status = SD_ENABLED;
 	return 0;
 
 failure:
 	
 	/* just to be sure we aren't locking up the SPI bus */
 	spi_device_disable(SPI_SD_CARD);
+
+	sd->sd_status = SD_DISABLED;
 	return -1;
 
 }

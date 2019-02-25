@@ -70,8 +70,14 @@ static const enum {
 	SD_TYPE_SDHC,
 };
 
+static const enum {
+	SD_ENABLED,
+	SD_DISABLED,
+};
+
 struct sd_ctx {
 	uint8_t sd_type;
+	uint8_t sd_status;
 };
 
 int8_t initialize_sd();

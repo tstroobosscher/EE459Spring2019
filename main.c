@@ -17,18 +17,19 @@
 #include "spi.h"
 #include "time.h"
 #include "sd.h"
+#include "io.h"
 
 struct fifo_t uart_rx_fifo;
 
 struct PartitionTable pt;
-struct FAT16BootSector bs;
-struct FAT16Entry e;
+struct FAT32BootSector bs;
+struct FAT32Entry e;
 
 struct atmel_328_time timer;
 
 struct sd_ctx sd;
 
-uint8_t sector[SECTOR_SIZE];
+struct io_ctx sd_io;
 
 int main() {
 	initialize_pins();
@@ -41,11 +42,11 @@ int main() {
 	// TCCR1A |= (1 << WGM01);
 	// TCCR1B |= (1 << CS12) | (1 << CS10);
 
-	if(sd_get_sector(&sd, 0x7E78, sector, SECTOR_SIZE) < 0)
-		uart_write_str("main: unable to read sector\r\n");
-	else
-
-	dump_bin(sector, SECTOR_SIZE);
+	if(sd.sd_status == SD_ENABLED)
+		if(sd_get_sector(&sd, 0x7E78, sd_io.sector_buf, SECTOR_SIZE) < 0)
+			uart_write_str("main: unable to read sector\r\n");
+		else
+			dump_bin(sd_io.sector_buf, SECTOR_SIZE);
 
 	while(1) {}
 
