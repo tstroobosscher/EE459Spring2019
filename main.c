@@ -27,7 +27,7 @@ const uint32_t macbeth_byte_addr = 0x00FCF000;
 
 struct PartitionTable pt[PARTITION_TABLE_ENTRIES];
 struct FAT32BootSector bs;
-//struct FAT32Entry e;
+struct FAT32Entry e;
 
 //struct atmel_328_time timer;
 
@@ -87,6 +87,26 @@ int main() {
 				}
 
 				dump_bin(&bs, sizeof(struct FAT32BootSector));
+
+				uint32_t fat_begin_lba = pt[i].start_sector + 
+					bs.reserved_sectors;
+				uint32_t cluster_begin_lba = pt[i].start_sector + 
+					bs.reserved_sectors + 
+					(bs.number_of_fats * bs.sectors_per_fat_32);
+				uint8_t sectors_per_cluster = bs.sectors_per_cluster;
+				uint32_t root_dir_first_cluster = bs.cluster_number_root_dir;
+
+				uint32_t addr = (cluster_begin_lba + 
+					((root_dir_first_cluster - 2) * sectors_per_cluster)) * bs.sector_size;
+
+				for(int j = 0; j < 16; j++) {
+					if(io_read_nbytes(&sd_io, &sd, &e, 
+						addr + j * sizeof(struct FAT32Entry), sizeof(struct FAT32Entry)) < 0) {
+						uart_write_str("main: error reading FAT32 root entry\r\n");
+					}
+
+					dump_bin(&e, sizeof(struct FAT32Entry));
+				}
 			}
 		}
 	}
