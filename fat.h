@@ -253,4 +253,10 @@ char fat32_dump_entry(struct FAT32Entry *e);
 void fat_dump_sizes();
 void dump_sector_addr(struct FAT32BootSector *bs, struct PartitionTable *pt);
 #endif
+
+struct fat32_ctx {
+	struct PartitionTable pt[4];
+	
+}
+
 #endif

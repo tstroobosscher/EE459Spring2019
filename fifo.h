@@ -5,23 +5,9 @@
 #ifndef FIFO_H
 #define FIFO_H
 
-#include "debug.h"
-
 #include <stdint.h> 
 
-/* for testing */
-
-
-//#define DEBUG
-
-
-#ifdef DEBUG_86
-#include <stdio.h>
-#endif
-
-/*
- *	    fifo.h
- */
+#include "debug.h"
 
 /* fifo is statically allocated */
 #define FIFO_SIZE 16
@@ -32,7 +18,7 @@ static const enum {
 	FIFO_READY,
 };
 
-struct fifo_t{
+struct fifo_t {
 	uint8_t f_buf[FIFO_SIZE];
 	uint8_t f_head;
 	uint8_t f_tail;
@@ -43,20 +29,6 @@ struct fifo_t{
  *	set the head and tail for the fifo structure
  */
 void initialize_fifo(struct fifo_t *fifo);
-
-#ifdef DEBUG_86
-/*
- *
- */
-void fifo_dump_buf(struct fifo_t *fifo, char *ret, int size);
-
-
-/*
- *	debug
- */
-void fifo_dump_mem(struct fifo_t *fifo, FILE *stream);
-
-#endif
 
 /*
  *	write string of n bytes to the fifo

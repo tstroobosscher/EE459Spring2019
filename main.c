@@ -20,6 +20,12 @@
 #include "io.h"
 #include "pins.h"
 
+/*
+ *	write debug strings in the header that can be placed in program
+ *	memory and then referenced by macro
+ *
+ */
+
 const uint32_t macbeth_sect_addr = 0x00007E78;
 const uint32_t macbeth_byte_addr = 0x00FCF000;
 
@@ -104,6 +110,9 @@ int main() {
 						addr + j * sizeof(struct FAT32Entry), sizeof(struct FAT32Entry)) < 0) {
 						uart_write_str("main: error reading FAT32 root entry\r\n");
 					}
+
+					if(fat32_parse_entry(&e) < 0)
+						break;
 
 					dump_bin(&e, sizeof(struct FAT32Entry));
 				}

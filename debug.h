@@ -1,6 +1,8 @@
 /*
  *	USC EE459 Spring 2019 Team 17 - Debug header
  */
+#ifndef DEBUG_H
+#define DEBUG_H
 
 /*
  *	Set for debug builds - Desktop
@@ -10,7 +12,7 @@
 /*
  *	Set for debug builds - Chip
  */
-//#define DEBUG_328
+#define DEBUG_328
 
 /* 
  * Changes clock speed to 16MHz 
@@ -26,5 +28,7 @@
 
 #define UART_DBG(x)
 #define UART_DBG_HEX(x)
+
+#endif
 
 #endif

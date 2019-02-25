@@ -26,6 +26,13 @@ void uart_write_str(char *buf) {
     }
 }
 
+void uart_write_strn(char *buf, char n) {
+    for(char i = 0; i < n; i++) {
+        uart_write_char(*buf);
+        buf++;
+    }
+}
+
 void uart_write_hex(uint8_t n) {
     if(((n>>4) & 15) < 10)
         uart_write_char('0' + ((n>>4)&15));

@@ -25,7 +25,6 @@ uint8_t initialize_io(struct io_ctx *io, struct sd_ctx *sd) {
 	return 0;
 }
 
-/* export one function, inline the subequent ones */
 static __attribute__((always inline)) 
 	int8_t io_get_byte(struct io_ctx *io, struct sd_ctx *sd, uint32_t offset,
 	uint8_t *buf) {
@@ -79,6 +78,7 @@ static __attribute__((always inline))
 	return 0;
 }
 
+/* export one function, inline the subequent ones */
 uint8_t io_read_nbytes(struct io_ctx *io, struct sd_ctx *sd, void *buf, 
 	uint32_t offset, uint32_t nbytes) {
 
