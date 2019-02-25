@@ -26,7 +26,7 @@ void uart_write_str(char *buf) {
     }
 }
 
-void uart_write_strn(char *buf, char n) {
+void uart_write_strn(uint8_t *buf, uint8_t n) {
     for(char i = 0; i < n; i++) {
         uart_write_char(*buf);
         buf++;

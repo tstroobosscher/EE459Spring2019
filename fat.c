@@ -12,7 +12,10 @@
 
 static __attribute__((always inline)) 
 	uint32_t fat32_calc_first_cluster(uint16_t high, uint16_t low) {
-	return (high << 16) | (low);
+	uint32_t shift_high = high;
+	uint32_t shift_low = low;
+	
+	return (shift_high << 16) | (shift_low);
 }
 
 static __attribute__((always inline)) 
