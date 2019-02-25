@@ -10,7 +10,8 @@
 #include "debug.h"
 #include "uart.h"
 
-static void spi_initialize_slave_select(uint8_t pin) {
+static __attribute__((always inline)) 
+	void spi_initialize_slave_select(uint8_t pin) {
 	/*
 	 *	Initialize slave select pin with active high
 	 */
