@@ -215,7 +215,8 @@ to out hardware and software constraints. The boards can be configured a number
 of ways:<ul>
 	<li>Half byte with control, 3 control pins, 4 data pins - 7 total
 	<li>Full byte with control, 3 control pins, 8 data pins - 7 total
-	<li>Serial?/SPI?
+	<li>SPI, Pin 15, B01
+	<li>Model: Digikey NHD-0420D3Z-NSW-BBW-V3, 20x4 serial 
 </ul>
 
 ### ECU Communication (Hardware and Software)

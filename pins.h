@@ -46,7 +46,7 @@ const enum {
  *		12:
  *		13:
  *		14:
- *		15:
+ *(B01)	15: LCD SPI Select
  *(D10)	16: SD Card SPI Select
  *(D11)	17: SPI MOSI
  *(D12)	18: SPI MISO
