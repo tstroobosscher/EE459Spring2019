@@ -274,7 +274,7 @@ because the addresses will be different
 
 # Draft of our Block Diagram
 
-<img src="resources/EE459_Diagram.png">
+<img src="resources/EE459_Diagram_Draft_2.png">
 
 ## Useful Commands
 
