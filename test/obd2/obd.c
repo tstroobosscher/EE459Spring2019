@@ -191,16 +191,8 @@ char* obd_pream(const char *cmd) {
 
 	dup[2] = '\0';
 
-	int n = 0;
-	int i = 0;
-	for(i = 0; i < strlen(args); i++) {
-		if(isspace(args[i]))
-			continue;
-		if(isxdigit(args[i])) {
-			args[n++] = args[i];
-		}
-	}
-	// strtol!
+	asprintf(&pream, "%02X", strtol(dup, 0, HEX_BASE) + PREAM_CONST);
+
 	free(dup);
 
 	return pream;
@@ -247,13 +239,17 @@ int obd_command(int device, const char *cmd, char *buf, int size) {
 		goto fail;
 	}
 
+	int n = 0;
+	int i = 0;
+	for(i = 0; i < strlen(args); i++) {
+		if(isspace(args[i]))
+			continue;
+		if(isxdigit(args[i])) {
+			args[n++] = args[i];
+		}
+	}
 	printf("%s\n", args);
-
-	int ar[3];
-
-	sscanf(args, "%02X %02X %02X", ar[0], ar[1], ar[2]);
-
-	printf("%d, %d, %d\n", ar[0], ar[1], ar[2]);
+	// strtol!
 
 	free(pream);
 	return 0;
