@@ -39,9 +39,13 @@
 
 #define BUF_SIZE 64
 #define MAX_TRIALS 64
+#define HEX_BASE 16
+#define PREAM_CONST 0x40
 
 const char *NO_DATA = "NO DATA";
 const char *OK = "OK";
+const char *NO_CONNECT = "UNABLE TO CONNECT";
+
 const char *ELM_RESET = "ATZ\r";
 const char *ECHO_OFF = "ATE0\r";
 const char *SEARCH_BUS = "ATSP0\r";
@@ -175,6 +179,26 @@ int elm_command(int device, const char *cmd, int len, char *buf, int size) {
 	return 0;
 }
 
+char* obd_pream(const char *cmd) {
+
+	if((strlen(cmd) != 5))
+		return NULL;
+
+	char *dup = strdup(cmd);
+	if(!dup)
+		return NULL;
+
+	char *pream;
+
+	dup[2] = '\0';
+
+	asprintf(&pream, "%02X", strtol(dup, 0, HEX_BASE) + PREAM_CONST);
+
+	free(dup);
+
+	return pream;
+}
+
 int obd_command(int device, const char *cmd, char *buf, int size) {
 	/*
 	 *	send cmd of size bytes to device, expect ret bytes and put into buf
@@ -184,29 +208,36 @@ int obd_command(int device, const char *cmd, char *buf, int size) {
 	 *	cmds are 4 digit hex values passed as ascii
 	 */
 
+	char *pream;
+	char *args;
+
 	printf("obd_command: %s\n", cmd);
 
 	if((strlen(cmd) != 5)) {
 		return -1;
 	}
 
-	/* preamble */
-	//int pream = atoi(&cmd[3])*16 + atoi(&cmd[2]) + 0x40;
+	
+	if((pream = obd_pream(cmd)) == NULL)
+		return -1;
+
 
 	if(elm_command(device, cmd, 4, buf, size) < 0) {
-		printf("error: elm_command\n");
-		return -1;
+		goto fail;
 	}
 
-	printf("0100: %s\n", buf);
-
-	// if(strstr(buf, NO_DATA) != NULL) {
-	// 	printf("elm_command: NO_DATA\n");
-	// 	/* command not supported */
-	// 	return -1;
-	// }
+	if(strstr(buf, NO_DATA) != NULL) {
+		goto fail;
+	}
+	
+	if((args = strstr(buf, pream)) == NULL)
+		goto fail;
 
 	return 0;
+
+fail:
+	free(pream);
+	return -1;
 
 }
 
