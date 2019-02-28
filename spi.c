@@ -49,6 +49,10 @@ void initialize_spi() {
 
 }
 
+void spi_set_speed() {
+	
+}
+
 int8_t spi_device_enable(uint8_t dev) {
 	/* clear pins first */
 	pin_high(PIN_SS_SD);
