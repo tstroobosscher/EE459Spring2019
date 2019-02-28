@@ -134,7 +134,8 @@ int elm_write(int device, const char *buf, int len) {
 		len -= ret;
 	}
 
-	write(device, "\r", 1);
+	/* why was this here ? */
+	//write(device, "\r", 1);
 
 	return 0;
 
@@ -178,24 +179,23 @@ int elm_command(int device, const char *cmd, int len, char *buf, int size) {
 
 }
 
-char* obd_pream(const char *cmd) {
+char* obd_resp(const char *cmd, char *buf) {
+	/*
+	 *	find the beginning of the response data
+	 */
+
+	char pream[3];
 
 	if((strlen(cmd) != 5))
 		return NULL;
 
-	char *dup = strdup(cmd);
-	if(!dup)
+	if(!strncpy(pream, cmd, 2))
 		return NULL;
 
-	char *pream;
+	/* NULL terminate substr */
+	pream[2] = '\0';
 
-	dup[2] = '\0';
-
-	asprintf(&pream, "%02X", strtol(dup, 0, HEX_BASE) + PREAM_CONST);
-
-	free(dup);
-
-	return pream;
+	return strstr(pream, buf);
 }
 
 int obd_command(int device, const char *cmd, char *buf, int size) {
@@ -205,10 +205,20 @@ int obd_command(int device, const char *cmd, char *buf, int size) {
 	 *	cmds are NULL terminated
 	 *	
 	 *	cmds are 4 digit hex values passed as ascii
+	 *	
+	 *	return a pointer to the preamble of the return argument with a NULL
+	 *	char at the end of the hex sequence.
 	 */
 
-	char *pream;
-	char *args;
+	/* 
+	 *	string ops are just easier and more efficient with dynamic allocation.
+	 *	but we really shouldnt need dynamic allocation. all the bytes are held
+	 *	in a butter right off the bat, and all the operations we are doing 
+	 *	are monotonically increasing through the index. hmmm
+	 */
+
+	char *data;
+	int n = 0;
 
 	printf("obd_command: %s\n", cmd);
 
@@ -216,48 +226,36 @@ int obd_command(int device, const char *cmd, char *buf, int size) {
 		printf("obd_command: incorrect command format\n");
 		return -1;
 	}
-	
-	if((pream = obd_pream(cmd)) == NULL) {
-		printf("obd_command: unable to get preamble\n");
-		return -1;
-	}
-
 
 	if(elm_command(device, cmd, OBD_CMD_LEN, buf, size) < 0) {
 		printf("obd_command: elm device failure\n");
-		goto fail;
+		return -1;
 	}
 
 	if(strstr(buf, NO_DATA) || strstr(buf, NO_CONNECT)) {
 		printf("obd_command: OBD not configured\n");
-		goto fail;
+		return -1;
 	}
-
 	
-	if((args = strstr(buf, pream)) == NULL) {
+	if(!(data = obd_resp(cmd, buf))) {
 		printf("obd_command: unable to find responses\n");
-		goto fail;
+		return -1;
 	}
 
-	int n = 0;
-	int i = 0;
-	for(i = 0; i < strlen(args); i++) {
-		if(isspace(args[i]))
+	for(int i = 0; i < strlen(data); i++) {
+		if(isspace(data[i]))
 			continue;
-		if(isxdigit(args[i])) {
-			args[n++] = args[i];
+		else if(isxdigit(data[i])) {
+			data[n++] = data[i];
 		}
 	}
-	printf("%s\n", args);
+
+	data[n] = '\0';
+
+	printf("%s\n", data);
 	// strtol!
 
-	free(pream);
 	return 0;
-
-fail:
-	free(pream);
-	return -1;
-
 }
 
 int initialize_elm(int device) {
