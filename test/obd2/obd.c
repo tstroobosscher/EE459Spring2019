@@ -1,11 +1,51 @@
+/*
+ *	USC EE459 Spring 2019 Team 17 - OBD2 Test code
+ */
+
+/*
+ *	February 26, 2019
+ *		So i need to write the routine that is going to grab the data bytes 
+ *		from the OBD2 response efficiently. All responses are preambled with
+ *		0x40 or'ed with the command number (we saw something extremely 
+ *		similar with the SD data-link layer code). All bytes before that
+ *		preamble are ignored, and each command has an expected number og bytes
+ *		to listen for
+ *		
+ *		Also i think its important to keep layering in mind. we probably 
+ *		shouldnt be doing string comparison or byte filtering at all at the
+ *		lowest level. we just need to copy the bytes into a buffer of an
+ *		appropriate size, and let the upper layers deal with the filtering
+ */
+
+/*
+ *	Wow, so declaring variables after string buffers can cause issues when
+ *	the strings are expected to be NULL terminated, switch the order of i 
+ *	and buf and the program will run incorrectly since printf is looking
+ *	for a NULL char (when using printf())
+ */
+
 #include <errno.h>
 #include <fcntl.h> 
 #include <string.h>
 #include <termios.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
 
 #define NO_PARITY 0
+
+#define ARRAY_SIZE(x) (sizeof((x))/sizeof((x)[0]))
+
+#define BUF_SIZE 64
+#define MAX_TRIALS 64
+
+const char *NO_DATA = "NO DATA";
+const char *OK = "OK";
+const char *ELM_RESET = "ATZ\r";
+const char *ECHO_OFF = "ATE0\r";
+const char *SEARCH_BUS = "ATSP0\r";
+const char *GET_DEVS = "0100\r";
 
 int set_tty_attr(int fd, int speed, int parity)
 {
@@ -62,6 +102,152 @@ void set_tty_blocking (int fd, int should_block)
             printf("error %d setting term attributes", errno);
 }
 
+int elm_response_complete(const char *buf) {
+	/*
+	 *	console will send a '>' once it is ready for the next command
+	 */
+
+	if(strstr(buf, ">"))
+		return 1;
+
+	return 0;
+}
+
+int elm_write(int device, const char *buf, int len) {
+	/*
+	 *	write n bytes from the buffer
+	 */
+
+	int ret =  0;
+
+	while(len > 0) {
+
+		ret = write(device, buf, len);
+		if(ret < 0)
+			return -1;
+
+		len -= ret;
+	}
+
+	write(device, "\r", 1);
+
+	return 0;
+
+}
+
+int elm_read(int device, char *buf, int len) {
+	/*
+	 *	read n bytes and put into the buffer
+	 */
+
+	char *cur = buf;
+	int ret = 0;
+	int n;
+
+	while(len) {
+		n = read(device, cur, 1);
+
+		cur += n;
+		ret += n;
+		len -= n;
+
+		*cur = '\0';
+
+		if(elm_response_complete(buf))
+			break;
+
+	}
+
+	return 0;
+}
+
+int elm_command(int device, const char *cmd, int len, char *buf, int size) {
+	/*
+	 *	send the command and then get the raw bytes until the '>', or tout
+	 */
+
+	if(elm_write(device, cmd, len) < 0)
+		return -1;
+
+	if(elm_read(device, buf, size) < 0)
+		return -1;
+
+	return 0;
+}
+
+int obd_command(int device, const char *cmd, char *buf, int size) {
+	/*
+	 *	send cmd of size bytes to device, expect ret bytes and put into buf
+	 *	
+	 *	cmds are NULL terminated
+	 *	
+	 *	cmds are 4 digit hex values passed as ascii
+	 */
+
+	printf("obd_command: %s\n", cmd);
+
+	if((strlen(cmd) != 5)) {
+		return -1;
+	}
+
+	/* preamble */
+	//int pream = atoi(&cmd[3])*16 + atoi(&cmd[2]) + 0x40;
+
+	if(elm_command(device, cmd, 4, buf, size) < 0) {
+		printf("error: elm_command\n");
+		return -1;
+	}
+
+	printf("0100: %s\n", buf);
+
+	// if(strstr(buf, NO_DATA) != NULL) {
+	// 	printf("elm_command: NO_DATA\n");
+	// 	/* command not supported */
+	// 	return -1;
+	// }
+
+	return 0;
+
+}
+
+int initialize_elm(int device) {
+
+	char buf[BUF_SIZE];
+
+	if(elm_command(device, ELM_RESET, sizeof(ELM_RESET), buf, sizeof(buf)) < 0)
+		return -1;
+
+	printf("ATZ: %s\n", buf);
+
+	if(elm_command(device, ECHO_OFF, sizeof(ECHO_OFF), buf, sizeof(buf)) < 0)
+		if(!strstr(buf, OK))
+			return -1;
+
+	printf("ATE0: %s\n", buf);
+
+	if(elm_command(device, SEARCH_BUS, sizeof(SEARCH_BUS), buf, 
+		sizeof(buf)) < 0)
+		if(!strstr(buf, OK))
+			return -1;
+
+	printf("ATSP0: %s\n", buf);
+
+
+	return 0;
+}
+
+int initialize_obd(int device) {
+
+	char buf[BUF_SIZE];
+
+	if(obd_command(device, GET_DEVS, buf, sizeof(buf)) < 0)
+		return -1;
+
+	return 0;
+}
+
+char buf[BUF_SIZE];
+
 int main(int argc, char * argv[]) {
 
 	const char *pname = argv[0];
@@ -85,75 +271,11 @@ int main(int argc, char * argv[]) {
 	}
 
 	set_tty_blocking(fd, 0);
+	if(initialize_elm(fd) < 0)
+		printf("initialize_elm: error\n");
 
-	write (fd, "ATZ\r\n", 5);
-
-	/*
-	 *	Wow, so declaring variables after string buffers can cause issues when
-	 *	the strings are expected to be NULL terminated, switch the order of i 
-	 *	and buf and the program will run incorrectly since printf is looking
-	 *	for a NULL char (when using printf())
-	 */
-
-	char buf;
-	int i = 0;
-
-	do {
-		read(fd, &buf, sizeof(buf));
-		write(STDOUT_FILENO, &buf, sizeof(buf));
-
-		i++;
-	} while(buf != '>');
-
-	printf("\n\rbytes received: %d\n", i);
-
-	write (fd, "ATE0\r\n", 5);
-
-	i = 0;
-
-	char ret[64];
-
-	for(i = 0; i < 50; i++){
-		read(fd, &buf, sizeof(buf));
-		write(STDOUT_FILENO, &buf, sizeof(buf));
-
-		ret[i] = buf;
-
-		if(buf == '>')
-			break;
-	}
-
-	printf("\n\n");
-
-	/* if "OK" not in the return string, error */
-	if(!strstr(ret, "OK"))
-		printf("%s: ERROR: unable to initialize ELM327\n", pname);
-	else
-		printf("%s: ELM327 initialized\n", pname);
-
-	write (fd, "0100\r\n", 5);
-
-	i = 0;
-
-	for(i = 0; i < 50; i++){
-		read(fd, &buf, sizeof(buf));
-		write(STDOUT_FILENO, &buf, sizeof(buf));
-
-		ret[i] = buf;
-
-		if(buf == '>')
-			break;
-	}
-
-	printf("%s: ret: %s\n", pname, ret);
-
-	/* read battery voltage */
-	//ATRV
-	
-	/* search for protocol */
-	//ATSP0
-
-
+	if(initialize_obd(fd) < 0)
+		printf("initialize_obd: error\n");
 
 	return 0;
 }
