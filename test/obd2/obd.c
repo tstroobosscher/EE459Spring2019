@@ -41,6 +41,7 @@
 #define MAX_TRIALS 64
 #define HEX_BASE 16
 #define PREAM_CONST 0x40
+#define OBD_CMD_LEN 4 + 1 /* +1 for carriage return */
 
 const char *NO_DATA = "NO DATA";
 const char *OK = "OK";
@@ -173,10 +174,8 @@ int elm_command(int device, const char *cmd, int len, char *buf, int size) {
 	if(elm_write(device, cmd, len) < 0)
 		return -1;
 
-	if(elm_read(device, buf, size) < 0)
-		return -1;
+	return (elm_read(device, buf, size));
 
-	return 0;
 }
 
 char* obd_pream(const char *cmd) {
@@ -192,8 +191,16 @@ char* obd_pream(const char *cmd) {
 
 	dup[2] = '\0';
 
-	asprintf(&pream, "%02X", strtol(dup, 0, HEX_BASE) + PREAM_CONST);
-
+	int n = 0;
+	int i = 0;
+	for(i = 0; i < strlen(args); i++) {
+		if(isspace(args[i]))
+			continue;
+		if(isxdigit(args[i])) {
+			args[n++] = args[i];
+		}
+	}
+	// strtol!
 	free(dup);
 
 	return pream;
@@ -213,26 +220,42 @@ int obd_command(int device, const char *cmd, char *buf, int size) {
 
 	printf("obd_command: %s\n", cmd);
 
-	if((strlen(cmd) != 5)) {
+	if((strlen(cmd) != OBD_CMD_LEN)) {
+		printf("obd_command: incorrect command format\n");
+		return -1;
+	}
+	
+	if((pream = obd_pream(cmd)) == NULL) {
+		printf("obd_command: unable to get preamble\n");
 		return -1;
 	}
 
-	
-	if((pream = obd_pream(cmd)) == NULL)
-		return -1;
 
-
-	if(elm_command(device, cmd, 4, buf, size) < 0) {
+	if(elm_command(device, cmd, OBD_CMD_LEN, buf, size) < 0) {
+		printf("obd_command: elm device failure\n");
 		goto fail;
 	}
 
-	if(strstr(buf, NO_DATA) != NULL) {
+	if(strstr(buf, NO_DATA) || strstr(buf, NO_CONNECT)) {
+		printf("obd_command: OBD not configured\n");
 		goto fail;
 	}
-	
-	if((args = strstr(buf, pream)) == NULL)
-		goto fail;
 
+	
+	if((args = strstr(buf, pream)) == NULL) {
+		printf("obd_command: unable to find responses\n");
+		goto fail;
+	}
+
+	printf("%s\n", args);
+
+	int ar[3];
+
+	sscanf(args, "%02X %02X %02X", ar[0], ar[1], ar[2]);
+
+	printf("%d, %d, %d\n", ar[0], ar[1], ar[2]);
+
+	free(pream);
 	return 0;
 
 fail:
