@@ -72,6 +72,27 @@ const char *ECHO_OFF = "ATE0\r";
 const char *SEARCH_BUS = "ATSP0\r";
 const char *GET_DEVS = "0100\r";
 
+struct node {
+	void  *data;
+
+	struct node *next;
+};
+
+void push_head(struct node **head, void *data, size_t bytes) {
+
+	struct node *new_node = (struct node *) malloc(sizeof(struct node));
+
+	new_node->data = malloc(bytes);
+	new_node->next = *head;
+
+	for(int i = 0; i < bytes; i++) {
+		/* dereference the value of the void pointer cast to char *, copy */
+		*(char *)(new_node->data + i) = *(char *)(data + i);
+	}
+
+	(*head) = new_node;
+
+}
 
 static const enum obd_pid{
 	/* 00 */	PIDS_SUPPORTED_01_02,	/* [01 - 20] Bit encoded [A7..D0] == [PID $01..PID $20] See below */
@@ -459,13 +480,7 @@ int initialize_obd(int device) {
 	/* first command that is supported */
 	cmds[0] = &obd_cmds[0];
 
-	for(int i = 0; i < 0x20; i++) {
-		if((res << 1) & (1 << 32))
-			cmds = reallocarray(sizeof(cmds) + sizeof(struct obd_cmd));
-
-
-	}
-
+	
 	return 0;
 }
 
