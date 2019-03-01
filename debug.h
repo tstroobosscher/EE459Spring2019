@@ -16,8 +16,8 @@
  */
 #define DEBUG_328
 
-/* 
- * Changes clock speed to 16MHz 
+/*
+ * Changes clock speed to 16MHz
  */
 #define ARDUINO
 

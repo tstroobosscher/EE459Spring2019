@@ -15,28 +15,27 @@
 
 #ifdef ARDUINO
 
-/* 
+/*
  * 16 Mhz Crystal (Arduino)
  */
 #define FOSC 16000000
 
 #else
 
-/* 
- * 7.3728 Mhz Crystal 
+/*
+ * 7.3728 Mhz Crystal
  */
 #define FOSC 7372800
 
 #endif
 
-
-/* 
+/*
  * Calculate number of arr elements
  */
-#define ARRAY_SIZE(x) (sizeof((x))/sizeof((x)[0]))
+#define ARRAY_SIZE(x) (sizeof((x)) / sizeof((x)[0]))
 
-/* 
- * avr requires compile-time knowledge of delay times 
+/*
+ * avr requires compile-time knowledge of delay times
  */
 #define DELAY_MS(x) (_delay_ms(x))
 
@@ -58,6 +57,6 @@ void dump_byte(uint8_t byte);
 void trace();
 #endif
 
-//void log(char *msg);
+// void log(char *msg);
 
 #endif

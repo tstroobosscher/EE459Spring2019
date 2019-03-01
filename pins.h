@@ -10,24 +10,24 @@
 
 /* PORTX */
 const enum {
-	ATMEL_PORT_B,
-	ATMEL_PORT_C,
-	ATMEL_PORT_D,
-	ATMEL_PORT_INVAL,
+  ATMEL_PORT_B,
+  ATMEL_PORT_C,
+  ATMEL_PORT_D,
+  ATMEL_PORT_INVAL,
 } amtel_328_port;
 
 /* DDRX */
 const enum {
-	ATMEL_INPUT,
-	ATMEL_OUTPUT,
-	ATMEL_DIR_INVAL,
+  ATMEL_INPUT,
+  ATMEL_OUTPUT,
+  ATMEL_DIR_INVAL,
 } atmel_328_ddr_status;
 
 /* Internal Pull-Ups */
 const enum {
-	ATMEL_PULL_ENA,
-	ATMEL_PULL_DIS,
-	ATMEL_PULL_INVAL,
+  ATMEL_PULL_ENA,
+  ATMEL_PULL_DIS,
+  ATMEL_PULL_INVAL,
 } atmel_328_pull_status;
 
 /*
@@ -41,7 +41,7 @@ const enum {
  *		7:	(Invalid) VCC
  *		8:	(Invalid) GND
  *		9:	(Invalid) XTAL
- *		10:	
+ *		10:
  *		11:
  *		12:
  *		13:

@@ -5,9 +5,7 @@
 #ifndef SPI_H
 #define SPI_H
 
-static const enum {
-	SPI_SD_CARD
-} spi_device;
+static const enum { SPI_SD_CARD } spi_device;
 
 void initialize_spi();
 uint8_t spi_write_char(uint8_t ch);
