@@ -44,6 +44,7 @@
 #define HEX_BASE 16
 #define PREAM_CONST 0x40
 #define OBD_CMD_LEN 4 + 1 /* +1 for carriage return */
+#define OBD_PID_REGISTER_SIZE 0x20 
 
 static const enum obd_unit {
   UNITS_NONE,
@@ -167,6 +168,7 @@ static const enum obd_pid {
   /* 1E */ AUXILIARY_INPUT_STATUS, /* A0 == Power Take Off (PTO) status (1 ==
                                       active) [A1..A7] not used */
   /* 1F */ RUN_TIME_ENGINE_START,  /*	256A + B [seconds] [0-65,535] */
+  /* 20 */  PIDS_SUPPORTED_21_40, /* Bit encoded [A7..D0] == [PID $21..PID $40] See below */
 } obd_pid;
 
 /*
@@ -197,8 +199,14 @@ struct obd_cmd {
   const char *cmd_str;
   int (*handle_data)(void *dat, int bytes, struct obd_ctx *ctx);
 } obd_cmds[] = {
-    {PIDS_SUPPORTED_01_02, 4, UNITS_NONE, "0100", "PIDS SUPPORTED 01 02",
-     &obd_set_supported_ops},
+    {
+        PIDS_SUPPORTED_01_02,
+        4,
+        UNITS_NONE,
+        "0100",
+        "PIDS SUPPORTED 01 02",
+        &obd_set_supported_ops,
+    },
     {
         MONITOR_STATUS_SINCE_DTCS_CLEARED,
         4,
@@ -212,7 +220,7 @@ struct obd_cmd {
         2,
         UNITS_NONE,
         "0102",
-        "FREEZE_DTC",
+        "FREEZE DTC",
         NULL,
     },
     {
@@ -316,7 +324,8 @@ struct obd_cmd {
         1,
         UNITS_CELCIUS,
         "010F",
-        "INTAKE AIR TEMP 1".NULL,
+        "INTAKE AIR TEMP 1",
+        NULL,
     },
     {
         MAF_RATE,
@@ -426,7 +435,7 @@ struct obd_cmd {
         TOTAL_OXYGEN_SENSORS_4_BANKS,
         1,
         UNITS_NONE,
-        "011E",
+        "011D",
         "TOTAL OXYGEN SENSORS 4 BANKS",
         NULL,
     },
@@ -434,7 +443,7 @@ struct obd_cmd {
         AUXILIARY_INPUT_STATUS,
         1,
         UNITS_NONE,
-        "011F",
+        "011E",
         "AUXILIARY INPUT STATUS",
         NULL,
     },
@@ -442,11 +451,13 @@ struct obd_cmd {
         RUN_TIME_ENGINE_START,
         2,
         UNITS_SEC,
-        "0120",
+        "011F",
         "RUN TIME ENGINE START",
         NULL,
     },
 };
+
+void obd_print_cmd(struct obd_cmd *cmd) { printf("%s\n", cmd->cmd_str); }
 
 int obd_set_supported_ops(void *dat, int bytes, struct obd_ctx *ctx) {
   return 0;
@@ -689,6 +700,13 @@ int obd_command(int device, const char *cmd, void *dat, int size) {
   return 0;
 }
 
+void dump_list(struct node *ptr, void (*fptr)(void *)) {
+  while (ptr) {
+    (*fptr)(ptr->data);
+    ptr = ptr->next;
+  }
+}
+
 int initialize_elm(int device) {
 
   char buf[BUF_SIZE];
@@ -728,11 +746,18 @@ int initialize_obd(int device) {
 
   struct node *start = NULL;
 
-  for (int i = 0; i < ARRAY_SIZE(obd_cmds); i++)
+  /* skip the 0 pid, not in the return data */
+  for (int i = 1; i < ARRAY_SIZE(obd_cmds); i++)
 
-    /* the msb in the res corresponds to the lowest order pid */
-    if (res & (1 << (ARRAY_SIZE(obd_cmds) - obd_cmds[i]->obd_pid)))
+    /* 
+     *  the msb in the res corresponds to the lowest order pid, not the 00 pid
+     * 
+     *  offset for the 0 pid
+     */
+    if (res & (1 << (0x20 - (obd_cmds[i].obd_pid - 1) )))
       push_head(&start, &obd_cmds[i], sizeof(struct obd_cmd));
+
+  dump_list(start, obd_print_cmd);
 
   return 0;
 }

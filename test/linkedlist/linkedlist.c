@@ -34,7 +34,7 @@ void dump_list(struct node *ptr, void (*fptr)(void *)) {
 	}
 }
 
-void print_int(void *t) {
+void print_int(struct obd_cmd *ptr) {
 	printf("%d\n", *(int *) t);
 }
 
