@@ -4,7 +4,7 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
-#include "uart.h"
+// #include "uart.h"
 
 /*
  *	Set for debug builds - Desktop
@@ -15,6 +15,8 @@
  *	Set for debug builds - Chip
  */
 #define DEBUG_328
+
+#define ATMEGA2560
 
 /*
  * Changes clock speed to 16MHz

@@ -13,14 +13,14 @@
 /*
  *	UART Baud rate
  */
-#define BAUD 19200
+#define BAUD 9600
 
 /*
  *	Value for UBRR0 register
  */
 #define MYUBRR ((FOSC / 16 / BAUD) - 1)
 
-void initialize_uart(unsigned int ubrr_value);
+void initialize_uart(unsigned long ubrr_value);
 char uart_read_char();
 void uart_write_hex(uint8_t n);
 void uart_write_char(char data);

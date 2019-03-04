@@ -1,4 +1,5 @@
-DEVICE     = atmega328p
+DEVICE     = atmega2560
+MEGA = atmega2560
 
 # 16 MHz is the arduino's pcb clock speed. Our clock is much slower than this
 # and this line of code will actually cause bugs in our time sensitive routines
@@ -7,10 +8,10 @@ DEVICE     = atmega328p
 # 7.3728MHz oscillator !  
 
 CLOCK      ?= 7372800
-PROGRAMMER = -c usbtiny -p m328 -F
-PORT ?= /dev/tty.usbmodem*
+PROGRAMMER = -c usbtiny -p m2560 -F
+PORT ?= /dev/ttyACM0
 ARDUINO_PROGRAMMER = -c arduino -b 115200 -P $(PORT)
-OBJECTS    = main.o uart.o fifo.o fat.o pins.o spi.o sd.o utils.o time.o io.o
+OBJECTS    = main.o uart.o fifo.o pins.o spi.o sd.o utils.o io.o fat.o 
 FUSES      = -U hfuse:w:0xde:m -U lfuse:w:0xff:m -U efuse:w:0x05:m
 
 # Tune the lines below only if you know what you are doing:

@@ -54,7 +54,7 @@ void uart_write_32(uint32_t val) {
   uart_write_hex(val);
 }
 
-void initialize_uart(unsigned int ubrr_value) {
+void initialize_uart(unsigned long ubrr_value) {
   /*
    * Set Baud rate
    */
