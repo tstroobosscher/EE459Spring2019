@@ -26,7 +26,7 @@ static const struct atmel_328_pin {
 #endif
 
 #ifdef ATMEGA328
-    /* 0  */
+    /* 0, no 0 pin, just used to align the array index with the pin number */
     {
         NULL,
         0,
