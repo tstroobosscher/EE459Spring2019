@@ -186,7 +186,7 @@ struct obd_ctx {
   uint32_t supported_devices;
 
   // linked list for supported devices
-  void *linked_list;
+  struct node *linked_list;
 };
 
 int obd_set_supported_ops(void *dat, int bytes, struct obd_ctx *ctx);
@@ -457,7 +457,7 @@ struct obd_cmd {
     },
 };
 
-void obd_print_cmd(struct obd_cmd *cmd) { printf("%s\n", cmd->cmd_str); }
+int obd_print_cmd(struct obd_cmd *cmd) { printf("%s\n", cmd->cmd_str); return 0;}
 
 int obd_set_supported_ops(void *dat, int bytes, struct obd_ctx *ctx) {
   return 0;
@@ -620,22 +620,18 @@ int obd_command(int device, const char *cmd, void *dat, int size) {
    *
    *	cmds are 4 digit hex values passed as ascii
    *
-   */
-
-  /*
    *	string ops are just easier and more efficient with dynamic allocation.
    *	but we really shouldnt need dynamic allocation. all the bytes are held
    *	in a butter right off the bat, and all the operations we are doing
    *	are monotonically increasing through the index. hmmm
-   */
-
-  /*
+   *
    *	return a buffer with the actual (not ascii) hex data in order
    *	by reference
    *
    *	return a buffer of the response size in bytes with the acutal data
    */
 
+  /* BUF_SIZE seems arbitrary, can be a varying number of whitespaces */
   char buf[BUF_SIZE];
   char *data;
   int n = 0;
@@ -648,7 +644,7 @@ int obd_command(int device, const char *cmd, void *dat, int size) {
     return -1;
   }
 
-  /* send the OBD cmd to the ELM */
+  /* send the OBD cmd to the ELM, put the response in the buffer */
   if (elm_command(device, cmd, OBD_CMD_LEN, buf, size) < 0) {
     printf("obd_command: elm device failure\n");
     return -1;
@@ -670,7 +666,11 @@ int obd_command(int device, const char *cmd, void *dat, int size) {
   for (int i = 0; i < strlen(data); i++) {
 
     if (isspace(data[i]))
+
+      /* skip the spaces */
       continue;
+
+    /* should only be processing hex data */
     else if (isxdigit(data[i])) {
       data[n++] = data[i];
     }
@@ -679,7 +679,8 @@ int obd_command(int device, const char *cmd, void *dat, int size) {
   /* NULL terminate the formatted response string */
   data[n] = '\0';
 
-  if (strlen(data) % 2)
+  /* check for evenness */
+  if ((strlen(data) % 2) || (strlen(data)/2 != size))
 
     /* incorrect response length */
     return -1;
@@ -687,13 +688,14 @@ int obd_command(int device, const char *cmd, void *dat, int size) {
   printf("string: %s\n", data);
 
   /* there should only be an even number of hex char's now */
-  for (int i = 0; i < strlen(data) / 2; i++) {
+  for (int i = 0; i < size; i++) {
 
-    /* grab each byte string, convert to int */
+    /* grab each byte string, convert to unsigned char */
     char ch[3] = {data[i * 2], data[i * 2 + 1], '\0'};
 
     printf("%s\n", ch);
 
+    /* strlen(data)/2 should also be equal to size */
     ret[i] = (unsigned char)strtol(ch, 0, HEX_BASE);
   }
 
@@ -731,20 +733,24 @@ int initialize_elm(int device) {
   return 0;
 }
 
-int initialize_obd(int device) {
+int initialize_obd(int device, struct obd_ctx *ctx) {
 
   unsigned char dat[BUF_SIZE];
 
   if (obd_command(device, GET_DEVS, dat, sizeof(dat)) < 0)
     return -1;
 
-  /* build the 32 bit response from the char array, 0 and 1 are preamble */
+  /*
+   *  build the 32 bit response from the char array, 0 and 1 are preamble
+   *  This is not going to work on 8 bit architecture, need to assign to larger
+   *  buffers first
+   */
   uint32_t res =
       (dat[2] << 24) | (dat[3] << 16) | (dat[4] << 8) | (dat[5] << 0);
 
-  printf("%08lX", res);
+  printf("%08X", res);
 
-  struct node *start = NULL;
+  ctx->linked_list = NULL;
 
   /* skip the 0 pid, not in the return data */
   for (int i = 1; i < ARRAY_SIZE(obd_cmds); i++)
@@ -753,16 +759,21 @@ int initialize_obd(int device) {
      *  the msb in the res corresponds to the lowest order pid, not the 00 pid
      * 
      *  offset for the 0 pid
+     *  
+     *  The 1 pid corresponds to the 32nd bitmask on the res32, which would be
+     *  shifted over 31 times, 0x20 - pid
      */
-    if (res & (1 << (0x20 - (obd_cmds[i].obd_pid - 1) )))
-      push_head(&start, &obd_cmds[i], sizeof(struct obd_cmd));
+    if (res & (1 << (0x20 - obd_cmds[i].obd_pid)))
+      push_head(&ctx->linked_list, &obd_cmds[i], sizeof(struct obd_cmd));
 
-  dump_list(start, obd_print_cmd);
+  dump_list(ctx->linked_list, obd_print_cmd);
 
   return 0;
 }
 
 char buf[BUF_SIZE];
+
+struct obd_ctx obd;
 
 int main(int argc, char *argv[]) {
 
@@ -787,10 +798,11 @@ int main(int argc, char *argv[]) {
   }
 
   set_tty_blocking(fd, 0);
+
   if (initialize_elm(fd) < 0)
     printf("initialize_elm: error\n");
 
-  if (initialize_obd(fd) < 0)
+  if (initialize_obd(fd, &obd) < 0)
     printf("initialize_obd: error\n");
 
   return 0;
