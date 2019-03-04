@@ -45,7 +45,7 @@ int main() {
     uart_write_str("main: unable to initialize SD\r\n");
 
   if (initialize_io(&io, &sd) < 0)
-    uart_write_str("main: unable to initialize IO\r\n");
+    uart_write_str("main: unable to initialize file IO\r\n");
 
   if (initialize_fat32(&fat32, &io, &sd) < 0)
     uart_write_str("main: unable to initialize FAT32\r\n");
