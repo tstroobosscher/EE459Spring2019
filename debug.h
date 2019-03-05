@@ -15,11 +15,6 @@
  */
 #define DEBUG
 
-#define ATMEGA2560
-
-/*
- * Changes clock speed to 16MHz
- */
 #define ARDUINO
 
 #ifdef DEBUG
