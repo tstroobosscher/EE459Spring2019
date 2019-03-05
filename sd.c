@@ -15,26 +15,18 @@
 
 static __attribute__((always inline)) int8_t sd_wake_up() {
   /* enable sd card */
-  if (spi_device_enable(SPI_SD_CARD) < 0)
-
-    /* sanity check */
-    return -1;
-
-  UART_DBG("sd: SD slave select enabled\r\n");
-
-  /* 80 clocks, init card */
-  for (uint8_t i = 0; i < 10; i++)
-    spi_write_char(0xFF);
-
-  UART_DBG("sd: 80 clocks send to SPI bus\r\n");
-
-  /* disable sd card */
   if (spi_device_disable(SPI_SD_CARD) < 0)
 
     /* sanity check */
     return -1;
 
   UART_DBG("sd: SD slave select disabled\r\n");
+
+  /* 80 clocks, init card */
+  for (uint8_t i = 0; i < 10; i++)
+    spi_write_char(0xFF);
+
+  UART_DBG("sd: 80 clocks send to SPI bus\r\n");
 
   return 0;
 }
@@ -43,9 +35,9 @@ static __attribute__((always inline)) int8_t sd_is_busy() {
 
   /* true/false logic */
   if (spi_read_char() == 0xFF)
-    return 1;
+    return true;
   else
-    return 0;
+    return false;
 }
 
 static __attribute__((always inline)) uint8_t
@@ -235,7 +227,7 @@ int8_t initialize_sd(struct sd_ctx *sd) {
   trials = 0;
 
   /* send CMD0, get IDLE state */
-  while (sd_command(CMD0, bind_args(NOARG, NOARG, NOARG, NOARG), CMD0_CRC, 0,
+  while (sd_command(CMD0, 0x00, CMD0_CRC, 0,
                     NULL) != R1_IDLE_STATE) {
 
     UART_DBG("sd: CMD0 error\r\n");

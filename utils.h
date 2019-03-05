@@ -45,6 +45,13 @@
 void dump_bin(void *buf, int size);
 #endif
 
+/**
+ * booleans
+ */
+
+#define true 1
+#define false 0
+
 /*
  *	Static buffer allocation
  */
