@@ -13,9 +13,6 @@
 #include "uart.h"
 #include "utils.h"
 
-#define UART_DBG(x)
-#define UART_DBG_HEX(x)
-
 static __attribute__((always inline)) int8_t sd_wake_up() {
   /* enable sd card */
   if (spi_device_disable(SPI_SD_CARD) < 0)
@@ -225,16 +222,10 @@ int8_t initialize_sd(struct sd_ctx *sd) {
   uint8_t ret;
   int trials;
 
-  // if (sd_wake_up() < 0)
+  if (sd_wake_up() < 0)
 
-  //    unhandled error 
-  //   goto failure;
-  
-  spi_device_disable(SPI_SD_CARD);
-
-  /* 80 clocks, init card */
-  for (uint8_t i = 0; i < 10; i++)
-    spi_write_char(0xFF);
+    /* unhandled error */
+    goto failure;
 
 
   UART_DBG("sd: sd card woken up\r\n");

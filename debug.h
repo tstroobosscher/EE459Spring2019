@@ -4,26 +4,16 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
-// #include "uart.h"
-
-/*
- *	Set for debug builds - Desktop
- */
-//#define DEBUG_86
+#include "uart.h"
 
 /*
  *	Set for debug builds - Chip
  */
-#define DEBUG_328
+#define DEBUG
 
-#define ATMEGA2560
-
-/*
- * Changes clock speed to 16MHz
- */
 #define ARDUINO
 
-#ifdef DEBUG_328
+#ifdef DEBUG
 
 #define UART_DBG(x) uart_write_str(x)
 #define UART_DBG_HEX(x) uart_write_hex(x)
