@@ -177,11 +177,33 @@ int8_t fat32_open_file(struct fat32_ctx *ctx, struct FAT32Entry *e, struct io_ct
     uint32_t fat_address;
 
     do {
-      if(io_read_nbytes(io, &fat_address, ctx->fat_begin_sector + e->cluster_begin_lba, sizeof(fat32_ctx) < 0)
+
+      if(io_read_nbytes(io, &fat_address, ctx->fat_begin_sector + e->cluster_begin_lba, sizeof(fat32_ctx)) < 0) {
         return -1;
+      }
 
       push_head(/* file_ctx pointer memer, the uint 32 (dynamic) */);
 
     } while(fat_address != 0xFFFFFFFF /* && not outside the boundary */);
 
+}
+
+int8_t fat32_close_file() {
+
+}
+
+int8_t fat_32_read_file_byte() {
+
+}
+
+int8_t fat32_read_file_nbytes() {
+
+}
+
+int8_t fat32_write_file_byte() {
+
+}
+
+int8_t fat32_write_file_nbytes() {
+  
 }
