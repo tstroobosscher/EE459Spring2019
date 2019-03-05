@@ -190,6 +190,7 @@ struct obd_ctx {
 };
 
 int obd_set_supported_ops(void *dat, int bytes, struct obd_ctx *ctx);
+int obd_get_engine_load(void *dat, int bytes, struct obd_ctx *ctx);
 
 struct obd_cmd {
   int obd_pid;
@@ -237,7 +238,7 @@ struct obd_cmd {
         UNITS_PERCENT,
         "0104",
         "CALCULATED ENGINE LOAD",
-        NULL,
+        &obd_get_engine_load,
     },
     {
         ENGINE_COOLANT_TEMP_1,
@@ -308,7 +309,7 @@ struct obd_cmd {
         1,
         UNITS_KMPH,
         "010D",
-        "VEHICLE SPEED,",
+        "VEHICLE SPEED",
         NULL,
     },
     {
@@ -459,12 +460,24 @@ struct obd_cmd {
 
 int obd_print_cmd(struct obd_cmd *cmd) { printf("%s\n", cmd->cmd_str); return 0;}
 
-void obd_set_supported_ops(uint32_t res, struct obd_ctx *ctx) {
+int obd_get_engine_load(void *dat, int bytes, struct obd_ctx *ctx) {
+
+  char *res = (char *) dat;
+
+  float calc = res[3]/2.55;
+
+  printf("%f\n", calc);
+
+}
+
+int obd_set_supported_ops(void *dat, int bytes, struct obd_ctx *ctx) {
+
+  char *res = (char *) dat;
 
   ctx->linked_list = NULL;
 
   /* skip the 0 pid, not in the return data */
-  for (int i = 1; i < ARRAY_SIZE(obd_cmds); i++)
+  for (int i = 1; i < bytes * 8; i++)
 
     /* 
      *  the msb in the res corresponds to the lowest order pid, not the 00 pid
@@ -477,6 +490,8 @@ void obd_set_supported_ops(uint32_t res, struct obd_ctx *ctx) {
     if (res & (1 << (0x20 - obd_cmds[i].obd_pid)))
 
       push_head(&ctx->linked_list, &obd_cmds[i], sizeof(struct obd_cmd));
+
+    return 0;
 }
 
 int set_tty_attr(int fd, int speed, int parity) {
@@ -773,9 +788,18 @@ int initialize_obd(int device, struct obd_ctx *ctx) {
   uint32_t res =
       (dat[2] << 24) | (dat[3] << 16) | (dat[4] << 8) | (dat[5] << 0);
 
+  obd_cmds[PIDS_SUPPORTED_01_02].
+
   dump_list(ctx->linked_list, obd_print_cmd);
 
   return 0;
+}
+
+void list_data(struct node *ptr) {
+  while(ptr) {
+    if(ptr->data->handle_data != NULL)
+    (*(ptr->data->handle_data))()
+  }
 }
 
 char buf[BUF_SIZE];
