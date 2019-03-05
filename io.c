@@ -13,6 +13,10 @@
  *	and getting bytes, everything else can be handled at the byte level
  */
 
+/* the io DBG's spam the log, lets just keep them quiet for now */
+#define UART_DBG(x)
+#define UART_DBG_HEX(x)
+
 uint8_t initialize_io(struct io_ctx *io, struct sd_ctx *sd) {
 	/* get first sector, set sector pointer */
 
