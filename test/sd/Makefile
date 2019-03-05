@@ -1,4 +1,4 @@
-DEVICE     = atmega328p
+DEVICE     = atmega2560
 
 # 16 MHz is the arduino's pcb clock speed. Our clock is much slower than this
 # and this line of code will actually cause bugs in our time sensitive routines
@@ -6,11 +6,9 @@ DEVICE     = atmega328p
 
 # 7.3728MHz oscillator !  
 
-CLOCK      ?= 7372800
+CLOCK      ?= 16000000
 PROGRAMMER = -c usbtiny -p m328 -F
-PORT ?= /dev/tty.usbmodem*
-ARDUINO_PROGRAMMER = -c arduino -b 115200 -P $(PORT)
-OBJECTS    = cmd.o ../../utils.o ../../uart.o
+OBJECTS    = cmd.o
 FUSES      = -U hfuse:w:0xde:m -U lfuse:w:0xff:m -U efuse:w:0x05:m
 
 # Tune the lines below only if you know what you are doing:
@@ -18,8 +16,6 @@ FUSES      = -U hfuse:w:0xde:m -U lfuse:w:0xff:m -U efuse:w:0x05:m
 AVRDUDE = avrdude $(PROGRAMMER) -p $(DEVICE)
 COMPILE = avr-gcc -std=c99 -Wall -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE)
 
-
-STATS_FILE = $(PWD)/avr_size.txt
 
 # symbolic targets:
 all:	main.hex

@@ -13,6 +13,8 @@
 #include <util/delay.h>
 #endif
 
+#define ATMEGA2560
+
 #ifdef ARDUINO
 
 /*
