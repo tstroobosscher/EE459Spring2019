@@ -1,44 +1,88 @@
 #include <avr/io.h>
 
-#include "../../utils.h"
-void USARTInit(unsigned int ubrr_value) { // is UBRR>255 supported?
-	//Set Baud rate
-	UBRR0H = (unsigned char)(ubrr_value >> 8);  
-	UBRR0L = (unsigned char)(ubrr_value & 255);
-	// Frame Format: asynchronous, no parity, 1 stop bit, char size 8
-	UCSR0C = (1 << UCSZ01) | (1 << UCSZ00);
-	//Enable The receiver and transmitter
-	UCSR0B = (1 << RXEN0) | (1 << TXEN0);
+#define ATMEGA2560
+
+#define FOSC 16000000
+/*
+ *	UART Baud rate
+ */
+#define BAUD 9600
+
+/*
+ *	Value for UBRR0 register
+ */
+#define MYUBRR ((FOSC / 16 / BAUD) - 1)
+
+char USARTReadChar() {
+  while (!(UCSR0A & (1 << RXC0))) {
+  }
+  return UDR0;
 }
 
-char USARTReadChar() { // blocking
-	while(!(UCSR0A & (1<<RXC0))) {}
-	return UDR0;
+void USARTWriteChar(char data) {
+  while (!(UCSR0A & (1 << UDRE0))) {
+  }
+  UDR0 = data;
 }
 
-void USARTWriteChar(char data) { // blocking
-	while(!(UCSR0A & (1<<UDRE0))) {}
-	UDR0=data;
+void uwrite_str(char *buf) {
+  while (*buf) {
+    USARTWriteChar(*buf);
+    buf++;
+  }
 }
 
-void uwrite_hex(unsigned char n) {
-	if(((n>>4) & 15) < 10)
-		USARTWriteChar('0' + ((n>>4)&15));
-	else
-		USARTWriteChar('A' + ((n>>4)&15) - 10);
-	n <<= 4;
-	if(((n>>4) & 15) < 10)
-		USARTWriteChar('0' + ((n>>4)&15));
-	else
-		USARTWriteChar('A' + ((n>>4)&15) - 10);
+void uart_write_strn(uint8_t *buf, uint8_t n) {
+  for (char i = 0; i < n; i++) {
+    USARTWriteChar(*buf);
+    buf++;
+  }
 }
 
-void uwrite_str(char *str) {
-	char i;
-	
-	for(i=0; str[i]; i++)
-		USARTWriteChar(str[i]);
+void uwrite_hex(uint8_t n) {
+  if (((n >> 4) & 15) < 10)
+    USARTWriteChar('0' + ((n >> 4) & 15));
+  else
+    USARTWriteChar('A' + ((n >> 4) & 15) - 10);
+  n <<= 4;
+  if (((n >> 4) & 15) < 10)
+    USARTWriteChar('0' + ((n >> 4) & 15));
+  else
+    USARTWriteChar('A' + ((n >> 4) & 15) - 10);
 }
+
+void uart_write_32(uint32_t val) {
+  uwrite_hex(val >> 24);
+  uwrite_hex(val >> 16);
+  uwrite_hex(val >> 8);
+  uwrite_hex(val);
+}
+
+void USARTInit(unsigned long ubrr_value) {
+  /*
+   * Set Baud rate
+   */
+  UBRR0H = (unsigned char)(ubrr_value >> 8);
+  UBRR0L = (unsigned char)(ubrr_value & 255);
+
+  /*
+   *	Frame Format: asynchronous, no parity, 1 stop bit, char size 8
+   */
+  UCSR0C = (1 << UCSZ01) | (1 << UCSZ00);
+
+  /*
+   *	Enable The receiver and transmitter
+   */
+  UCSR0B = (1 << RXEN0) | (1 << TXEN0);
+
+  /*
+   *	flush output buffer, kind of a hack, should really be checking
+   *	buffer status
+   */
+  uwrite_str("\n\r\n\r");
+}
+
+#if defined ATMEGA328
 
 #define SPI_DDR DDRB
 #define SPI_PORT PORTB
@@ -50,6 +94,21 @@ void uwrite_str(char *str) {
 #define CS (1<<PB2)
 #define CS_ENABLE() (PORTB &= ~CS)
 #define CS_DISABLE() (PORTB |= CS)
+
+#elif defined ATMEGA2560
+
+#define SPI_DDR DDRB
+#define SPI_PORT PORTB
+#define MOSI (1<<PB2)
+#define MISO (1<<PB3)
+#define SCK (1<<PB1)
+
+#define CS_DDR DDRB
+#define CS (1<<PB0)
+#define CS_ENABLE() (PORTB &= ~CS)
+#define CS_DISABLE() (PORTB |= CS)
+
+#endif
 
 void SPI_init() {
 	CS_DDR |= CS; // SD card circuit select as output
@@ -88,7 +147,7 @@ void SD_command(unsigned char cmd, unsigned long arg, unsigned char crc, unsigne
 	SPI_write(arg);
 	SPI_write(crc);
 
-	// uwrite_str("sd: cmd sent: ");
+ //    uwrite_str("sd: cmd sent: ");
  //    dump_byte(cmd);
  //    dump_byte(arg >> 24);
  //    dump_byte(arg >> 16);
@@ -106,7 +165,7 @@ void SD_command(unsigned char cmd, unsigned long arg, unsigned char crc, unsigne
 		USARTWriteChar(' ');
 		uwrite_hex(buffer[i]);
 	}
-	
+
 	uwrite_str("\r\n");
 
 	if(buffer[1] & R1_IDLE_STATE)
@@ -128,8 +187,10 @@ void SD_command(unsigned char cmd, unsigned long arg, unsigned char crc, unsigne
 int main() {
 	char i;
 	
-	USARTInit(52); // 20 MHz / (16 * 19200 baud) - 1 = 64.104x
+	USARTInit(MYUBRR); // 20 MHz / (16 * 19200 baud) - 1 = 64.104x
 	SPI_init();
+
+	uwrite_str("test\r\n");
 
 	// ]r:10
 	CS_DISABLE();

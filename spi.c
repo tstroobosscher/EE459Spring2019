@@ -9,6 +9,10 @@
 #include "pins.h"
 #include "spi.h"
 #include "uart.h"
+#include "utils.h"
+
+#define UART_DBG(x)
+#define UART_DBG_HEX(x)
 
 static __attribute__((always inline)) void
 spi_initialize_slave_select(uint8_t pin) {
@@ -59,6 +63,7 @@ int8_t spi_device_enable(uint8_t dev) {
   case SPI_SD_CARD:
     if (pin_low(PIN_SS_SD) < 0)
       return -1;
+    UART_DBG("spi: SD slave select enabled\r\n");
     return 0;
   default:
     return -1;
@@ -71,6 +76,7 @@ int8_t spi_device_disable(uint8_t dev) {
   case SPI_SD_CARD:
     if (pin_high(PIN_SS_SD) < 0)
       return -1;
+    UART_DBG("spi: SD slave select disabled\r\n");
     return 0;
   default:
     return -1;

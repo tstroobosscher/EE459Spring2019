@@ -170,7 +170,7 @@ static const struct atmel_328_pin {
         ATMEL_PULL_DIS,
         &DDRB,
     },
-    /* 18 */
+    /* 18, MISO */
     {
         &PORTB,
         4,
@@ -412,7 +412,7 @@ static const struct atmel_328_pin {
         ATMEL_PULL_DIS,
         &DDRH,
     },
-    /* 19 */
+    /* 19, Slave Select SD */
     {
         &PORTB,
         0,
@@ -420,7 +420,7 @@ static const struct atmel_328_pin {
         ATMEL_PULL_DIS,
         &DDRB,
     },
-    /* 20 */
+    /* 20, SCK */
     {
         &PORTB,
         1,
@@ -428,7 +428,7 @@ static const struct atmel_328_pin {
         ATMEL_PULL_DIS,
         &DDRB,
     },
-    /* 21 */
+    /* 21, MOSI */
     {
         &PORTB,
         2,
@@ -436,12 +436,12 @@ static const struct atmel_328_pin {
         ATMEL_PULL_DIS,
         &DDRB,
     },
-    /* 22 */
+    /* 22, MISO */
     {
         &PORTB,
         3,
         ATMEL_INPUT,
-        ATMEL_PULL_DIS,
+        ATMEL_PULL_ENA,
         &DDRB,
     },
     /* 23 */
@@ -468,9 +468,8 @@ static const struct atmel_328_pin {
         ATMEL_PULL_DIS,
         &DDRB,
     },
-    /* 26 */
+    /* 26, Arduino Mega D13 - LED */
     {
-        26,
         &PORTB,
         7,
         ATMEL_OUTPUT,
@@ -1078,15 +1077,17 @@ void initialize_pins() {
   for (uint8_t i = 0; i < ARRAY_SIZE(atmega328_pins); i++) {
     if (atmega328_pins[i].port_reg != NULL) {
       if (atmega328_pins[i].pin_dir == ATMEL_OUTPUT) {
+        UART_DBG("pin_init: OUTPUT\r\n");
         *(atmega328_pins[i].dir_reg) |= (1 << atmega328_pins[i].port_num);
       } else if (atmega328_pins[i].pin_dir == ATMEL_INPUT) {
+        UART_DBG("pin_init: INPUT\r\n");
         *(atmega328_pins[i].dir_reg) &= ~(1 << atmega328_pins[i].port_num);
         /* set internal pull-ups if input pin */
         if (atmega328_pins[i].pull_up == ATMEL_PULL_ENA) {
           *(atmega328_pins[i].port_reg) |= (1 << atmega328_pins[i].port_num);
-        }
-      }
-    }
+        } else UART_DBG("pin_init: pull-up disabled\r\n");
+      } else UART_DBG("pin_init: neither input or output\r\n");
+    } else UART_DBG("pin_init: port reg NULL\r\n"); 
   }
 }
 
@@ -1130,9 +1131,9 @@ int8_t pin_high(uint8_t pin) {
       if (atmega328_pins[pin].pin_dir == ATMEL_OUTPUT) {
         *(atmega328_pins[pin].port_reg) |= (1 << atmega328_pins[pin].port_num);
         return 0;
-      }
-    }
-  }
+      } else UART_DBG("pin_high: not output\r\n");
+    } else UART_DBG("pin_high: NULL reg\r\n");
+  } else UART_DBG("pin_high: pin out of range\r\n");
 
   return -1;
 }
@@ -1144,9 +1145,9 @@ int8_t pin_low(uint8_t pin) {
       if (atmega328_pins[pin].pin_dir == ATMEL_OUTPUT) {
         *(atmega328_pins[pin].port_reg) &= ~(1 << atmega328_pins[pin].port_num);
         return 0;
-      }
-    }
-  }
+      } else UART_DBG("pin_low: not output\r\n");
+    } else UART_DBG("pin_low: NULL reg\r\n");
+  } else UART_DBG("pin_low: pin out of range\r\n");
 
   return -1;
 }

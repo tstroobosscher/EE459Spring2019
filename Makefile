@@ -7,7 +7,7 @@ MEGA = atmega2560
 
 # 7.3728MHz oscillator !  
 
-CLOCK      ?= 7372800
+CLOCK      ?= 16000000
 PROGRAMMER = -c usbtiny -p m2560 -F
 PORT ?= /dev/ttyACM0
 ARDUINO_PROGRAMMER = -c arduino -b 115200 -P $(PORT)
