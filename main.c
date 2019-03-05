@@ -50,17 +50,17 @@ int main() {
 
   /* software resources */
   if (initialize_sd(&sd) < 0)
-    uart_write_str("main: unable to initialize SD\r\n");
+    UART_DBG("main: unable to initialize SD\r\n");
   else 
     UART_DBG("main: initialized sd\r\n");
 
   if (initialize_io(&io, &sd) < 0)
-    uart_write_str("main: unable to initialize IO\r\n");
+    UART_DBG("main: unable to initialize IO\r\n");
   else
     UART_DBG("main: initialized IO\r\n");
 
   if (initialize_fat32(&fat32, &io, &sd) < 0)
-    uart_write_str("main: unable to initialize FAT32\r\n");
+    UART_DBG("main: unable to initialize FAT32\r\n");
   else
     UART_DBG("main: initialized fat32\r\n");
 
@@ -70,7 +70,7 @@ int main() {
                          (fat32.root_dir_sector * sd.sd_sector_size) +
                              (j * sizeof(struct FAT32Entry)),
                          sizeof(struct FAT32Entry)) < 0) {
-        uart_write_str("main: error reading FAT32 root entry\r\n");
+        UART_DBG("main: error reading FAT32 root entry\r\n");
         break;
       }
 
@@ -83,10 +83,10 @@ int main() {
 
   while (1) {
     if(pin_high(26) < 0)
-      uart_write_str("pin_high error\r\n");
+      UART_DBG("pin_high error\r\n");
     DELAY_MS(1000);
     if(pin_low(26) < 0)
-      uart_write_str("pin_low error\r\n");
+      UART_DBG("pin_low error\r\n");
     DELAY_MS(1000);
   }
 
