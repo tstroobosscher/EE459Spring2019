@@ -459,8 +459,24 @@ struct obd_cmd {
 
 int obd_print_cmd(struct obd_cmd *cmd) { printf("%s\n", cmd->cmd_str); return 0;}
 
-int obd_set_supported_ops(void *dat, int bytes, struct obd_ctx *ctx) {
-  return 0;
+void obd_set_supported_ops(uint32_t res, struct obd_ctx *ctx) {
+
+  ctx->linked_list = NULL;
+
+  /* skip the 0 pid, not in the return data */
+  for (int i = 1; i < ARRAY_SIZE(obd_cmds); i++)
+
+    /* 
+     *  the msb in the res corresponds to the lowest order pid, not the 00 pid
+     * 
+     *  offset for the 0 pid
+     *  
+     *  The 1 pid corresponds to the 32nd bitmask on the res32, which would be
+     *  shifted over 31 times, 0x20 - pid
+     */
+    if (res & (1 << (0x20 - obd_cmds[i].obd_pid)))
+
+      push_head(&ctx->linked_list, &obd_cmds[i], sizeof(struct obd_cmd));
 }
 
 int set_tty_attr(int fd, int speed, int parity) {
@@ -612,6 +628,34 @@ char *obd_resp(const char *cmd, char *buf) {
   return strstr(buf, pream);
 }
 
+int obd_fmt_resp(char *str) {
+
+  /* format the response string */
+  for (int i = 0; i < strlen(str); i++) {
+
+    if (isspace(str[i]))
+
+      /* skip the spaces */
+      continue;
+
+    /* should only be processing hex data */
+    else if (isxdigit(str[i])) {
+      str[n++] = str[i];
+    }
+  }
+
+  /* NULL terminate the formatted response string */
+  str[n] = '\0';
+
+  /* check for evenness */
+  if ((strlen(data) % 2))
+
+    /* incorrect response length */
+    return -1;
+
+  return 0;
+}
+
 int obd_command(int device, const char *cmd, void *dat, int size) {
   /*
    *	send cmd of 4 bytes to device, expect size bytes and put into dat
@@ -662,41 +706,22 @@ int obd_command(int device, const char *cmd, void *dat, int size) {
     return -1;
   }
 
-  /* format the response string */
-  for (int i = 0; i < strlen(data); i++) {
-
-    if (isspace(data[i]))
-
-      /* skip the spaces */
-      continue;
-
-    /* should only be processing hex data */
-    else if (isxdigit(data[i])) {
-      data[n++] = data[i];
-    }
+  /* place all the hex chars into sequential order with no whitespace */
+  if(obd_fmt_resp(data) < 0 ) {
+    printf("obd_command: unable to format response\n");
+    return -1;
   }
 
-  /* NULL terminate the formatted response string */
-  data[n] = '\0';
-
-  /* check for evenness */
-  if ((strlen(data) % 2) || (strlen(data)/2 != size))
-
-    /* incorrect response length */
-    return -1;
-
-  printf("string: %s\n", data);
-
-  /* there should only be an even number of hex char's now */
-  for (int i = 0; i < size; i++) {
+   /* there should only be an even number of hex char's now */
+  for (int i = 0; i < strlen(data)/2; i++) {
 
     /* grab each byte string, convert to unsigned char */
     char ch[3] = {data[i * 2], data[i * 2 + 1], '\0'};
 
-    printf("%s\n", ch);
+    //printf("%s\n", ch);
 
-    /* strlen(data)/2 should also be equal to size */
-    ret[i] = (unsigned char)strtol(ch, 0, HEX_BASE);
+    /* strlen(data)/2 should also be equal to size NO! size is the max buf*/
+    ret[i] = (unsigned char) strtol(ch, 0, HEX_BASE);
   }
 
   return 0;
@@ -748,24 +773,6 @@ int initialize_obd(int device, struct obd_ctx *ctx) {
   uint32_t res =
       (dat[2] << 24) | (dat[3] << 16) | (dat[4] << 8) | (dat[5] << 0);
 
-  printf("%08X", res);
-
-  ctx->linked_list = NULL;
-
-  /* skip the 0 pid, not in the return data */
-  for (int i = 1; i < ARRAY_SIZE(obd_cmds); i++)
-
-    /* 
-     *  the msb in the res corresponds to the lowest order pid, not the 00 pid
-     * 
-     *  offset for the 0 pid
-     *  
-     *  The 1 pid corresponds to the 32nd bitmask on the res32, which would be
-     *  shifted over 31 times, 0x20 - pid
-     */
-    if (res & (1 << (0x20 - obd_cmds[i].obd_pid)))
-      push_head(&ctx->linked_list, &obd_cmds[i], sizeof(struct obd_cmd));
-
   dump_list(ctx->linked_list, obd_print_cmd);
 
   return 0;
@@ -804,6 +811,10 @@ int main(int argc, char *argv[]) {
 
   if (initialize_obd(fd, &obd) < 0)
     printf("initialize_obd: error\n");
+
+  while(1) {
+
+  }
 
   return 0;
 }
