@@ -332,6 +332,7 @@ This just pulls in other peoples changes into your own local repository.
 | February 21, 2019 | d37c9837 | 10.1% | 42.9% |
 | February 21, 2019 | f63b8958 | 11.2% | 43.1% |
 | February 24, 2019 | 46822e93 | 16.2% | 73.0% |
+| March 5, 2019 | d7c76f37 | 3.2% | 30.8% | <-- 8K SRAM |
 
 ## Issues
 Programming the board while using SPI devices can cause bus contention and can
