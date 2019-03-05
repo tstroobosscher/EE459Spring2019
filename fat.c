@@ -154,6 +154,34 @@ int8_t initialize_fat32(struct fat32_ctx *fat32, struct io_ctx *io,
   return 0;
 }
 
-int8_t fat32_read_file(struct fat32_ctx *ctx, struct FAT32Entry *e) {
-  
+int8_t fat32_open_file(struct fat32_ctx *ctx, struct FAT32Entry *e, struct io_ctx *io, struct fat32_file *file) {
+  /*
+   *  create a linked list that holds the fat table entries, size of the file
+   *  it's not necessary to buffer the entire file, but perform the 
+   *  calculations necessary to find the particular block corresponding to a
+   *  requested byte.
+   *  
+   *  First need the cluster address of the entry. That indexes the 32 bit 
+   *  (FAT32) number in the fat which is at the block offset of 
+   *  fat32->fat_begin_sector For every byte in the fat that isnt the end int:
+   *  0xFFFFFFFF. 
+   *  
+   *  for each list item, we just need to save the index of the fat table that
+   *  item stays in.
+   *  
+   *  for each byte we need to check if it sits outside the bounds of the 
+   *  buffer, so it makes sense to first implement the byte reading function,
+   *  and then write the nbytes function 
+   */
+
+    uint32_t fat_address;
+
+    do {
+      if(io_read_nbytes(io, &fat_address, ctx->fat_begin_sector + e->cluster_begin_lba, sizeof(fat32_ctx) < 0)
+        return -1;
+
+      push_head(/* file_ctx pointer memer, the uint 32 (dynamic) */);
+
+    } while(fat_address != 0xFFFFFFFF /* && not outside the boundary */);
+
 }

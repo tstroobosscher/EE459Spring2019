@@ -268,6 +268,15 @@ struct fat32_ctx {
   uint32_t fat_begin_sector;
 };
 
+struct fat32_file {
+  /*
+   *  holds file size, pointer to linked list head of the fat map
+   *  
+   *  The number of list items times the sector size should give 
+   *  the upper bound of the file size.
+   */
+};
+
 int8_t initialize_fat32(struct fat32_ctx *fat32, struct io_ctx *io,
                         struct sd_ctx *sd);
 

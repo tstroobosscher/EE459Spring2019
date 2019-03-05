@@ -14,4 +14,3 @@ struct node {
 void push_head(struct node **head, void *data, size_t bytes);
 
 #endif
-
