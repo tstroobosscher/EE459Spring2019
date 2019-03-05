@@ -37,7 +37,7 @@ void initialize_spi() {
   SPCR |= (1 << SPE);
 
   /* master device */
-  SPCR |= (1 << MSTR);
+  SPCR |= (1 << MSTR) | (1<<SPR0);;
 
   /*
    *	We will need to see how fast we can use SPI, the board might cause

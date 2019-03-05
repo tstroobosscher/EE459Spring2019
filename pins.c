@@ -170,7 +170,7 @@ static const struct atmel_328_pin {
         ATMEL_PULL_DIS,
         &DDRB,
     },
-    /* 18 */
+    /* 18, MISO */
     {
         &PORTB,
         4,
@@ -432,16 +432,16 @@ static const struct atmel_328_pin {
     {
         &PORTB,
         2,
-        ATMEL_OUTPUT,
+        ATMEL_INPUT,
         ATMEL_PULL_DIS,
         &DDRB,
     },
-    /* 22 */
+    /* 22, MISO */
     {
         &PORTB,
         3,
         ATMEL_INPUT,
-        ATMEL_PULL_DIS,
+        ATMEL_PULL_ENA,
         &DDRB,
     },
     /* 23 */

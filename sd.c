@@ -13,9 +13,6 @@
 #include "uart.h"
 #include "utils.h"
 
-#define UART_DBG(x)
-#define UART_DBG_HEX(x)
-
 static __attribute__((always inline)) int8_t sd_wake_up() {
   /* enable sd card */
   if (spi_device_enable(SPI_SD_CARD) < 0)
@@ -23,15 +20,21 @@ static __attribute__((always inline)) int8_t sd_wake_up() {
     /* sanity check */
     return -1;
 
+  UART_DBG("sd: SD slave select enabled\r\n");
+
   /* 80 clocks, init card */
   for (uint8_t i = 0; i < 10; i++)
     spi_write_char(0xFF);
+
+  UART_DBG("sd: 80 clocks send to SPI bus\r\n");
 
   /* disable sd card */
   if (spi_device_disable(SPI_SD_CARD) < 0)
 
     /* sanity check */
     return -1;
+
+  UART_DBG("sd: SD slave select disabled\r\n");
 
   return 0;
 }
@@ -40,9 +43,9 @@ static __attribute__((always inline)) int8_t sd_is_busy() {
 
   /* true/false logic */
   if (spi_read_char() == 0xFF)
-    return 0;
-  else
     return 1;
+  else
+    return 0;
 }
 
 static __attribute__((always inline)) uint8_t
@@ -242,6 +245,8 @@ int8_t initialize_sd(struct sd_ctx *sd) {
     if (++trials > MAX_CMD_TRIALS)
       goto failure;
   }
+
+  UART_DBG("sd: CMD0 succesful\r\n");
 
   while (sd_is_busy()) {
     /* need timeout */

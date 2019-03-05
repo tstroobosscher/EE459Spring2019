@@ -54,8 +54,8 @@
 #define CMD8_CRC 0x87
 #define NOCRC 0xFF
 
-#define CMD0 0x40
-#define CMD1 0x40 | 0
+#define CMD0 0x40 | 0
+#define CMD1 0x40 | 1
 #define CMD8 0x40 | 8
 #define CMD16 0x40 | 16
 #define CMD17 0x40 | 17
