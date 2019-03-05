@@ -6,12 +6,10 @@
 #define UTILS_H
 
 #include <stdint.h>
+#include <util/delay.h>
+
 
 #include "debug.h"
-
-#ifndef DEBUG_86
-#include <util/delay.h>
-#endif
 
 #define ATMEGA2560
 

@@ -11,22 +11,15 @@
 #include "uart.h"
 #include "utils.h"
 
-#define UART_DBG(x)
-#define UART_DBG_HEX(x)
-
 static __attribute__((always inline)) void
 spi_initialize_slave_select(uint8_t pin) {
 /*
  *	Initialize slave select pin with active high
  */
-#ifdef DEBUG_328
   if (pin_high(pin) < 0)
-    uart_write_str("spi: unable to initialize slave select pin\n\r");
+    UART_DBG("spi: unable to initialize slave select pin\n\r");
   else
-    uart_write_str("spi: succesfully initialized slave select pin\n\r");
-#else
-  pin_high(pin);
-#endif
+    UART_DBG("spi: succesfully initialized slave select pin\n\r");
 }
 
 void initialize_spi() {

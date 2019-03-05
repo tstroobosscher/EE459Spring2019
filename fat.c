@@ -153,3 +153,7 @@ int8_t initialize_fat32(struct fat32_ctx *fat32, struct io_ctx *io,
 
   return 0;
 }
+
+int8_t fat32_read_file(struct fat32_ctx *ctx, struct FAT32Entry *e) {
+  
+}
