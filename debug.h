@@ -15,6 +15,8 @@
  */
 #define DEBUG
 
+#define ATMEGA2560
+
 #define ARDUINO
 
 #ifdef DEBUG

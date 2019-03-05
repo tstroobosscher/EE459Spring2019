@@ -71,8 +71,6 @@ void initialize_uart(unsigned long ubrr_value) {
    */
   UCSR0B = (1 << RXEN0) | (1 << TXEN0);
 
-  UCSR0A = (1 << U2X0);
-
   /*
    *	flush output buffer, kind of a hack, should really be checking
    *	buffer status
