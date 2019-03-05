@@ -88,7 +88,7 @@ static const enum {
  *		28:	(Analog)
  */
 
-#ifdef ATMEGA328
+#if defined ATMEGA328
 
 #define PIN_RX 2
 #define PIN_TX 3

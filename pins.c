@@ -412,7 +412,7 @@ static const struct atmel_328_pin {
         ATMEL_PULL_DIS,
         &DDRH,
     },
-    /* 19 */
+    /* 19, Slave Select SD */
     {
         &PORTB,
         0,
@@ -420,7 +420,7 @@ static const struct atmel_328_pin {
         ATMEL_PULL_DIS,
         &DDRB,
     },
-    /* 20 */
+    /* 20, SCK */
     {
         &PORTB,
         1,
@@ -428,11 +428,11 @@ static const struct atmel_328_pin {
         ATMEL_PULL_DIS,
         &DDRB,
     },
-    /* 21 */
+    /* 21, MOSI */
     {
         &PORTB,
         2,
-        ATMEL_INPUT,
+        ATMEL_OUTPUT,
         ATMEL_PULL_DIS,
         &DDRB,
     },
@@ -1085,9 +1085,9 @@ void initialize_pins() {
         /* set internal pull-ups if input pin */
         if (atmega328_pins[i].pull_up == ATMEL_PULL_ENA) {
           *(atmega328_pins[i].port_reg) |= (1 << atmega328_pins[i].port_num);
-        }
-      }
-    }
+        } else UART_DBG("pin_init: pull-up disabled\r\n");
+      } else UART_DBG("pin_init: neither input or output\r\n");
+    } else UART_DBG("pin_init: port reg NULL\r\n"); 
   }
 }
 

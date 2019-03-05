@@ -147,7 +147,7 @@ void SD_command(unsigned char cmd, unsigned long arg, unsigned char crc, unsigne
 	SPI_write(arg);
 	SPI_write(crc);
 
-	// uwrite_str("sd: cmd sent: ");
+ //    uwrite_str("sd: cmd sent: ");
  //    dump_byte(cmd);
  //    dump_byte(arg >> 24);
  //    dump_byte(arg >> 16);

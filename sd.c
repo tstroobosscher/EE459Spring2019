@@ -13,6 +13,9 @@
 #include "uart.h"
 #include "utils.h"
 
+#define UART_DBG(x)
+#define UART_DBG_HEX(x)
+
 static __attribute__((always inline)) int8_t sd_wake_up() {
   /* enable sd card */
   if (spi_device_disable(SPI_SD_CARD) < 0)
@@ -33,8 +36,15 @@ static __attribute__((always inline)) int8_t sd_wake_up() {
 
 static __attribute__((always inline)) int8_t sd_is_busy() {
 
-  /* true/false logic */
-  if (spi_read_char() == 0xFF)
+  /* true/false logic, yes the sd card is busy if not 0xFF */
+
+  uint8_t ch = spi_read_char();
+
+  UART_DBG("SPI busy char: ");
+  UART_DBG_HEX(ch);
+  UART_DBG("\r\n");
+
+  if (ch != 0xFF)
     return true;
   else
     return false;
@@ -55,9 +65,6 @@ sd_command(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t bytes,
    */
 
   spi_device_enable(SPI_SD_CARD);
-
-  while (sd_is_busy()) {
-  }
 
   spi_write_char(cmd);
   spi_write_char(arg >> 24);
@@ -89,10 +96,13 @@ sd_command(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t bytes,
 
       DELAY_MS(10);
 
-      if (++trials >= MAX_CMD_TRIALS)
+      if (++trials >= MAX_CMD_TRIALS) {
+
+        UART_DBG("\r\n");
 
         /* MSB set is an error response */
         return R1_RESPONSE_ERR;
+      }
 
     } while ((ret & RET_MSB_MASK) == RET_MSB_MASK);
 
@@ -215,10 +225,17 @@ int8_t initialize_sd(struct sd_ctx *sd) {
   uint8_t ret;
   int trials;
 
-  if (sd_wake_up() < 0)
+  // if (sd_wake_up() < 0)
 
-    /* unhandled error */
-    goto failure;
+  //    unhandled error 
+  //   goto failure;
+  
+  spi_device_disable(SPI_SD_CARD);
+
+  /* 80 clocks, init card */
+  for (uint8_t i = 0; i < 10; i++)
+    spi_write_char(0xFF);
+
 
   UART_DBG("sd: sd card woken up\r\n");
   DELAY_MS(10);
@@ -227,7 +244,7 @@ int8_t initialize_sd(struct sd_ctx *sd) {
   trials = 0;
 
   /* send CMD0, get IDLE state */
-  while (sd_command(CMD0, 0x00, CMD0_CRC, 0,
+  while (sd_command(0x40 | 0, 0x00, 0x95, 0,
                     NULL) != R1_IDLE_STATE) {
 
     UART_DBG("sd: CMD0 error\r\n");
