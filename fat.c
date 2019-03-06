@@ -170,7 +170,10 @@ int8_t fat32_is_last_cluster(uint32_t dat) {
     return false;
 }
 
-int8_t fat32_get_fat(struct fat32_ctx *ctx, struct io_ctx *io, uint32_t first_cluster) {
+int8_t fat32_get_fat(struct fat32_ctx *ctx, struct io_ctx *io, uint32_t first_cluster, struct node **ptr) {
+  /*
+   *  traverse the fat, create a heap structure pointing to a linked list containing the values, return by reference
+   */
   
   struct node *n = NULL;
 
@@ -200,7 +203,7 @@ int8_t fat32_get_fat(struct fat32_ctx *ctx, struct io_ctx *io, uint32_t first_cl
 
   } while(!fat32_is_last_cluster(next_address));
 
-  ctx->fat_list = n;
+  (*ptr) = n;
 
   return 0;
 }
@@ -231,7 +234,7 @@ int8_t fat32_open_file(struct fat32_ctx *ctx, struct FAT32Entry *e, struct io_ct
    */
 
   /* lets build the 64 bit value and store in the context */
-  if(fat32_get_fat(ctx, io, fat32_calc_first_cluster(e->first_cluster_addr_high, e->first_cluster_addr_low)) < 0)
+  if(fat32_get_fat(ctx, io, fat32_calc_first_cluster(e->first_cluster_addr_high, e->first_cluster_addr_low), &(ctx->fat_list)) < 0)
     return -1;
 
 
