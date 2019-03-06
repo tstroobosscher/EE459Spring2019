@@ -51,6 +51,33 @@ struct fat32_file file;
 
 int main() {
 
+  char *str = 
+	"1606\n"
+	"THE TRAGEDY OF MACBETH\n"
+	"\n"
+	"\n"
+	"by Walliam Shakespeare\n"
+	"\n"
+	"\n"
+	"\n"
+	"Dramatis Personae\n"
+	"\n"
+	"  DUNCAN, King of Scotland\n"
+  	"  MACBETH, Thane of Glamis and Cawdor, a general in the King's\n"
+	"army\n"
+  	"  LADY MACBETH, his wife\n"
+  	"  MACDUFF, Thane of Fife, a nobleman of Scotland\n"
+  	"  LADY MACDUFF, his wife\n"
+  	"  MALCOLM, elder son of Duncan\n"
+  	"  DONALBAIN, younger son of Duncan\n"
+  	"  BANQUO, Thane of Lochaber, a general in the King's army\n"
+  	"  FLEANCE, his son\n"
+  	"  LENNOX, nobleman of Scotland\n"
+  	"  ROSS, nobleman of Scotland\n"
+  	"  MENTEITH nobleman of Scotland\n"
+  	"  ANGUS,";
+
+  
   /* atmel hardware */
   initialize_pins();
 
@@ -80,6 +107,20 @@ int main() {
   else
     UART_DBG("main: initialized fat32\r\n");
 
+  /* main routines */
+
+  uint8_t ret;
+  
+  if((ret = sd_put_sector(0x00007E78, str, 512)) == 0xFF)
+    UART_DBG("main unable to write block\r\n");
+  else
+    UART_DBG("main: write block successful, return: 0x");
+    UART_DBG_HEX(ret);
+    UART_DBG("\r\n");
+
+  while(sd_is_busy()){
+  }
+  
 loop:
 
   while (1) {

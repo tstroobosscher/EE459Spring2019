@@ -14,8 +14,8 @@
 #include "utils.h"
 
 /* turn off SD dbg messages */
-#define UART_DBG(x)
-#define UART_DBG_HEX(x)
+//#define UART_DBG(x)
+//#define UART_DBG_HEX(x)
 
 static __attribute__((always inline)) int8_t sd_wake_up() {
   /* enable sd card */
@@ -35,7 +35,7 @@ static __attribute__((always inline)) int8_t sd_wake_up() {
   return 0;
 }
 
-static __attribute__((always inline)) int8_t sd_is_busy() {
+int8_t sd_is_busy() {
 
   /* true/false logic, yes the sd card is busy if not 0xFF */
 
@@ -153,6 +153,16 @@ static __attribute__((always inline)) uint8_t sd_get_resp_byte(uint8_t *buf,
   return 0xFF;
 }
 
+uint8_t sd_cmd_resp() {
+  uint8_t ret;
+  
+  for(uint8_t i = 0; i < 8; i++)
+    if(!(ret = spi_read_char() & 0x80))
+       return ret;
+
+  return 0xFF;
+}
+
 static __attribute__((always inline)) int8_t sd_find_resp_byte(uint8_t *buf,
                                                                uint8_t size) {
   for (uint8_t i = 0; i < size; i++)
@@ -218,6 +228,30 @@ static __attribute__((always inline)) int8_t sd_init_read_sector(uint32_t arg) {
 
   spi_device_disable(SPI_SD_CARD);
   return 0;
+}
+
+int8_t sd_init_put_sector(uint32_t addr) {
+  uint16_t trials = 0;
+
+  spi_device_enable(SPI_SD_CARD);
+
+  while(sd_is_busy()) {
+  }
+
+  do {
+    if(++trials > 4)
+      return -1;
+    
+    spi_write_char(CMD24);
+    spi_write_char(addr >> 24);
+    spi_write_char(addr >> 16);
+    spi_write_char(addr >> 8);
+    spi_write_char(addr);
+  } while((sd_cmd_resp() != 0x00));
+
+  spi_device_disable(SPI_SD_CARD);
+  return 0;
+		 
 }
 
 /* export */
@@ -427,6 +461,40 @@ int16_t sd_get_sector(struct sd_ctx *sd, uint32_t addr, uint8_t *buf,
   return 0;
 }
 
-int8_t sd_put_sector(struct sd_ctx *sd, uint32_t addr, uint8_t *buf, uint16_t size) {
+void sd_put_bytes(void *buf, uint16_t size) {
+  uint8_t *ptr = (uint8_t *) buf;
+
+  /* send the begin token */
+  spi_write_char(0xFE);
+
+  /* write the data */
+  for(uint16_t i = 0; i < size; i++)
+    spi_write_char(ptr[i]);
+
+  /* send the 'CRC' */
+  spi_write_char(0xFF);
+  spi_write_char(0xFF);
+}
+
+uint8_t sd_put_sector(uint32_t addr, uint8_t *buf, uint16_t size) {
+
+  if(sd_init_put_sector(addr) < 0) {
+    UART_DBG("sd: unable to initialize write sector\r\n");
+    return -1;
+  }
+
+  UART_DBG("sd: successfully initialized write sector\r\n");
+  
+  sd_put_bytes(buf, size);
+
+  UART_DBG("sd: wrote out block\r\n");
+
+  uint8_t ret;
+  
+  for(uint8_t i = 0; i < 16; i++)
+    if((ret = spi_read_char()) & 0x11 == 0x01)
+      return ret;
+
+  return 0xFF;
   
 }
