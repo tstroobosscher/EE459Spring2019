@@ -86,14 +86,14 @@ int8_t fat32_parse_entry(struct FAT32Entry *e) {
   return 0;
 }
 
-void fat32_set_partition(struct fat32_ctx *fat32, struct PartitionTable pt[]) {
+static __attribute__((always inline)) void fat32_set_partition(struct fat32_ctx *fat32, struct PartitionTable pt[]) {
    /* lets just worry about the first partition */
   fat32->partition_type = pt[0].partition_type;
   fat32->start_sector = pt[0].start_sector;
   fat32->length_sectors = pt[0].length_sectors;
 }
 
-void fat32_set_context(struct fat32_ctx *fat32, struct FAT32BootSector *bs) {
+static __attribute__((always inline)) void fat32_set_context(struct fat32_ctx *fat32, struct FAT32BootSector *bs) {
 
   /*
    *  Grab the relevant information from BS, then process, then recycle
@@ -118,74 +118,20 @@ void fat32_set_context(struct fat32_ctx *fat32, struct FAT32BootSector *bs) {
   fat32->fat_list = NULL;
 }
 
-int8_t initialize_fat32(struct fat32_ctx *fat32, struct io_ctx *io,
-                        struct sd_ctx *sd) {
-  /* read the partition table */
-
-  struct FAT32Entry e;
-  struct PartitionTable pt[PARTITION_TABLE_ENTRIES];
-  struct FAT32BootSector bs;
-
-  if (sd->sd_status == SD_DISABLED)
-    return 0;
-
-  if (io_read_nbytes(io, &pt, PARTITION_TABLE_OFFSET,
-                     sizeof(struct PartitionTable) * PARTITION_TABLE_ENTRIES) <
-      0) {
-    UART_DBG("fat32: error reading partition table\r\n");
-    return -1;
-  }
-
-  UART_DBG_BIN(&pt, sizeof(struct PartitionTable) * PARTITION_TABLE_ENTRIES);
-
-  fat32_set_partition(fat32, &pt);
-
-  UART_DBG("fat32: start sector: ");
-  UART_DBG_32(fat32->start_sector);
-  UART_DBG("\r\n");
-
-  if ((fat32->partition_type == PARTITION_TYPE_FAT32_LT2G) ||
-      (fat32->partition_type == PARTITION_TYPE_FAT32_LBA)) {
-
-    UART_DBG("fat32: FAT32 partition found\r\n");
-  } else {
-
-    /* partition 0 is not FAT32 */
-    UART_DBG("fat32: partition 0 is not FAT32\r\n");
-    return -1;
-  }
-
-  /* read the boot sector */
-  if (io_read_nbytes(io, &bs, SECTOR_SIZE_BYTES * pt[0].start_sector,
-                     sizeof(struct FAT32BootSector)) < 0) {
-    UART_DBG("fat32: error reading FAT32 boot sector\r\n");
-    return -1;
-  }
-
-  UART_DBG_BIN(&bs, sizeof(struct FAT32BootSector));
-
-  fat32_set_context(fat32, &bs);
-
-  if(fat32_cache_root_dir(fat32, sd, io, &e) < 0)
-    return -1;
-
-  return 0;
-}
-
-void fat32_dump_address(uint32_t *dat) {
+static __attribute__((always inline)) void fat32_dump_address(uint32_t *dat) {
   uart_write_str("fat list item: ");
   uart_write_32(*dat);
   uart_write_str("\r\n");
 }
 
-int8_t fat32_is_last_cluster(uint32_t dat) {
+static __attribute__((always inline)) int8_t fat32_is_last_cluster(uint32_t dat) {
   if((0x0FFFFFFF & dat)  >= 0x0FFFFFF8)
     return true;
   else
     return false;
 }
 
-int8_t fat32_get_fat(struct fat32_ctx *ctx, struct io_ctx *io, uint32_t first_cluster, struct node **ptr) {
+static __attribute__((always inline)) int8_t fat32_get_fat(struct fat32_ctx *ctx, struct io_ctx *io, uint32_t first_cluster, struct node **ptr) {
   /*
    *  traverse the fat, create a heap structure pointing to a linked list containing the values, return by reference
    */
@@ -263,7 +209,7 @@ int8_t fat32_open_file(struct fat32_ctx *ctx, struct FAT32Entry *e, struct io_ct
   return 0;
 }
 
-int8_t fat32_cache_root_dir(struct fat32_ctx *ctx, struct sd_ctx *sd, struct io_ctx *io, struct FAT32Entry *e) {
+static __attribute__((always inline)) int8_t fat32_cache_root_dir(struct fat32_ctx *ctx, struct sd_ctx *sd, struct io_ctx *io, struct FAT32Entry *e) {
   /*
    *  parse the root directory, cache the values of the entries that are
    *  actually files, their indexes, etc. the root directory in fat32 is
@@ -278,8 +224,10 @@ int8_t fat32_cache_root_dir(struct fat32_ctx *ctx, struct sd_ctx *sd, struct io_
   /* need an upper bound on the number of entries. sizeof(fat) / sizeof(entry) ? */
 
   /* first traverse the fat */
-  if(fat32_get_fat(ctx, io, ctx->cluster_number_root_dir, &(ctx->fat_list)) < 0)
+  if(fat32_get_fat(ctx, io, ctx->cluster_number_root_dir, &(ctx->fat_list)) < 0) {
+    UART_DBG("fat32: unable to get FAT\r\n");
     return -1;
+  }
 
   list_dump(ctx->fat_list, fat32_dump_address);
 
@@ -305,6 +253,7 @@ int8_t fat32_cache_root_dir(struct fat32_ctx *ctx, struct sd_ctx *sd, struct io_
     if((e->file_attr == FILENAME_NEVER_USED) || (e->file_attr == FILENAME_FILE_DELETED) || ((e->file_attr & 0x0F) == 0x0F))
       continue;
 
+    /* we should also keep a list to track directory entries, really no need to open files here */
     uart_write_str("main: file\r\n");
     fat32_open_file(ctx, e, io, &file);
 
@@ -313,10 +262,68 @@ int8_t fat32_cache_root_dir(struct fat32_ctx *ctx, struct sd_ctx *sd, struct io_
     fat32_dump_file_meta(&file);
     fat32_close_file(ctx, &file);
   }
+
+  return 0;
 }
 
 void fat32_close_root_dir(struct fat32_ctx *ctx) {
 
+}
+
+int8_t initialize_fat32(struct fat32_ctx *fat32, struct io_ctx *io,
+                        struct sd_ctx *sd) {
+  /* read the partition table */
+
+  struct FAT32Entry e;
+  struct PartitionTable pt[PARTITION_TABLE_ENTRIES];
+  struct FAT32BootSector bs;
+
+  if (sd->sd_status == SD_DISABLED)
+    return 0;
+
+  if (io_read_nbytes(io, &pt, PARTITION_TABLE_OFFSET,
+                     sizeof(struct PartitionTable) * PARTITION_TABLE_ENTRIES) <
+      0) {
+    UART_DBG("fat32: error reading partition table\r\n");
+    return -1;
+  }
+
+  UART_DBG_BIN(&pt, sizeof(struct PartitionTable) * PARTITION_TABLE_ENTRIES);
+
+  fat32_set_partition(fat32, &pt);
+
+  UART_DBG("fat32: start sector: ");
+  UART_DBG_32(fat32->start_sector);
+  UART_DBG("\r\n");
+
+  if ((fat32->partition_type == PARTITION_TYPE_FAT32_LT2G) ||
+      (fat32->partition_type == PARTITION_TYPE_FAT32_LBA)) {
+
+    UART_DBG("fat32: FAT32 partition found\r\n");
+  } else {
+
+    /* partition 0 is not FAT32 */
+    UART_DBG("fat32: partition 0 is not FAT32\r\n");
+    return -1;
+  }
+
+  /* read the boot sector */
+  if (io_read_nbytes(io, &bs, SECTOR_SIZE_BYTES * pt[0].start_sector,
+                     sizeof(struct FAT32BootSector)) < 0) {
+    UART_DBG("fat32: error reading FAT32 boot sector\r\n");
+    return -1;
+  }
+
+  UART_DBG_BIN(&bs, sizeof(struct FAT32BootSector));
+
+  fat32_set_context(fat32, &bs);
+
+  if(fat32_cache_root_dir(fat32, sd, io, &e) < 0) {
+    UART_DBG("fat32: unable to cache root directory\r\n");
+    return -1;
+  }
+
+  return 0;
 }
 
 void fat32_dump_file_meta(struct fat32_file *file) {
