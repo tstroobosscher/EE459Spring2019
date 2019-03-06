@@ -11,20 +11,29 @@
 /*
  *	the strategy is to abstract the flash reading and writing to placing
  *	and getting bytes, everything else can be handled at the byte level
+ *	
+ *	the address space of the io module is the entire SD card
  */
 
 /* the io DBG's spam the log, lets just keep them quiet for now */
 #define UART_DBG(x)
 #define UART_DBG_HEX(x)
 
-uint8_t initialize_io(struct io_ctx *io, struct sd_ctx *sd) {
+int8_t initialize_io(struct io_ctx *io, struct sd_ctx *sd) {
 	/* get first sector, set sector pointer */
 
-	if(sd_get_sector(sd, 0, io->sector_buf, sd->sd_sector_size) < 0)
+	if(sd_get_sector(sd, 0, io->input_sector_buf, sd->sd_sector_size) < 0)
 		return -1;
 
-	io->sector_addr = 0;
-	io->byte_addr = 0;
+	if(sd_get_sector(sd, 0, io->output_sector_buf, sd->sd_sector_size) < 0)
+		return -1;
+
+	io->input_sector_addr = 0;
+	io->input_byte_addr = 0;
+
+	io->output_sector_addr = 0;
+	io->input_byte_addr = 0;
+
 	io->sd = sd;
 
 	return 0;
@@ -62,18 +71,18 @@ static __attribute__((always inline))
 	uint32_t sector_offset = offset % io->sd->sd_sector_size;
 
 	/* current sector is not the required sector, get the correct one */
-	if(sector_addr != io->sector_addr) {
-		if(sd_get_sector(io->sd, sector_addr, io->sector_buf, 
+	if(sector_addr != io->input_sector_addr) {
+		if(sd_get_sector(io->sd, sector_addr, io->input_sector_buf, 
 			io->sd->sd_sector_size) < 0 ) {
 			return -1;
 		}
 
-		io->sector_addr = sector_addr;
+		io->input_sector_addr = sector_addr;
 	}
 
-	*buf = io->sector_buf[sector_offset];
+	*buf = io->input_sector_buf[sector_offset];
 
-	io->byte_addr = sector_addr + sector_offset;
+	io->input_byte_addr = sector_addr + sector_offset;
 
 	UART_DBG("io: byte received: ");
 	UART_DBG_HEX(*buf);
@@ -83,7 +92,7 @@ static __attribute__((always inline))
 }
 
 /* export one function, inline the previous ones */
-uint8_t io_read_nbytes(struct io_ctx *io, void *buf, uint32_t offset, 
+int8_t io_read_nbytes(struct io_ctx *io, void *buf, uint32_t offset, 
 	uint32_t nbytes) {
 
 	uint8_t *ptr = (uint8_t *) buf;
@@ -95,4 +104,38 @@ uint8_t io_read_nbytes(struct io_ctx *io, void *buf, uint32_t offset,
 
 	return 0;
 
+}
+
+int8_t io_put_byte(struct io_ctx *io, uint32_t offset, uint8_t *buf) {
+	/*
+	 *	Writing is a little more complex. First we have to write out the
+	 *	previous block, then we have to bring in the block that was requested, 
+	 *	then modify the content of that block, and either force it out,
+	 *	let the watchdog timer handle it, or let it write out when the blocks
+	 *	switch
+	 */
+
+	/* sector address is the byte address divided by the sector size */
+	uint32_t sector_addr = (offset >> 9);
+
+	/* intra sector address of the specified byte */
+	uint32_t sector_offset = offset % io->sd->sd_sector_size;
+
+	/* current sector is not the required sector, get the correct one */
+	if(sector_addr != io->output_sector_addr) {
+		if(sd_get_sector(io->sd, sector_addr, io->output_sector_buf, 
+			io->sd->sd_sector_size) < 0 ) {
+			return -1;
+		}
+
+		io->output_sector_addr = sector_addr;
+	}
+
+	*buf = io->output_sector_buf[sector_offset];
+
+	io->output_byte_addr = sector_addr + sector_offset;
+
+	UART_DBG("io: byte written: ");
+	UART_DBG_HEX(*buf);
+	UART_DBG("\r\n");
 }

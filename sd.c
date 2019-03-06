@@ -426,3 +426,7 @@ int16_t sd_get_sector(struct sd_ctx *sd, uint32_t addr, uint8_t *buf,
 
   return 0;
 }
+
+int8_t sd_put_sector(struct sd_ctx *sd, uint32_t addr, uint8_t *buf, uint16_t size) {
+  
+}

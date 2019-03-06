@@ -17,16 +17,28 @@
 struct io_ctx {
 
 	/* pointer to current sector */
-	uint16_t sector_addr;
+	uint16_t input_sector_addr;
 
 	/* pointer to current byte */
-	uint64_t byte_addr;
+	uint64_t input_byte_addr;
 
 	/* sector buffer */
-	uint8_t sector_buf[SECTOR_SIZE];
+	uint8_t input_sector_buf[SECTOR_SIZE];
 
 	/* sector checksum */
-	uint16_t sector_crc;
+	uint16_t input_sector_crc;
+
+	/* pointer to current sector */
+	uint16_t output_sector_addr;
+
+	/* pointer to current byte */
+	uint64_t output_byte_addr;
+
+	/* sector buffer */
+	uint8_t output_sector_buf[SECTOR_SIZE];
+
+	/* sector checksum */
+	uint16_t output_sector_crc;
 
 	/* 
 	 * 	same as in sd, but we need to layer the abstraction and we aren't 
@@ -35,9 +47,9 @@ struct io_ctx {
 	struct sd_ctx *sd;
 };
 
-uint8_t initialize_io(struct io_ctx *io, struct sd_ctx *sd);
+int8_t initialize_io(struct io_ctx *io, struct sd_ctx *sd);
 
-uint8_t io_read_nbytes(struct io_ctx *io, void *buf, uint32_t offset, 
+int8_t io_read_nbytes(struct io_ctx *io, void *buf, uint32_t offset, 
 	uint32_t nbytes);
 
 #endif

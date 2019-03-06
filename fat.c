@@ -166,8 +166,6 @@ static __attribute__((always inline)) int8_t fat32_get_fat(struct fat32_ctx *ctx
 
   (*ptr) = n;
 
-  //list_dump((*ptr), fat32_dump_address);
-
   return 0;
 }
 
@@ -346,9 +344,9 @@ void fat32_close_file(struct fat32_ctx *ctx, struct fat32_file *file) {
   list_free(ctx->fat_list);
 }
 
-// int8_t fat_32_read_file_byte() {
+int8_t fat_32_read_file_byte() {
 
-// }
+}
 
 // int8_t fat32_read_file_nbytes() {
 
