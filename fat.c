@@ -86,16 +86,45 @@ int8_t fat32_parse_entry(struct FAT32Entry *e) {
   return 0;
 }
 
+void fat32_set_partition(struct fat32_ctx *fat32, struct PartitionTable pt[]) {
+   /* lets just worry about the first partition */
+  fat32->partition_type = pt[0].partition_type;
+  fat32->start_sector = pt[0].start_sector;
+  fat32->length_sectors = pt[0].length_sectors;
+}
+
+void fat32_set_context(struct fat32_ctx *fat32, struct FAT32BootSector *bs) {
+
+  /*
+   *  Grab the relevant information from BS, then process, then recycle
+   */
+
+  fat32->reserved_sectors = bs->reserved_sectors;
+  fat32->number_of_fats = bs->number_of_fats;
+  fat32->sectors_per_fat_32 = bs->sectors_per_fat_32;
+  fat32->sectors_per_cluster = bs->sectors_per_cluster;
+  fat32->cluster_number_root_dir = bs->cluster_number_root_dir;
+
+  fat32->cluster_begin_sector =
+      fat32->start_sector + fat32->reserved_sectors +
+      (fat32->number_of_fats * fat32->sectors_per_fat_32);
+
+  fat32->root_dir_sector =
+      (fat32->cluster_begin_sector +
+       ((fat32->cluster_number_root_dir - 2) * fat32->sectors_per_cluster));
+
+  fat32->fat_begin_sector = fat32->start_sector + fat32->reserved_sectors;
+
+  fat32->fat_list = NULL;
+}
+
 int8_t initialize_fat32(struct fat32_ctx *fat32, struct io_ctx *io,
                         struct sd_ctx *sd) {
   /* read the partition table */
 
   struct FAT32Entry e;
-
   struct PartitionTable pt[PARTITION_TABLE_ENTRIES];
-  memset(&pt, 0, sizeof(struct PartitionTable) * PARTITION_TABLE_ENTRIES);
   struct FAT32BootSector bs;
-  memset(&bs, 0, sizeof(struct FAT32BootSector));
 
   if (sd->sd_status == SD_DISABLED)
     return 0;
@@ -107,15 +136,12 @@ int8_t initialize_fat32(struct fat32_ctx *fat32, struct io_ctx *io,
     return -1;
   }
 
-  dump_bin(&pt, sizeof(struct PartitionTable) * PARTITION_TABLE_ENTRIES);
+  UART_DBG_BIN(&pt, sizeof(struct PartitionTable) * PARTITION_TABLE_ENTRIES);
 
-  /* lets just worry about the first partition */
-  fat32->partition_type = pt[0].partition_type;
-  fat32->start_sector = pt[0].start_sector;
-  fat32->length_sectors = pt[0].length_sectors;
+  fat32_set_partition(fat32, &pt);
 
   UART_DBG("fat32: start sector: ");
-  uart_write_32(fat32->start_sector);
+  UART_DBG_32(fat32->start_sector);
   UART_DBG("\r\n");
 
   if ((fat32->partition_type == PARTITION_TYPE_FAT32_LT2G) ||
@@ -132,29 +158,13 @@ int8_t initialize_fat32(struct fat32_ctx *fat32, struct io_ctx *io,
   /* read the boot sector */
   if (io_read_nbytes(io, &bs, SECTOR_SIZE_BYTES * pt[0].start_sector,
                      sizeof(struct FAT32BootSector)) < 0) {
-    uart_write_str("fat32: error reading FAT32 boot sector\r\n");
+    UART_DBG("fat32: error reading FAT32 boot sector\r\n");
     return -1;
   }
 
-  dump_bin(&bs, sizeof(struct FAT32BootSector));
+  UART_DBG_BIN(&bs, sizeof(struct FAT32BootSector));
 
-  fat32->reserved_sectors = bs.reserved_sectors;
-  fat32->number_of_fats = bs.number_of_fats;
-  fat32->sectors_per_fat_32 = bs.sectors_per_fat_32;
-  fat32->sectors_per_cluster = bs.sectors_per_cluster;
-  fat32->cluster_number_root_dir = bs.cluster_number_root_dir;
-
-  fat32->cluster_begin_sector =
-      fat32->start_sector + fat32->reserved_sectors +
-      (fat32->number_of_fats * fat32->sectors_per_fat_32);
-
-  fat32->root_dir_sector =
-      (fat32->cluster_begin_sector +
-       ((fat32->cluster_number_root_dir - 2) * fat32->sectors_per_cluster));
-
-  fat32->fat_begin_sector = fat32->start_sector + fat32->reserved_sectors;
-
-  fat32->fat_list = NULL;
+  fat32_set_context(fat32, &bs);
 
   if(fat32_cache_root_dir(fat32, sd, io, &e) < 0)
     return -1;

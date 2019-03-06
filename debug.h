@@ -24,12 +24,14 @@
 #define UART_DBG(x) uart_write_str(x)
 #define UART_DBG_HEX(x) uart_write_hex(x)
 #define UART_DBG_32(x) uart_write_32(x)
+#define UART_DBG_BIN(x, y) dump_bin(x, y)
 
 #else
 
 #define UART_DBG(x)
 #define UART_DBG_HEX(x)
 #define UART_DBG_32(x)
+#define UART_DBG_BIN(x, y)
 
 #endif
 
