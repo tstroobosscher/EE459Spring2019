@@ -8,35 +8,7 @@
 /* milliseconds */
 #define PULSE_WIDTH_MS 100
 
-//#include "debug.h"
-
-#define ATMEGA2560
-
-/* PORTX */
-const enum {
-
-#ifdef ATMEGA2560
-  ATMEL_PORT_A,
-#endif
-
-#if defined ATMEGA2560 || defined ATMEGA328
-  ATMEL_PORT_B,
-  ATMEL_PORT_C,
-  ATMEL_PORT_D,
-#endif
-
-#ifdef ATMEGA2560
-  ATMEL_PORT_E,
-  ATMEL_PORT_F,
-  ATMEL_PORT_G,
-  ATMEL_PORT_H,
-  ATMEL_PORT_J,
-  ATMEL_PORT_K,
-  ATMEL_PORT_L,
-#endif
-
-  ATMEL_PORT_INVAL,
-} amtel_328_port;
+#include "debug.h"
 
 /* DDRX setting */
 static const enum {
@@ -51,8 +23,6 @@ static const enum {
   ATMEL_PULL_DIS,
   ATMEL_PULL_INVAL,
 } atmel_328_pull_status;
-
-
 
 /*
  *  ___ATMEGA328___

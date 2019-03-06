@@ -1086,7 +1086,7 @@ void initialize_pins() {
         if (atmega328_pins[i].pull_up == ATMEL_PULL_ENA) {
           *(atmega328_pins[i].port_reg) |= (1 << atmega328_pins[i].port_num);
         } else UART_DBG("pin_init: pull-up disabled\r\n");
-      } else UART_DBG("pin_init: neither input or output\r\n");
+      } else UART_DBG("pin_init: neither input nor output\r\n");
     } else UART_DBG("pin_init: port reg NULL\r\n"); 
   }
 }
