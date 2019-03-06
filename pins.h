@@ -85,6 +85,4 @@ int8_t pin_low(uint8_t pin);
 void pulse_pin(uint8_t pin);
 void cycle_pins();
 
-#undef ATMEGA2560
-
 #endif
