@@ -284,6 +284,8 @@ struct fat32_file {
   uint32_t current_cluster;
   uint32_t current_sector;
   uint32_t sectors_per_cluster;
+
+  struct node *fat_list;
 };
 
 int8_t initialize_fat32(struct fat32_ctx *fat32, struct io_ctx *io,
@@ -291,5 +293,6 @@ int8_t initialize_fat32(struct fat32_ctx *fat32, struct io_ctx *io,
 
 int8_t fat32_parse_entry(struct FAT32Entry *e);
 void fat32_dump_file_meta(struct fat32_file *file);
+int8_t fat32_cache_root_dir(struct fat32_ctx *ctx, struct sd_ctx *sd, struct io_ctx *io, struct FAT32Entry *e);
 
 #endif

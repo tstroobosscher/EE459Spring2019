@@ -80,30 +80,7 @@ int main() {
   else
     UART_DBG("main: initialized fat32\r\n");
 
-  if (sd.sd_status == SD_ENABLED) {
-    for (int j = 0; j < 16; j++) {
-      if (io_read_nbytes(&io, &e,
-                         (fat32.root_dir_sector * sd.sd_sector_size) +
-                             (j * sizeof(struct FAT32Entry)),
-                         sizeof(struct FAT32Entry)) < 0) {
-        UART_DBG("main: error reading FAT32 root entry\r\n");
-        break;
-      }
-
-      if (fat32_parse_entry(&e) < 0)
-        break;
-      dump_bin(&e, sizeof(struct FAT32Entry));
-
-      if((e.file_attr == FILENAME_NEVER_USED) || (e.file_attr == FILENAME_FILE_DELETED) || ((e.file_attr & 0x0F) == 0x0F))
-        continue;
-
-      uart_write_str("main: file\r\n");
-      fat32_open_file(&fat32, &e, &io, &file);
-      fat32_dump_file_meta(&file);
-
-      fat32_close_file(&fat32, &file);
-    }
-  }
+loop:
 
   while (1) {
     if(pin_high(26) < 0)

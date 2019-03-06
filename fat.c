@@ -90,6 +90,8 @@ int8_t initialize_fat32(struct fat32_ctx *fat32, struct io_ctx *io,
                         struct sd_ctx *sd) {
   /* read the partition table */
 
+  struct FAT32Entry e;
+
   struct PartitionTable pt[PARTITION_TABLE_ENTRIES];
   memset(&pt, 0, sizeof(struct PartitionTable) * PARTITION_TABLE_ENTRIES);
   struct FAT32BootSector bs;
@@ -154,6 +156,9 @@ int8_t initialize_fat32(struct fat32_ctx *fat32, struct io_ctx *io,
 
   fat32->fat_list = NULL;
 
+  if(fat32_cache_root_dir(fat32, sd, io, &e) < 0)
+    return -1;
+
   return 0;
 }
 
@@ -175,7 +180,7 @@ int8_t fat32_get_fat(struct fat32_ctx *ctx, struct io_ctx *io, uint32_t first_cl
    *  traverse the fat, create a heap structure pointing to a linked list containing the values, return by reference
    */
   
-  struct node *n = NULL;
+  struct node *n = (struct node *) NULL;
 
   uint32_t curr_address = first_cluster;
   uint32_t next_address;
@@ -204,6 +209,8 @@ int8_t fat32_get_fat(struct fat32_ctx *ctx, struct io_ctx *io, uint32_t first_cl
   } while(!fat32_is_last_cluster(next_address));
 
   (*ptr) = n;
+
+  //list_dump((*ptr), fat32_dump_address);
 
   return 0;
 }
@@ -234,9 +241,8 @@ int8_t fat32_open_file(struct fat32_ctx *ctx, struct FAT32Entry *e, struct io_ct
    */
 
   /* lets build the 64 bit value and store in the context */
-  if(fat32_get_fat(ctx, io, fat32_calc_first_cluster(e->first_cluster_addr_high, e->first_cluster_addr_low), &(ctx->fat_list)) < 0)
+  if(fat32_get_fat(ctx, io, fat32_calc_first_cluster(e->first_cluster_addr_high, e->first_cluster_addr_low), &(file->fat_list)) < 0)
     return -1;
-
 
   file->file_size = e->file_size;
   file->byte_offset = 0;
@@ -244,48 +250,60 @@ int8_t fat32_open_file(struct fat32_ctx *ctx, struct FAT32Entry *e, struct io_ct
   file->sectors_per_cluster = ctx->sectors_per_cluster;
   file->current_sector = 0;
 
-  list_dump(ctx->fat_list, fat32_dump_address);
+  return 0;
 }
 
-// int8_t fat32_cache_root_dir(struct fat32_ctx *ctx, struct sd_ctx) {
-//   /*
-//    *  parse the root directory, cache the values of the entries that are
-//    *  actually files, their indexes, etc. the root directory in fat32 is
-//    *  slightly different than the older siblings. The root directory is
-//    *  essentially just another file, so its file table must be traversed 
-//    *  and cached for complete analysis of its contents.
-//    *  
-//    *  save the values: pointer to linked list concerning the root
-//    *  directory entries
-//    */
+int8_t fat32_cache_root_dir(struct fat32_ctx *ctx, struct sd_ctx *sd, struct io_ctx *io, struct FAT32Entry *e) {
+  /*
+   *  parse the root directory, cache the values of the entries that are
+   *  actually files, their indexes, etc. the root directory in fat32 is
+   *  slightly different than the older siblings. The root directory is
+   *  essentially just another file, so its file table must be traversed 
+   *  and cached for complete analysis of its contents.
+   *  
+   *  save the values: pointer to linked list concerning the root
+   *  directory entries
+   */
 
-//   /* need an upper bound on the number of entries. sizeof(fat) / sizeof(entry) ? */
+  /* need an upper bound on the number of entries. sizeof(fat) / sizeof(entry) ? */
 
-//   /* first traverse the fat */
+  /* first traverse the fat */
+  if(fat32_get_fat(ctx, io, ctx->cluster_number_root_dir, &(ctx->fat_list)) < 0)
+    return -1;
 
-//   for (int j = 0; j < 16; j++) {
-//     if (io_read_nbytes(&io, &e,
-//                        (fat32.root_dir_sector * sd.sd_sector_size) +
-//                            (j * sizeof(struct FAT32Entry)),
-//                        sizeof(struct FAT32Entry)) < 0) {
-//       UART_DBG("main: error reading FAT32 root entry\r\n");
-//       break;
-//     }
+  list_dump(ctx->fat_list, fat32_dump_address);
 
-//     if (fat32_parse_entry(&e) < 0)
-//       break;
-//     dump_bin(&e, sizeof(struct FAT32Entry));
+  struct fat32_file file;
 
-//     if((e.file_attr == FILENAME_NEVER_USED) || (e.file_attr == FILENAME_FILE_DELETED) || ((e.file_attr & 0x0F) == 0x0F))
-//       continue;
+  /* 16 is arnitrary right now, directory entries are 0 delimited */
+  for (int j = 0; j < 16; j++) {
 
-//     uart_write_str("main: file\r\n");
-//     fat32_open_file(&fat32, &e, &io, &file);
-//     fat32_dump_file_meta(&file);
+    /* fat needs to linearize the directory space, can span clusters */
+    if (io_read_nbytes(io, e,
+                       (ctx->root_dir_sector * sd->sd_sector_size) +
+                           (j * sizeof(struct FAT32Entry)),
+                       sizeof(struct FAT32Entry)) < 0) {
+      UART_DBG("main: error reading FAT32 root entry\r\n");
+      break;
+    }
 
-//     fat32_close_file(&fat32, &file);
-//   }
-// }
+    if (fat32_parse_entry(e) < 0)
+      break;
+
+    dump_bin(e, sizeof(struct FAT32Entry));
+
+    if((e->file_attr == FILENAME_NEVER_USED) || (e->file_attr == FILENAME_FILE_DELETED) || ((e->file_attr & 0x0F) == 0x0F))
+      continue;
+
+    uart_write_str("main: file\r\n");
+    fat32_open_file(ctx, e, io, &file);
+
+    list_dump((struct node *) file.fat_list, fat32_dump_address);
+
+    fat32_dump_file_meta(&file);
+    fat32_close_file(ctx, &file);
+  }
+}
 
 void fat32_close_root_dir(struct fat32_ctx *ctx) {
 
@@ -302,6 +320,8 @@ void fat32_dump_file_meta(struct fat32_file *file) {
   uart_write_32(file->sectors_per_cluster);
   uart_write_str("\r\ncurrent sector: 0x");
   uart_write_32(file->current_sector);
+  uart_write_str("\r\nlist pointer: 0x");
+  uart_write_32(file->fat_list);
   uart_write_str("\r\n");
 }
 

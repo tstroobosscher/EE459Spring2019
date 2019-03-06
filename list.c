@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 #include "list.h"
+#include "debug.h"
 
 void list_push_head(struct node **head, void *data, size_t bytes) {
 
