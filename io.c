@@ -82,7 +82,7 @@ static __attribute__((always inline))
 	return 0;
 }
 
-/* export one function, inline the subequent ones */
+/* export one function, inline the previous ones */
 uint8_t io_read_nbytes(struct io_ctx *io, void *buf, uint32_t offset, 
 	uint32_t nbytes) {
 

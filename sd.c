@@ -13,6 +13,10 @@
 #include "uart.h"
 #include "utils.h"
 
+/* turn off SD dbg messages */
+#define UART_DBG(x)
+#define UART_DBG_HEX(x)
+
 static __attribute__((always inline)) int8_t sd_wake_up() {
   /* enable sd card */
   if (spi_device_disable(SPI_SD_CARD) < 0)

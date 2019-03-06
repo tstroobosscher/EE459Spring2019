@@ -13,7 +13,7 @@
 /*
  *	Set for debug builds - Chip
  */
-//#define DEBUG
+#define DEBUG
 
 #define ATMEGA2560
 

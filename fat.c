@@ -152,6 +152,8 @@ int8_t initialize_fat32(struct fat32_ctx *fat32, struct io_ctx *io,
 
   fat32->fat_begin_sector = fat32->start_sector + fat32->reserved_sectors;
 
+  fat32->fat_list = NULL;
+
   return 0;
 }
 
@@ -166,6 +168,41 @@ int8_t fat32_is_last_cluster(uint32_t dat) {
     return true;
   else
     return false;
+}
+
+int8_t fat32_get_fat(struct fat32_ctx *ctx, struct io_ctx *io, uint32_t first_cluster) {
+  
+  struct node *n = NULL;
+
+  uint32_t curr_address = first_cluster;
+  uint32_t next_address;
+
+  do {
+
+    if(io_read_nbytes(io, &next_address, SECTOR_SIZE_BYTES * ctx->fat_begin_sector + curr_address * 4, sizeof(curr_address)) < 0) {
+      return -1;
+    }
+
+    UART_DBG("pointer: ");
+    UART_DBG_32(curr_address);
+    UART_DBG(" value: ");
+    UART_DBG_32(next_address);
+    UART_DBG("\r\n");
+
+    /*
+     *  Lets cache the fat to speed up the look-up
+     */
+
+    /* we want to push the previous address onto the list if the next one isn't the last */
+    list_push_tail(&n, &curr_address, sizeof(curr_address));
+
+    curr_address = next_address;
+
+  } while(!fat32_is_last_cluster(next_address));
+
+  ctx->fat_list = n;
+
+  return 0;
 }
 
 int8_t fat32_open_file(struct fat32_ctx *ctx, struct FAT32Entry *e, struct io_ctx *io, struct fat32_file *file) {
@@ -193,37 +230,76 @@ int8_t fat32_open_file(struct fat32_ctx *ctx, struct FAT32Entry *e, struct io_ct
    *  So we actually want the last cluster on the list, check a the end
    */
 
-  uint32_t curr_address = fat32_calc_first_cluster(e->first_cluster_addr_high, e->first_cluster_addr_low) * 4;
-  uint32_t next_address = curr_address;
+  /* lets build the 64 bit value and store in the context */
+  if(fat32_get_fat(ctx, io, fat32_calc_first_cluster(e->first_cluster_addr_high, e->first_cluster_addr_low)) < 0)
+    return -1;
 
-  struct node *n = NULL;
 
-  do {
-
-    if(io_read_nbytes(io, &next_address, SECTOR_SIZE_BYTES * ctx->fat_begin_sector + curr_address * 4, sizeof(curr_address)) < 0) {
-      return -1;
-    }
-
-    UART_DBG("pointer: ");
-    UART_DBG_32(curr_address);
-    UART_DBG(" value: ");
-    UART_DBG_32(next_address);
-    UART_DBG("\r\n");
-
-    /*
-     *  Lets cache the fat to speed up the look-up
-     */
-
-    /* we want to push the previous address onto the list if the current one isn't */
-    list_push_tail(&n, &curr_address, sizeof(curr_address));
-
-    curr_address = next_address;
-
-  } while(!fat32_is_last_cluster(next_address));
-
-  ctx->fat_list = n;
+  file->file_size = e->file_size;
+  file->byte_offset = 0;
+  file->current_cluster = fat32_calc_first_cluster(e->first_cluster_addr_high, e->first_cluster_addr_low);
+  file->sectors_per_cluster = ctx->sectors_per_cluster;
+  file->current_sector = 0;
 
   list_dump(ctx->fat_list, fat32_dump_address);
+}
+
+// int8_t fat32_cache_root_dir(struct fat32_ctx *ctx, struct sd_ctx) {
+//   /*
+//    *  parse the root directory, cache the values of the entries that are
+//    *  actually files, their indexes, etc. the root directory in fat32 is
+//    *  slightly different than the older siblings. The root directory is
+//    *  essentially just another file, so its file table must be traversed 
+//    *  and cached for complete analysis of its contents.
+//    *  
+//    *  save the values: pointer to linked list concerning the root
+//    *  directory entries
+//    */
+
+//   /* need an upper bound on the number of entries. sizeof(fat) / sizeof(entry) ? */
+
+//   /* first traverse the fat */
+
+//   for (int j = 0; j < 16; j++) {
+//     if (io_read_nbytes(&io, &e,
+//                        (fat32.root_dir_sector * sd.sd_sector_size) +
+//                            (j * sizeof(struct FAT32Entry)),
+//                        sizeof(struct FAT32Entry)) < 0) {
+//       UART_DBG("main: error reading FAT32 root entry\r\n");
+//       break;
+//     }
+
+//     if (fat32_parse_entry(&e) < 0)
+//       break;
+//     dump_bin(&e, sizeof(struct FAT32Entry));
+
+//     if((e.file_attr == FILENAME_NEVER_USED) || (e.file_attr == FILENAME_FILE_DELETED) || ((e.file_attr & 0x0F) == 0x0F))
+//       continue;
+
+//     uart_write_str("main: file\r\n");
+//     fat32_open_file(&fat32, &e, &io, &file);
+//     fat32_dump_file_meta(&file);
+
+//     fat32_close_file(&fat32, &file);
+//   }
+// }
+
+void fat32_close_root_dir(struct fat32_ctx *ctx) {
+
+}
+
+void fat32_dump_file_meta(struct fat32_file *file) {
+  uart_write_str("\r\nfile size: 0x");
+  uart_write_32(file->file_size);
+  uart_write_str("\r\nfile position: 0x");
+  uart_write_32(file->byte_offset);
+  uart_write_str("\r\ncurrent cluster: 0x");
+  uart_write_32(file->current_cluster);
+  uart_write_str("\r\nsectors per cluster: 0x");
+  uart_write_32(file->sectors_per_cluster);
+  uart_write_str("\r\ncurrent sector: 0x");
+  uart_write_32(file->current_sector);
+  uart_write_str("\r\n");
 }
 
 void fat32_close_file(struct fat32_ctx *ctx, struct fat32_file *file) {

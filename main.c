@@ -22,15 +22,29 @@
 /*
  *	write debug strings in the header that can be placed in program
  *	memory and then referenced by macro
- *
  */
+
+
 
 struct FAT32Entry e;
 
+/*
+ *  Can we push these valeus into successive data structures so we aren't
+ *  keeping stale data in the dataspace? What do we actually need?
+ */
+
 struct sd_ctx sd;
 
+/*
+ *  the io level should also be global because a single io structure 
+ *  can operate on more than one instance of a file
+ */
 struct io_ctx io;
 
+/* 
+ *  fat32 context should be global because we can associate more than
+ *  one file with a single file system
+ */
 struct fat32_ctx fat32;
 
 struct fat32_file file;
@@ -80,10 +94,13 @@ int main() {
         break;
       dump_bin(&e, sizeof(struct FAT32Entry));
 
-      // if((e.file_attr == FILENAME_NEVER_USED) || (e.file_attr == FILENAME_FILE_DELETED) || ((e.file_attr & 0x0F) == 0x0F))
-      //   break;
-      // uart_write_str("main: ");
+      if((e.file_attr == FILENAME_NEVER_USED) || (e.file_attr == FILENAME_FILE_DELETED) || ((e.file_attr & 0x0F) == 0x0F))
+        continue;
+
+      uart_write_str("main: file\r\n");
       fat32_open_file(&fat32, &e, &io, &file);
+      fat32_dump_file_meta(&file);
+
       fat32_close_file(&fat32, &file);
     }
   }
