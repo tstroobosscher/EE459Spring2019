@@ -8,9 +8,7 @@
 /* milliseconds */
 #define PULSE_WIDTH_MS 100
 
-//#include "debug.h"
-
-#define ATMEGA2560
+#include "debug.h"
 
 /* PORTX */
 const enum {
@@ -114,7 +112,5 @@ int8_t pin_high(uint8_t pin);
 int8_t pin_low(uint8_t pin);
 void pulse_pin(uint8_t pin);
 void cycle_pins();
-
-#undef ATMEGA2560
 
 #endif

@@ -42,44 +42,44 @@ int main() {
 
   initialize_uart(MYUBRR);
 
-  // UART_DBG("main: initialized uart\r\n");
+  UART_DBG("main: initialized uart\r\n");
 
-  // initialize_spi();
+  initialize_spi();
 
-  // UART_DBG("main: initialized spi\r\n");
+  UART_DBG("main: initialized spi\r\n");
 
-  // /* software resources */
-  // if (initialize_sd(&sd) < 0)
-  //   UART_DBG("main: unable to initialize SD\r\n");
-  // else 
-  //   UART_DBG("main: initialized sd\r\n");
+  /* software resources */
+  if (initialize_sd(&sd) < 0)
+    UART_DBG("main: unable to initialize SD\r\n");
+  else 
+    UART_DBG("main: initialized sd\r\n");
 
-  // if (initialize_io(&io, &sd) < 0)
-  //   UART_DBG("main: unable to initialize IO\r\n");
-  // else
-  //   UART_DBG("main: initialized IO\r\n");
+  if (initialize_io(&io, &sd) < 0)
+    UART_DBG("main: unable to initialize IO\r\n");
+  else
+    UART_DBG("main: initialized IO\r\n");
 
-  // if (initialize_fat32(&fat32, &io, &sd) < 0)
-  //   UART_DBG("main: unable to initialize FAT32\r\n");
-  // else
-  //   UART_DBG("main: initialized fat32\r\n");
+  if (initialize_fat32(&fat32, &io, &sd) < 0)
+    UART_DBG("main: unable to initialize FAT32\r\n");
+  else
+    UART_DBG("main: initialized fat32\r\n");
 
-  // if (sd.sd_status == SD_ENABLED) {
-  //   for (int j = 0; j < 16; j++) {
-  //     if (io_read_nbytes(&io, &e,
-  //                        (fat32.root_dir_sector * sd.sd_sector_size) +
-  //                            (j * sizeof(struct FAT32Entry)),
-  //                        sizeof(struct FAT32Entry)) < 0) {
-  //       UART_DBG("main: error reading FAT32 root entry\r\n");
-  //       break;
-  //     }
+  if (sd.sd_status == SD_ENABLED) {
+    for (int j = 0; j < 16; j++) {
+      if (io_read_nbytes(&io, &e,
+                         (fat32.root_dir_sector * sd.sd_sector_size) +
+                             (j * sizeof(struct FAT32Entry)),
+                         sizeof(struct FAT32Entry)) < 0) {
+        UART_DBG("main: error reading FAT32 root entry\r\n");
+        break;
+      }
 
-  //     if (fat32_parse_entry(&e) < 0)
-  //       break;
-  //     else
-  //       dump_bin(&e, sizeof(struct FAT32Entry));
-  //   }
-  // }
+      if (fat32_parse_entry(&e) < 0)
+        break;
+      else
+        dump_bin(&e, sizeof(struct FAT32Entry));
+    }
+  }
 
   while (1) {
     if(pin_high(26) < 0)

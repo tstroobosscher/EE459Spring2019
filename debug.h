@@ -11,12 +11,11 @@
  */
 
 /*
- *	Set for debug builds - Chip
+ *	Set for debug builds
  */
-#define DEBUG
+//#define DEBUG
 
 #define ATMEGA2560
-
 #define ARDUINO
 
 #ifdef DEBUG

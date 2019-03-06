@@ -5,12 +5,10 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <stdint.h>
 #include <util/delay.h>
 
 #include "debug.h"
-
-#define ATMEGA2560
-#define ARDUINO
 
 #ifdef ARDUINO
 

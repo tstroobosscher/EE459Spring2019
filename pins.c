@@ -25,7 +25,7 @@ static const struct atmel_328_pin {
 #error Cannot compile for multiple chips
 #endif
 
-#ifdef ATMEGA328
+#if defined ATMEGA328
     /* 0, no 0 pin, just used to align the array index with the pin number */
     {
         NULL,
