@@ -6,7 +6,7 @@
 /*
  *	UART Baud rate
  */
-#define BAUD 9600
+#define BAUD 19200
 
 /*
  *	Value for UBRR0 register
@@ -190,7 +190,39 @@ int main() {
 	USARTInit(MYUBRR); // 20 MHz / (16 * 19200 baud) - 1 = 64.104x
 	SPI_init();
 
-	uwrite_str("test\r\n");
+	const char *str =
+
+	"1606\n"
+	"THE TRAGEDY OF MACBETH\n"
+	"\n"
+	"\n"
+	"by Walliam Shakespeare\n"
+	"\n"
+	"\n"
+	"\n"
+	"Dramatis Personae\n"
+	"\n"
+	"  DUNCAN, King of Scotland\n"
+  	"  MACBETH, Thane of Glamis and Cawdor, a general in the King's\n"
+	"army\n"
+  	"  LADY MACBETH, his wife\n"
+  	"  MACDUFF, Thane of Fife, a nobleman of Scotland\n"
+  	"  LADY MACDUFF, his wife\n"
+  	"  MALCOLM, elder son of Duncan\n"
+  	"  DONALBAIN, younger son of Duncan\n"
+  	"  BANQUO, Thane of Lochaber, a general in the King's army\n"
+  	"  FLEANCE, his son\n"
+  	"  LENNOX, nobleman of Scotland\n"
+  	"  ROSS, nobleman of Scotland\n"
+  	"  MENTEITH nobleman of Scotland\n"
+  	"  ANGUS,";
+
+  	int size;
+  	for(size = 0; str[size]; size++){}
+  	uwrite_str("size of char buf: ");
+  	uwrite_hex(size >> 8);
+  	uwrite_hex(size);
+  	uwrite_str("\r\n");
 
 	// ]r:10
 	CS_DISABLE();
@@ -266,10 +298,61 @@ int main() {
 
 			for(uint16_t i = 0; i < 512; i++)
 				USARTWriteChar(SPI_write(0xFF));
+
+			uwrite_str("\r\n");
 			
+			break;
+
+		case '9':
+
+		  SD_command(0x40 | 24, 0x00007E78, 0xFF, 8);
+		  CS_DISABLE();
+		  CS_ENABLE();
+		  break;
+		case 'a':
+			SPI_write(0xFE);
+			for(int i = 0; str[i]; i++) {
+				char ret = SPI_write(str[i]);
+				USARTWriteChar(' ');
+				uwrite_hex(ret);
+			}
+			SPI_write(0xFF);
+			SPI_write(0xFF);
+
+			char ret;
+
+			for(i = 0; i < 100; i++) {
+			  if(((ret = SPI_write(0xFF)) & 0x11) == 0x01) {
+			    break;
+			  }
+
+			      
+			  if(i == 99)
+			    uwrite_str("unable to find response char\r\n");
+			}
+
+			uwrite_str("write return :0x");
+			uwrite_hex(ret);
+			uwrite_str("\r\n");
+
+			switch(ret & 0x0E) {
+
+			case 0x04:
+			  uwrite_str("data accepted\r\n");
+			  break;
+			case 0x0A:
+			  uwrite_str("data rejected - crc\r\n");
+			  break;
+			case 0x0C:
+			  uwrite_str("data rejected - write error\r\n");
+                          break;
+		        default:
+			  uwrite_str("unhandled response byte\r\n");
+			}
+
 			break;
 		}
 	}	
-	
+
 	return 0;
 }
