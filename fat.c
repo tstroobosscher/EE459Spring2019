@@ -3,6 +3,7 @@
  */
 
 #include <stdint.h>
+#include <stddef.h>
 
 #include "debug.h"
 #include "fat.h"
@@ -28,7 +29,7 @@ fat32_calc_lba_from_cluster(uint32_t cluster_begin_lba,
 static __attribute__((always inline)) void
 fat32_dump_filename(struct FAT32Entry *e) {
   uart_write_strn(e->filename, 8);
-  uart_write_char(".");
+  uart_write_str(".");
   uart_write_strn(e->filename_ext, 3);
 }
 
@@ -154,6 +155,19 @@ int8_t initialize_fat32(struct fat32_ctx *fat32, struct io_ctx *io,
   return 0;
 }
 
+void fat32_dump_address(uint32_t *dat) {
+  uart_write_str("fat list item: ");
+  uart_write_32(*dat);
+  uart_write_str("\r\n");
+}
+
+int8_t fat32_is_last_cluster(uint32_t dat) {
+  if((0x0FFFFFFF & dat)  >= 0x0FFFFFF8)
+    return true;
+  else
+    return false;
+}
+
 int8_t fat32_open_file(struct fat32_ctx *ctx, struct FAT32Entry *e, struct io_ctx *io, struct fat32_file *file) {
   /*
    *  create a linked list that holds the fat table entries, size of the file
@@ -172,38 +186,62 @@ int8_t fat32_open_file(struct fat32_ctx *ctx, struct FAT32Entry *e, struct io_ct
    *  for each byte we need to check if it sits outside the bounds of the 
    *  buffer, so it makes sense to first implement the byte reading function,
    *  and then write the nbytes function 
+   *  
+   *  IMPORTANT: keep in mind that in the FAT, the cluster number is the 32 bit chunk offset
+   *  from the fat begin address... whaaa
+   *  
+   *  So we actually want the last cluster on the list, check a the end
    */
 
-    uint32_t fat_address;
+  uint32_t curr_address = fat32_calc_first_cluster(e->first_cluster_addr_high, e->first_cluster_addr_low) * 4;
+  uint32_t next_address = curr_address;
 
-    do {
+  struct node *n = NULL;
 
-      if(io_read_nbytes(io, &fat_address, ctx->fat_begin_sector + e->cluster_begin_lba, sizeof(fat32_ctx)) < 0) {
-        return -1;
-      }
+  do {
 
-      push_head(/* file_ctx pointer memer, the uint 32 (dynamic) */);
+    if(io_read_nbytes(io, &next_address, SECTOR_SIZE_BYTES * ctx->fat_begin_sector + curr_address * 4, sizeof(curr_address)) < 0) {
+      return -1;
+    }
 
-    } while(fat_address != 0xFFFFFFFF /* && not outside the boundary */);
+    UART_DBG("pointer: ");
+    UART_DBG_32(curr_address);
+    UART_DBG(" value: ");
+    UART_DBG_32(next_address);
+    UART_DBG("\r\n");
 
+    /*
+     *  Lets cache the fat to speed up the look-up
+     */
+
+    /* we want to push the previous address onto the list if the current one isn't */
+    list_push_tail(&n, &curr_address, sizeof(curr_address));
+
+    curr_address = next_address;
+
+  } while(!fat32_is_last_cluster(next_address));
+
+  ctx->fat_list = n;
+
+  list_dump(ctx->fat_list, fat32_dump_address);
 }
 
-int8_t fat32_close_file() {
-
+void fat32_close_file(struct fat32_ctx *ctx, struct fat32_file *file) {
+  list_free(ctx->fat_list);
 }
 
-int8_t fat_32_read_file_byte() {
+// int8_t fat_32_read_file_byte() {
 
-}
+// }
 
-int8_t fat32_read_file_nbytes() {
+// int8_t fat32_read_file_nbytes() {
 
-}
+// }
 
-int8_t fat32_write_file_byte() {
+// int8_t fat32_write_file_byte() {
 
-}
+// }
 
-int8_t fat32_write_file_nbytes() {
+// int8_t fat32_write_file_nbytes() {
   
-}
+// }

@@ -10,6 +10,7 @@
 #include "debug.h"
 #include "io.h"
 #include "sd.h"
+#include "list.h"
 
 /* always found at this address */
 #define PARTITION_TABLE_OFFSET 0x1BE
@@ -266,6 +267,8 @@ struct fat32_ctx {
   uint32_t cluster_begin_sector;
   uint32_t root_dir_sector;
   uint32_t fat_begin_sector;
+
+  struct node *fat_list;
 };
 
 struct fat32_file {
