@@ -108,15 +108,10 @@ int main() {
     UART_DBG("main: initialized fat32\r\n");
 
   /* main routines */
-
-  uint8_t ret;
-  
-  if((ret = sd_put_sector(0x00007E78, str, 512)) == 0xFF)
-    UART_DBG("main unable to write block\r\n");
+  if(sd_put_sector(0x00007E78, str, 512) < 0)
+    UART_DBG("main: unable to write block\r\n");
   else
-    UART_DBG("main: write block successful, return: 0x");
-    UART_DBG_HEX(ret);
-    UART_DBG("\r\n");
+    UART_DBG("main: write block successful\r\n");
 
   while(sd_is_busy()){
   }
