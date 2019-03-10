@@ -56,7 +56,7 @@ int main() {
 	"THE TRAGEDY OF MACBETH\n"
 	"\n"
 	"\n"
-	"by William Shakespeare\n"
+	"by Walliam Shakespeare\n"
 	"\n"
 	"\n"
 	"\n"
@@ -108,7 +108,7 @@ int main() {
     UART_DBG("main: initialized fat32\r\n");
 
   /* main routines */
-  if(sd_put_sector(0x00007E78, str, 512) < 0)
+  if(io_put_byte(&io,   v 0x00007E78, str, 512) < 0)
     UART_DBG("main: unable to write block\r\n");
   else
     UART_DBG("main: write block successful\r\n");
