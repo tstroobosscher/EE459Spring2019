@@ -13,7 +13,7 @@
 /*
  *	UART Baud rate
  */
-#define BAUD 9600
+#define BAUD 19200
 
 /*
  *	Value for UBRR0 register

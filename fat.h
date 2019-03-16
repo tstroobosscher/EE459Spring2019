@@ -9,6 +9,7 @@
 
 #include "debug.h"
 #include "io.h"
+#include "list.h"
 #include "sd.h"
 
 /* always found at this address */
@@ -112,8 +113,8 @@ struct PartitionTable {
  *	0x043 			Volume ID (0x027 FAT12/16) 4
  *	0x047			Volume label (0x02B FAT12/16)		11
  *	0x052 			File system type (0x036 FAT12/16)	8
- *	0x08A			Boot code (0x03E FAT12/16)			372
- *(448 FAT12/16) 0x1FE 			Boot sector signature (0x55AA)
+ *	0x08A			Boot code (0x03E FAT12/16)
+ *372 (448 FAT12/16) 0x1FE 			Boot sector signature (0x55AA)
  *2
  */
 
@@ -266,11 +267,31 @@ struct fat32_ctx {
   uint32_t cluster_begin_sector;
   uint32_t root_dir_sector;
   uint32_t fat_begin_sector;
+
+  struct node *fat_list;
+};
+
+struct fat32_file {
+  /*
+   *  holds file size, pointer to linked list head of the fat map
+   *
+   *  The number of list items times the sector size should give
+   *  the upper bound of the file size.
+   */
+
+  uint32_t file_size;
+  uint32_t byte_offset;
+  uint32_t current_cluster;
+  uint32_t current_sector;
+  uint32_t sectors_per_cluster;
+
+  struct node *fat_list;
 };
 
 int8_t initialize_fat32(struct fat32_ctx *fat32, struct io_ctx *io,
                         struct sd_ctx *sd);
 
 int8_t fat32_parse_entry(struct FAT32Entry *e);
+void fat32_dump_file_meta(struct fat32_file *file);
 
 #endif

@@ -11,11 +11,15 @@
 #include "uart.h"
 #include "utils.h"
 
+/* turn off SPI dbg messages */
+#define UART_DBG(x)
+#define UART_DBG_HEX(x)
+
 static __attribute__((always inline)) void
 spi_initialize_slave_select(uint8_t pin) {
-/*
- *	Initialize slave select pin with active high
- */
+  /*
+   *	Initialize slave select pin with active high
+   */
   if (pin_high(pin) < 0)
     UART_DBG("spi: unable to initialize slave select pin\n\r");
   else

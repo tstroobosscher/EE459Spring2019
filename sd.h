@@ -59,6 +59,7 @@
 #define CMD8 0x40 | 8
 #define CMD16 0x40 | 16
 #define CMD17 0x40 | 17
+#define CMD24 0x40 | 24
 #define CMD55 0X40 | 55
 #define CMD58 0X40 | 58
 
@@ -83,7 +84,9 @@ struct sd_ctx {
 
 int8_t initialize_sd();
 
-int16_t sd_get_sector(struct sd_ctx *sd, uint32_t addr, uint8_t *buf,
-                      uint16_t size);
+int16_t sd_get_sector(uint32_t addr, uint8_t *buf, uint16_t size);
+int8_t sd_put_sector(uint32_t addr, uint8_t *buf, uint16_t size);
+
+int8_t sd_is_busy();
 
 #endif

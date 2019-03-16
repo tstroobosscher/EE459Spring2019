@@ -276,6 +276,13 @@ because the addresses will be different
 
 <img src="resources/EE459_Diagram_Draft_2.png">
 
+## Linked List
+Because a lot of our data operations happen in varying states, for example, the 
+OBD data set of one vehicle may be wildly different from another, or the size 
+of a file and the resources it consumes and where those resources are located
+comes in unpredictable forms, so employing a linked list to handle this kind of
+unpredictability in the characterization of a dataset has been very helpful.
+
 ## Useful Commands
 
 ### Creating a snapshot of the repo

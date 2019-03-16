@@ -94,9 +94,9 @@ void dump_byte(uint8_t byte) {
 
 void trace() { uart_write_str("trace\r\n"); }
 
-  // void log(char *msg) {
-  // 	uart_write_str(msg);
-  // 	uart_write_str("\n\r");
-  // }
+// void log(char *msg) {
+// 	uart_write_str(msg);
+// 	uart_write_str("\n\r");
+// }
 
-  /* TODO: flush uart buffers */
+/* TODO: flush uart buffers */
