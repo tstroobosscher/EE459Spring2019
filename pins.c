@@ -4,8 +4,8 @@
 
 #include <avr/io.h>
 #include <avr/pgmspace.h>
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <util/delay.h>
 
 #include "debug.h"
@@ -1085,9 +1085,12 @@ void initialize_pins() {
         /* set internal pull-ups if input pin */
         if (atmega328_pins[i].pull_up == ATMEL_PULL_ENA) {
           *(atmega328_pins[i].port_reg) |= (1 << atmega328_pins[i].port_num);
-        } else UART_DBG("pin_init: pull-up disabled\r\n");
-      } else UART_DBG("pin_init: neither input nor output\r\n");
-    } else UART_DBG("pin_init: port reg NULL\r\n"); 
+        } else
+          UART_DBG("pin_init: pull-up disabled\r\n");
+      } else
+        UART_DBG("pin_init: neither input nor output\r\n");
+    } else
+      UART_DBG("pin_init: port reg NULL\r\n");
   }
 }
 
@@ -1131,9 +1134,12 @@ int8_t pin_high(uint8_t pin) {
       if (atmega328_pins[pin].pin_dir == ATMEL_OUTPUT) {
         *(atmega328_pins[pin].port_reg) |= (1 << atmega328_pins[pin].port_num);
         return 0;
-      } else UART_DBG("pin_high: not output\r\n");
-    } else UART_DBG("pin_high: NULL reg\r\n");
-  } else UART_DBG("pin_high: pin out of range\r\n");
+      } else
+        UART_DBG("pin_high: not output\r\n");
+    } else
+      UART_DBG("pin_high: NULL reg\r\n");
+  } else
+    UART_DBG("pin_high: pin out of range\r\n");
 
   return -1;
 }
@@ -1145,9 +1151,12 @@ int8_t pin_low(uint8_t pin) {
       if (atmega328_pins[pin].pin_dir == ATMEL_OUTPUT) {
         *(atmega328_pins[pin].port_reg) &= ~(1 << atmega328_pins[pin].port_num);
         return 0;
-      } else UART_DBG("pin_low: not output\r\n");
-    } else UART_DBG("pin_low: NULL reg\r\n");
-  } else UART_DBG("pin_low: pin out of range\r\n");
+      } else
+        UART_DBG("pin_low: not output\r\n");
+    } else
+      UART_DBG("pin_low: NULL reg\r\n");
+  } else
+    UART_DBG("pin_low: pin out of range\r\n");
 
   return -1;
 }

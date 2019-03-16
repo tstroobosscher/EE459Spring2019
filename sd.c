@@ -155,10 +155,10 @@ static __attribute__((always inline)) uint8_t sd_get_resp_byte(uint8_t *buf,
 
 uint8_t sd_cmd_resp() {
   uint8_t ret;
-  
-  for(uint8_t i = 0; i < 8; i++)
-    if(!(ret = spi_read_char() & 0x80))
-       return ret;
+
+  for (uint8_t i = 0; i < 8; i++)
+    if (!(ret = spi_read_char() & 0x80))
+      return ret;
 
   return 0xFF;
 }
@@ -222,14 +222,14 @@ static __attribute__((always inline)) int8_t sd_init_read_sector(uint32_t arg) {
 
 int8_t sd_init_put_sector(uint32_t addr) {
 
-  while(sd_is_busy()) {
+  while (sd_is_busy()) {
   }
 
-  if(sd_command(CMD24, addr, 0xFF, 0, NULL) != 0x00) {
+  if (sd_command(CMD24, addr, 0xFF, 0, NULL) != 0x00) {
     return -1;
   }
-  
-  return 0;		 
+
+  return 0;
 }
 
 /* export */
@@ -243,7 +243,6 @@ int8_t initialize_sd(struct sd_ctx *sd) {
     /* unhandled error */
     goto failure;
 
-
   UART_DBG("sd: sd card woken up\r\n");
   DELAY_MS(10);
 
@@ -251,8 +250,7 @@ int8_t initialize_sd(struct sd_ctx *sd) {
   trials = 0;
 
   /* send CMD0, get IDLE state */
-  while (sd_command(0x40 | 0, 0x00, 0x95, 0,
-                    NULL) != R1_IDLE_STATE) {
+  while (sd_command(0x40 | 0, 0x00, 0x95, 0, NULL) != R1_IDLE_STATE) {
 
     UART_DBG("sd: CMD0 error\r\n");
     DELAY_MS(10);
@@ -419,8 +417,7 @@ failure:
 }
 
 /* export */
-int16_t sd_get_sector(uint32_t addr, uint8_t *buf,
-                      uint16_t size) {
+int16_t sd_get_sector(uint32_t addr, uint8_t *buf, uint16_t size) {
   uint8_t trials = 0;
 
   spi_device_enable(SPI_SD_CARD);
@@ -439,7 +436,7 @@ int16_t sd_get_sector(uint32_t addr, uint8_t *buf,
 
   sd_get_bytes(size, buf);
 
-  while(sd_is_busy()){
+  while (sd_is_busy()) {
     /* TODO: timeout */
   }
 
@@ -448,17 +445,17 @@ int16_t sd_get_sector(uint32_t addr, uint8_t *buf,
 }
 
 void sd_put_bytes(void *buf, uint16_t size) {
-  uint8_t *ptr = (uint8_t *) buf;
+  uint8_t *ptr = (uint8_t *)buf;
 
   /*
    * SPI device is enabled and stays enabled
    */
-  
+
   /* send the begin token */
   spi_write_char(0xFE);
 
   /* write the data */
-  for(uint16_t i = 0; i < size; i++)
+  for (uint16_t i = 0; i < size; i++)
     spi_write_char(ptr[i]);
 
   /* send the 'CRC' */
@@ -474,47 +471,48 @@ int8_t sd_put_sector(uint32_t addr, uint8_t *buf, uint16_t size) {
    */
 
   spi_device_enable(SPI_SD_CARD);
-  
-  if(sd_init_put_sector(addr) < 0) {
+
+  if (sd_init_put_sector(addr) < 0) {
     UART_DBG("sd: unable to initialize write sector\r\n");
     return -1;
   }
 
   UART_DBG("sd: successfully initialized write sector\r\n");
-  
+
   sd_put_bytes(buf, size);
 
   UART_DBG("sd: wrote out block\r\n");
-  
-  for(uint8_t i = 0; i < 128; i++) {
-    if(((ret = spi_read_char()) & 0x11) == 0x01) {
+
+  for (uint8_t i = 0; i < 128; i++) {
+    if (((ret = spi_read_char()) & 0x11) == 0x01) {
 
       UART_DBG("ret: ");
       UART_DBG_HEX(ret);
       UART_DBG("\r\n");
 
-      if((ret & 0x0E) == 0x04) {
-	UART_DBG("sd: data acknowledged\r\n");
+      if ((ret & 0x0E) == 0x04) {
+        UART_DBG("sd: data acknowledged\r\n");
         UART_DBG("sd: wrote block at sector: 0x");
-	UART_DBG_32(addr);
-	UART_DBG("\r\n");
-	while(sd_is_busy()){
-	  /* timeout */
-	}
-	spi_device_disable(SPI_SD_CARD); 
-	return 0;
+        UART_DBG_32(addr);
+        UART_DBG("\r\n");
+        while (sd_is_busy()) {
+          /* timeout */
+        }
+        spi_device_disable(SPI_SD_CARD);
+        return 0;
+      } else {
+        UART_DBG("sd: incorrect response\r\n");
+        break;
       }
-      else {
-	UART_DBG("sd: incorrect response\r\n");
-	break;
-      }
-    } else UART_DBG("sd: incorrect resp format\r\n");
-  } UART_DBG("sd: response ack not found\r\n");
+    } else
+      UART_DBG("sd: incorrect resp format\r\n");
+  }
+  UART_DBG("sd: response ack not found\r\n");
 
   /* guarantee that the device is done writing when the func returns */
-  while(sd_is_busy()){
+  while (sd_is_busy()) {
     /* timeout */
   }
-  spi_device_disable(SPI_SD_CARD); 
+  spi_device_disable(SPI_SD_CARD);
   return -1;
 }

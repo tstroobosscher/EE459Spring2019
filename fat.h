@@ -9,8 +9,8 @@
 
 #include "debug.h"
 #include "io.h"
-#include "sd.h"
 #include "list.h"
+#include "sd.h"
 
 /* always found at this address */
 #define PARTITION_TABLE_OFFSET 0x1BE
@@ -113,8 +113,8 @@ struct PartitionTable {
  *	0x043 			Volume ID (0x027 FAT12/16) 4
  *	0x047			Volume label (0x02B FAT12/16)		11
  *	0x052 			File system type (0x036 FAT12/16)	8
- *	0x08A			Boot code (0x03E FAT12/16)			372
- *(448 FAT12/16) 0x1FE 			Boot sector signature (0x55AA)
+ *	0x08A			Boot code (0x03E FAT12/16)
+ *372 (448 FAT12/16) 0x1FE 			Boot sector signature (0x55AA)
  *2
  */
 
@@ -274,8 +274,8 @@ struct fat32_ctx {
 struct fat32_file {
   /*
    *  holds file size, pointer to linked list head of the fat map
-   *  
-   *  The number of list items times the sector size should give 
+   *
+   *  The number of list items times the sector size should give
    *  the upper bound of the file size.
    */
 

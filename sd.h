@@ -84,8 +84,7 @@ struct sd_ctx {
 
 int8_t initialize_sd();
 
-int16_t sd_get_sector(uint32_t addr, uint8_t *buf,
-                      uint16_t size);
+int16_t sd_get_sector(uint32_t addr, uint8_t *buf, uint16_t size);
 int8_t sd_put_sector(uint32_t addr, uint8_t *buf, uint16_t size);
 
 int8_t sd_is_busy();

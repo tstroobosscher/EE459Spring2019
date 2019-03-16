@@ -5,8 +5,8 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-#include "list.h"
 #include "debug.h"
+#include "list.h"
 
 void list_push_head(struct node **head, void *data, size_t bytes) {
 
@@ -38,24 +38,24 @@ void list_push_tail(struct node **head, void *data, size_t bytes) {
   }
 
   /* if it's the first one */
-  if(!ptr) {
-  	(*head) = new_node;
-  	return;
+  if (!ptr) {
+    (*head) = new_node;
+    return;
   }
 
   /* find the tail ptr */
-  while(ptr->next) 
-  	ptr = ptr->next;
+  while (ptr->next)
+    ptr = ptr->next;
 
   ptr->next = new_node;
   return;
 }
 
 void list_free(struct node *ptr) {
-	while(ptr) {
-		free(ptr);
-		ptr = ptr->next;
-	}
+  while (ptr) {
+    free(ptr);
+    ptr = ptr->next;
+  }
 }
 
 void list_dump(struct node *ptr, void (*fptr)(void *)) {

@@ -6,8 +6,8 @@
 
 /*
  *	Do not #include headers that depend on debug.h ! these circular
- *	dependencies can corrupt the macro values inside debug and screw with the
- *	rest of the code
+ *	dependencies can corrupt the macro values inside debug and screw with
+ *the rest of the code
  */
 
 /*

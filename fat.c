@@ -2,8 +2,8 @@
  *	USC EE459 Spring 2019 Team 17 - FAT Routines
  */
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #include "debug.h"
 #include "fat.h"
@@ -86,14 +86,16 @@ int8_t fat32_parse_entry(struct FAT32Entry *e) {
   return 0;
 }
 
-static __attribute__((always inline)) void fat32_set_partition(struct fat32_ctx *fat32, struct PartitionTable pt[]) {
-   /* lets just worry about the first partition */
+static __attribute__((always inline)) void
+fat32_set_partition(struct fat32_ctx *fat32, struct PartitionTable pt[]) {
+  /* lets just worry about the first partition */
   fat32->partition_type = pt[0].partition_type;
   fat32->start_sector = pt[0].start_sector;
   fat32->length_sectors = pt[0].length_sectors;
 }
 
-static __attribute__((always inline)) void fat32_set_context(struct fat32_ctx *fat32, struct FAT32BootSector *bs) {
+static __attribute__((always inline)) void
+fat32_set_context(struct fat32_ctx *fat32, struct FAT32BootSector *bs) {
 
   /*
    *  Grab the relevant information from BS, then process, then recycle
@@ -124,26 +126,33 @@ static __attribute__((always inline)) void fat32_dump_address(uint32_t *dat) {
   uart_write_str("\r\n");
 }
 
-static __attribute__((always inline)) int8_t fat32_is_last_cluster(uint32_t dat) {
-  if((0x0FFFFFFF & dat)  >= 0x0FFFFFF8)
+static __attribute__((always inline)) int8_t
+fat32_is_last_cluster(uint32_t dat) {
+  if ((0x0FFFFFFF & dat) >= 0x0FFFFFF8)
     return true;
   else
     return false;
 }
 
-static __attribute__((always inline)) int8_t fat32_get_fat(struct fat32_ctx *ctx, struct io_ctx *io, uint32_t first_cluster, struct node **ptr) {
+static __attribute__((always inline)) int8_t
+fat32_get_fat(struct fat32_ctx *ctx, struct io_ctx *io, uint32_t first_cluster,
+              struct node **ptr) {
   /*
-   *  traverse the fat, create a heap structure pointing to a linked list containing the values, return by reference
+   *  traverse the fat, create a heap structure pointing to a linked list
+   * containing the values, return by reference
    */
-  
-  struct node *n = (struct node *) NULL;
+
+  struct node *n = (struct node *)NULL;
 
   uint32_t curr_address = first_cluster;
   uint32_t next_address;
 
   do {
 
-    if(io_read_nbytes(io, &next_address, SECTOR_SIZE_BYTES * ctx->fat_begin_sector + curr_address * 4, sizeof(curr_address)) < 0) {
+    if (io_read_nbytes(io, &next_address,
+                       SECTOR_SIZE_BYTES * ctx->fat_begin_sector +
+                           curr_address * 4,
+                       sizeof(curr_address)) < 0) {
       return -1;
     }
 
@@ -157,72 +166,82 @@ static __attribute__((always inline)) int8_t fat32_get_fat(struct fat32_ctx *ctx
      *  Lets cache the fat to speed up the look-up
      */
 
-    /* we want to push the previous address onto the list if the next one isn't the last */
+    /* we want to push the previous address onto the list if the next one isn't
+     * the last */
     list_push_tail(&n, &curr_address, sizeof(curr_address));
 
     curr_address = next_address;
 
-  } while(!fat32_is_last_cluster(next_address));
+  } while (!fat32_is_last_cluster(next_address));
 
   (*ptr) = n;
 
   return 0;
 }
 
-int8_t fat32_open_file(struct fat32_ctx *ctx, struct FAT32Entry *e, struct io_ctx *io, struct fat32_file *file) {
+int8_t fat32_open_file(struct fat32_ctx *ctx, struct FAT32Entry *e,
+                       struct io_ctx *io, struct fat32_file *file) {
   /*
    *  create a linked list that holds the fat table entries, size of the file
-   *  it's not necessary to buffer the entire file, but perform the 
+   *  it's not necessary to buffer the entire file, but perform the
    *  calculations necessary to find the particular block corresponding to a
    *  requested byte.
-   *  
-   *  First need the cluster address of the entry. That indexes the 32 bit 
-   *  (FAT32) number in the fat which is at the block offset of 
+   *
+   *  First need the cluster address of the entry. That indexes the 32 bit
+   *  (FAT32) number in the fat which is at the block offset of
    *  fat32->fat_begin_sector For every byte in the fat that isnt the end int:
-   *  0xFFFFFFFF. 
-   *  
+   *  0xFFFFFFFF.
+   *
    *  for each list item, we just need to save the index of the fat table that
    *  item stays in.
-   *  
-   *  for each byte we need to check if it sits outside the bounds of the 
+   *
+   *  for each byte we need to check if it sits outside the bounds of the
    *  buffer, so it makes sense to first implement the byte reading function,
-   *  and then write the nbytes function 
-   *  
-   *  IMPORTANT: keep in mind that in the FAT, the cluster number is the 32 bit chunk offset
-   *  from the fat begin address... whaaa
-   *  
+   *  and then write the nbytes function
+   *
+   *  IMPORTANT: keep in mind that in the FAT, the cluster number is the 32 bit
+   * chunk offset from the fat begin address... whaaa
+   *
    *  So we actually want the last cluster on the list, check a the end
    */
 
   /* lets build the 64 bit value and store in the context */
-  if(fat32_get_fat(ctx, io, fat32_calc_first_cluster(e->first_cluster_addr_high, e->first_cluster_addr_low), &(file->fat_list)) < 0)
+  if (fat32_get_fat(ctx, io,
+                    fat32_calc_first_cluster(e->first_cluster_addr_high,
+                                             e->first_cluster_addr_low),
+                    &(file->fat_list)) < 0)
     return -1;
 
   file->file_size = e->file_size;
   file->byte_offset = 0;
-  file->current_cluster = fat32_calc_first_cluster(e->first_cluster_addr_high, e->first_cluster_addr_low);
+  file->current_cluster = fat32_calc_first_cluster(e->first_cluster_addr_high,
+                                                   e->first_cluster_addr_low);
   file->sectors_per_cluster = ctx->sectors_per_cluster;
   file->current_sector = 0;
 
   return 0;
 }
 
-static __attribute__((always inline)) int8_t fat32_cache_root_dir(struct fat32_ctx *ctx, struct sd_ctx *sd, struct io_ctx *io, struct FAT32Entry *e) {
+static __attribute__((always inline)) int8_t
+fat32_cache_root_dir(struct fat32_ctx *ctx, struct sd_ctx *sd,
+                     struct io_ctx *io, struct FAT32Entry *e) {
   /*
    *  parse the root directory, cache the values of the entries that are
    *  actually files, their indexes, etc. the root directory in fat32 is
    *  slightly different than the older siblings. The root directory is
-   *  essentially just another file, so its file table must be traversed 
+   *  essentially just another file, so its file table must be traversed
    *  and cached for complete analysis of its contents.
-   *  
+   *
    *  save the values: pointer to linked list concerning the root
    *  directory entries
    */
 
-  /* need an upper bound on the number of entries. sizeof(fat) / sizeof(entry) ? */
+  /* need an upper bound on the number of entries. sizeof(fat) / sizeof(entry) ?
+   */
 
   /* first traverse the fat */
-  if(fat32_get_fat(ctx, io, ctx->cluster_number_root_dir, &(ctx->fat_list)) < 0) {
+  if (fat32_get_fat(ctx, io, ctx->cluster_number_root_dir, &(ctx->fat_list)) <
+      0) {
     UART_DBG("fat32: unable to get FAT\r\n");
     return -1;
   }
@@ -231,7 +250,7 @@ static __attribute__((always inline)) int8_t fat32_cache_root_dir(struct fat32_c
 
   struct fat32_file file;
 
-  /* 16 is arnitrary right now, directory entries are 0 delimited */
+  /* 16 is arbitrary right now, directory entries are 0 delimited */
   for (int j = 0; j < 16; j++) {
 
     /* fat needs to linearize the directory space, can span clusters */
@@ -248,14 +267,17 @@ static __attribute__((always inline)) int8_t fat32_cache_root_dir(struct fat32_c
 
     dump_bin(e, sizeof(struct FAT32Entry));
 
-    if((e->file_attr == FILENAME_NEVER_USED) || (e->file_attr == FILENAME_FILE_DELETED) || ((e->file_attr & 0x0F) == 0x0F))
+    if ((e->file_attr == FILENAME_NEVER_USED) ||
+        (e->file_attr == FILENAME_FILE_DELETED) ||
+        ((e->file_attr & 0x0F) == 0x0F))
       continue;
 
-    /* we should also keep a list to track directory entries, really no need to open files here */
+    /* we should also keep a list to track directory entries, really no need to
+     * open files here */
     uart_write_str("main: file\r\n");
     fat32_open_file(ctx, e, io, &file);
 
-    list_dump((struct node *) file.fat_list, fat32_dump_address);
+    list_dump((struct node *)file.fat_list, fat32_dump_address);
 
     fat32_dump_file_meta(&file);
     fat32_close_file(ctx, &file);
@@ -264,9 +286,7 @@ static __attribute__((always inline)) int8_t fat32_cache_root_dir(struct fat32_c
   return 0;
 }
 
-void fat32_close_root_dir(struct fat32_ctx *ctx) {
-
-}
+void fat32_close_root_dir(struct fat32_ctx *ctx) {}
 
 int8_t initialize_fat32(struct fat32_ctx *fat32, struct io_ctx *io,
                         struct sd_ctx *sd) {
@@ -316,13 +336,15 @@ int8_t initialize_fat32(struct fat32_ctx *fat32, struct io_ctx *io,
 
   fat32_set_context(fat32, &bs);
 
-  if(fat32_cache_root_dir(fat32, sd, io, &e) < 0) {
+  if (fat32_cache_root_dir(fat32, sd, io, &e) < 0) {
     UART_DBG("fat32: unable to cache root directory\r\n");
     return -1;
   }
 
   return 0;
 }
+
+uint8_t fat32_creat_file(struct fat32_ctx *ctx, struct fat32_file *file) {}
 
 void fat32_dump_file_meta(struct fat32_file *file) {
   uart_write_str("\r\nfile size: 0x");
@@ -344,9 +366,7 @@ void fat32_close_file(struct fat32_ctx *ctx, struct fat32_file *file) {
   list_free(ctx->fat_list);
 }
 
-int8_t fat_32_read_file_byte() {
-
-}
+int8_t fat_32_read_file_byte() {}
 
 // int8_t fat32_read_file_nbytes() {
 
@@ -357,5 +377,5 @@ int8_t fat_32_read_file_byte() {
 // }
 
 // int8_t fat32_write_file_nbytes() {
-  
+
 // }

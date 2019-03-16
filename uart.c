@@ -30,7 +30,7 @@ void uart_write_str(char *buf) {
 
 void uart_write_strn(uint8_t *buf, uint8_t n) {
   for (char i = 0; i < n; i++) {
-    if(!isascii(*buf))
+    if (!isascii(*buf))
       continue;
     uart_write_char(*buf);
     buf++;
