@@ -1,3 +1,5 @@
+
+
 /*
  *	USC EE459 Spring 2019 Team 17 - Input/Output Abstraction Layer
  */
@@ -6,6 +8,7 @@
 
 #include "io.h"
 #include "sd.h"
+#include "spi.h"
 #include "uart.h"
 
 /*
@@ -16,23 +19,23 @@
  */
 
 /* the io DBG's spam the log, lets just keep them quiet for now */
-#define UART_DBG(x)
-#define UART_DBG_HEX(x)
+//#define UART_DBG(x)
+//#define UART_DBG_HEX(x)
 
 int8_t initialize_io(struct io_ctx *io, struct sd_ctx *sd) {
 	/* get first sector, set sector pointer */
 
-	if(sd_get_sector(sd, 0, io->input_sector_buf, sd->sd_sector_size) < 0)
+	if(sd_get_sector(0, io->input_sector_buf, SECTOR_SIZE) < 0)
 		return -1;
 
-	if(sd_get_sector(sd, 0, io->output_sector_buf, sd->sd_sector_size) < 0)
+	if(sd_get_sector(0, io->output_sector_buf, SECTOR_SIZE) < 0)
 		return -1;
 
 	io->input_sector_addr = 0;
 	io->input_byte_addr = 0;
 
 	io->output_sector_addr = 0;
-	io->input_byte_addr = 0;
+	io->output_byte_addr = 0;
 
 	io->sd = sd;
 
@@ -50,30 +53,29 @@ static __attribute__((always inline))
 	 *	return success or failure
 	 */
 
-	UART_DBG("io: byte offset: 0x");
-	UART_DBG_HEX(offset >> 24);
-	UART_DBG_HEX(offset >> 16);
-	UART_DBG_HEX(offset >> 8);
-	UART_DBG_HEX(offset);
-	UART_DBG("\r\n");
+	//UART_DBG("io: byte offset: 0x");
+	//UART_DBG_HEX(offset >> 24);
+	//UART_DBG_HEX(offset >> 16);
+	//UART_DBG_HEX(offset >> 8);
+	//UART_DBG_HEX(offset);
+	//UART_DBG("\r\n");
 
 	/* sector address is the byte address divided by the sector size */
 	uint32_t sector_addr = (offset >> 9);
 
-	UART_DBG("io: sector address: 0x");
-	UART_DBG_HEX(sector_addr >> 24);
-	UART_DBG_HEX(sector_addr >> 16);
-	UART_DBG_HEX(sector_addr >> 8);
-	UART_DBG_HEX(sector_addr);
-	UART_DBG("\r\n");
+	//UART_DBG("io: sector address: 0x");
+	//UART_DBG_HEX(sector_addr >> 24);
+	//UART_DBG_HEX(sector_addr >> 16);
+	//UART_DBG_HEX(sector_addr >> 8);
+	//UART_DBG_HEX(sector_addr);
+	//UART_DBG("\r\n");
 
 	/* intra sector address of the specified byte */
-	uint32_t sector_offset = offset % io->sd->sd_sector_size;
+	uint32_t sector_offset = offset % SECTOR_SIZE;
 
 	/* current sector is not the required sector, get the correct one */
 	if(sector_addr != io->input_sector_addr) {
-		if(sd_get_sector(io->sd, sector_addr, io->input_sector_buf, 
-			io->sd->sd_sector_size) < 0 ) {
+		if(sd_get_sector(sector_addr, io->input_sector_buf, SECTOR_SIZE) < 0 ) {
 			return -1;
 		}
 
@@ -106,36 +108,64 @@ int8_t io_read_nbytes(struct io_ctx *io, void *buf, uint32_t offset,
 
 }
 
+int8_t io_flush_write_buffer(struct io_ctx *io) {
+  /*
+   * unconditional write out to the flash
+   */
+  return sd_put_sector(io->output_sector_addr, io->output_sector_buf, SECTOR_SIZE);
+
+}
+
 int8_t io_put_byte(struct io_ctx *io, uint32_t offset, uint8_t *buf) {
-	/*
-	 *	Writing is a little more complex. First we have to write out the
-	 *	previous block, then we have to bring in the block that was requested, 
-	 *	then modify the content of that block, and either force it out,
-	 *	let the watchdog timer handle it, or let it write out when the blocks
-	 *	switch
-	 */
+  /*
+   *  Writing is a little more complex. First we have to write out the
+   *  previous block, then we have to bring in the block that was requested, 
+   *  then modify the content of that block, and either force it out,
+   *  let the watchdog timer handle it, or let it write out when the blocks
+   *  switch
+   */
 
-	/* sector address is the byte address divided by the sector size */
-	uint32_t sector_addr = (offset >> 9);
+  /* sector address is the byte address divided by the sector size */
+  uint32_t sector_addr = (offset / 512);
 
-	/* intra sector address of the specified byte */
-	uint32_t sector_offset = offset % io->sd->sd_sector_size;
+  UART_DBG("io: offset: 0x");
+  UART_DBG_32(offset);
+  UART_DBG("\r\n");
+  
+  UART_DBG("io: sector addr: 0x");
+  UART_DBG_32(sector_addr);
+  UART_DBG("\r\n");
 
-	/* current sector is not the required sector, get the correct one */
-	if(sector_addr != io->output_sector_addr) {
-		if(sd_get_sector(io->sd, sector_addr, io->output_sector_buf, 
-			io->sd->sd_sector_size) < 0 ) {
-			return -1;
-		}
+  /* intra sector address of the specified byte */
+  uint32_t sector_offset = offset % SECTOR_SIZE;
 
-		io->output_sector_addr = sector_addr;
-	}
+  /* current sector is not the required sector, get the correct one */
+  if(sector_addr != io->output_sector_addr) {
+    
+    /* write back previous data unconditionally */
+    if(io_flush_write_buffer(io) < 0) {
+      UART_DBG("io: unable to flush write buffer\r\n");
+      return -1;
+    }
 
-	*buf = io->output_sector_buf[sector_offset];
+    //UART_DBG_BIN(io->output_sector_buf, SECTOR_SIZE);
 
-	io->output_byte_addr = sector_addr + sector_offset;
+    if(sd_get_sector(sector_addr, io->output_sector_buf, 512) < 0 ) {
 
-	UART_DBG("io: byte written: ");
-	UART_DBG_HEX(*buf);
-	UART_DBG("\r\n");
+      UART_DBG("io: unable to get write data, failing\r\n");
+      return -1;
+    }
+
+    UART_DBG_BIN(io->output_sector_buf, SECTOR_SIZE);
+
+    io->output_sector_addr = sector_addr;
+  }
+
+  io->output_sector_buf[sector_offset] = *buf;
+
+  io->output_byte_addr = sector_addr + sector_offset;
+
+  UART_DBG("io: byte written: ");
+  UART_DBG_HEX(*buf);
+  UART_DBG("\r\n");
 }

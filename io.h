@@ -51,5 +51,7 @@ int8_t initialize_io(struct io_ctx *io, struct sd_ctx *sd);
 
 int8_t io_read_nbytes(struct io_ctx *io, void *buf, uint32_t offset, 
 	uint32_t nbytes);
+int8_t io_put_byte(struct io_ctx *io, uint32_t offset, uint8_t *buf);
+int8_t io_flush_write_buffer(struct io_ctx *io);
 
 #endif

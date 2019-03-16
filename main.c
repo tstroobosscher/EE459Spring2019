@@ -7,6 +7,7 @@
 // hello it's paul
 
 #include <avr/io.h>
+#include <stdint.h>
 
 #include "fat.h"
 #include "fifo.h"
@@ -20,11 +21,16 @@
 #include "debug.h"
 
 /*
+ *  okay, so multiplication on 8 bit architectures works a bit differently
+ *  than you would expect. a buffer is assigned to the value being 
+ *  operated on, and the size that buffer may be inadiquate if it is not
+ *  stated explicitely.
+ */
+
+/*
  *	write debug strings in the header that can be placed in program
  *	memory and then referenced by macro
  */
-
-
 
 struct FAT32Entry e;
 
@@ -51,8 +57,9 @@ struct fat32_file file;
 
 int main() {
 
-  char *str = 
-	"1606\n"
+  char ch = 'X';
+
+  char str[] = "1606\n"
 	"THE TRAGEDY OF MACBETH\n"
 	"\n"
 	"\n"
@@ -77,8 +84,7 @@ int main() {
   	"  MENTEITH nobleman of Scotland\n"
   	"  ANGUS,";
 
-  
-  /* atmel hardware */
+/* atmel hardware */
   initialize_pins();
 
   UART_DBG("main: initialized pins\r\n");
@@ -105,18 +111,27 @@ int main() {
   if (initialize_fat32(&fat32, &io, &sd) < 0)
     UART_DBG("main: unable to initialize FAT32\r\n");
   else
-    UART_DBG("main: initialized fat32\r\n");
-
-  /* main routines */
-  if(sd_put_sector(0x00007E78, str, 512) < 0)
-    UART_DBG("main: unable to write block\r\n");
-  else
-    UART_DBG("main: write block successful\r\n");
-
-  while(sd_is_busy()){
-  }
+    UART_DBG("main: initialized FAT32\r\n");
   
-loop:
+  /* main routines */
+  /* strncpy(io.output_sector_buf, str, 512); */
+  
+  /* io.output_sector_addr = 0x7E78; */
+  
+  /* if(sd_put_sector(0x00007E78, io.output_sector_buf, 512) < 0) */
+  /*   UART_DBG("main: unable to write block\r\n"); */
+  /* else */
+  /*   UART_DBG("main successfully wrote block\r\n"); */
+  
+  /* if(io_put_byte(&io, ((uint32_t) 0x00007E78 * (uint32_t) 512), &ch) < 0) */
+  /*   UART_DBG("main: unable to write byte\r\n"); */
+  /* else */
+  /*   UART_DBG("main: write byte successful\r\n"); */
+  
+  /* if(io_flush_write_buffer(&io) < 0) */
+  /*   UART_DBG("main: unable to flush write buffer\r\n"); */
+  /* else */
+  /*   UART_DBG("main: successfully flushed write buffer\r\n"); */
 
   while (1) {
     if(pin_high(26) < 0)
