@@ -2,105 +2,109 @@
  *	USC EE459 Spring 2019 Team 17 - Serial (UART)
  */
 
-#include <stdio.h>
-#include <stdint.h>
 #include <avr/io.h>
+#include <stdint.h>
+#include <stdio.h>
 
 #include "uart.h"
 #include "utils.h"
 
 char uart_read_char() {
-    while(!(UCSR0A & (1 << RXC0))) {}
-    return UDR0;
+  while (!(UCSR0A & (1 << RXC0))) {
+  }
+  return UDR0;
 }
 
 void uart_write_char(char data) {
-    while(!(UCSR0A & (1 << UDRE0))) {}
-    UDR0=data;
+  while (!(UCSR0A & (1 << UDRE0))) {
+  }
+  UDR0 = data;
 }
 
 void uart_write_str(char *buf) {
-    while(*buf) {
-        uart_write_char(*buf);
-        buf++;
-    }
+  while (*buf) {
+    uart_write_char(*buf);
+    buf++;
+  }
 }
 
 void uart_write_strn(uint8_t *buf, uint8_t n) {
-    for(char i = 0; i < n; i++) {
-        uart_write_char(*buf);
-        buf++;
-    }
+  for (char i = 0; i < n; i++) {
+    if (!isascii(*buf))
+      continue;
+    uart_write_char(*buf);
+    buf++;
+  }
 }
 
 void uart_write_hex(uint8_t n) {
-    if(((n>>4) & 15) < 10)
-        uart_write_char('0' + ((n>>4)&15));
-    else
-        uart_write_char('A' + ((n>>4)&15) - 10);
-    n <<= 4;
-    if(((n>>4) & 15) < 10)
-        uart_write_char('0' + ((n>>4)&15));
-    else
-        uart_write_char('A' + ((n>>4)&15) - 10);
+  if (((n >> 4) & 15) < 10)
+    uart_write_char('0' + ((n >> 4) & 15));
+  else
+    uart_write_char('A' + ((n >> 4) & 15) - 10);
+  n <<= 4;
+  if (((n >> 4) & 15) < 10)
+    uart_write_char('0' + ((n >> 4) & 15));
+  else
+    uart_write_char('A' + ((n >> 4) & 15) - 10);
 }
 
-void uart_write_32 (uint32_t val) {
-    uart_write_hex(val >> 24);
-    uart_write_hex(val >> 16);
-    uart_write_hex(val >> 8);
-    uart_write_hex(val);
+void uart_write_32(uint32_t val) {
+  uart_write_hex(val >> 24);
+  uart_write_hex(val >> 16);
+  uart_write_hex(val >> 8);
+  uart_write_hex(val);
 }
 
-void initialize_uart(unsigned int ubrr_value) {
-    /*
-     * Set Baud rate
-     */
-    UBRR0H = (unsigned char)(ubrr_value >> 8);  
-    UBRR0L = (unsigned char)(ubrr_value & 255);
+void initialize_uart(unsigned long ubrr_value) {
+  /*
+   * Set Baud rate
+   */
+  UBRR0H = (unsigned char)(ubrr_value >> 8);
+  UBRR0L = (unsigned char)(ubrr_value & 255);
 
-    /*
-     *	Frame Format: asynchronous, no parity, 1 stop bit, char size 8
-     */
-    UCSR0C = (1 << UCSZ01) | (1 << UCSZ00);
+  /*
+   *	Frame Format: asynchronous, no parity, 1 stop bit, char size 8
+   */
+  UCSR0C = (1 << UCSZ01) | (1 << UCSZ00);
 
-    /*
-     *	Enable The receiver and transmitter
-     */
-    UCSR0B = (1 << RXEN0) | (1 << TXEN0);
+  /*
+   *	Enable The receiver and transmitter
+   */
+  UCSR0B = (1 << RXEN0) | (1 << TXEN0);
 
-    /* 
-     *	flush output buffer, kind of a hack, should really be checking
-     *	buffer status
-     */
-    uart_write_str("\n\r\n\r");
+  /*
+   *	flush output buffer, kind of a hack, should really be checking
+   *	buffer status
+   */
+  uart_write_str("\n\r\n\r");
 }
 
-void uart_check_vowel_consonant(){
-	uint8_t ch = uart_read_char();
-	uint8_t buf[BUF_SIZE];
+void uart_check_vowel_consonant() {
+  uint8_t ch = uart_read_char();
+  uint8_t buf[BUF_SIZE];
 
-	if ((ch >= 'a') && (ch <= 'z')) {
-		switch(ch) {
-			case 'a':
-				sprintf((char *) buf,"You entered a vowel: a\n\r");
-				break;
-			case 'e':
-				sprintf((char *) buf,"You entered a vowel: e\n\r");
-				break;
-			case 'i':
-				sprintf((char *) buf,"You entered a vowel: i\n\r");
-				break;
-			case 'o':
-				sprintf((char *) buf,"You entered a vowel: o\n\r");
-				break;
-			case 'u':
-				sprintf((char *) buf,"You entered a vowel: u\n\r");
-				break;
-			default:
-				sprintf((char *) buf, "That was the consonant: %c\n\r", ch);
-		}
+  if ((ch >= 'a') && (ch <= 'z')) {
+    switch (ch) {
+    case 'a':
+      sprintf((char *)buf, "You entered a vowel: a\n\r");
+      break;
+    case 'e':
+      sprintf((char *)buf, "You entered a vowel: e\n\r");
+      break;
+    case 'i':
+      sprintf((char *)buf, "You entered a vowel: i\n\r");
+      break;
+    case 'o':
+      sprintf((char *)buf, "You entered a vowel: o\n\r");
+      break;
+    case 'u':
+      sprintf((char *)buf, "You entered a vowel: u\n\r");
+      break;
+    default:
+      sprintf((char *)buf, "That was the consonant: %c\n\r", ch);
+    }
 
-		uart_write_str((char *) buf);
-	}
+    uart_write_str((char *)buf);
+  }
 }

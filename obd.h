@@ -213,5 +213,4 @@ static const enum {
 	/* A4 */	TRANSMISSION_GEAR,
 	/* A5 */	DIESEL_EXHAUST_FLUID_TREATMENT,
 	/* A6 */	ODOMETER,
-
 #endif

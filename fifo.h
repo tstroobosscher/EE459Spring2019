@@ -5,7 +5,7 @@
 #ifndef FIFO_H
 #define FIFO_H
 
-#include <stdint.h> 
+#include <stdint.h>
 
 #include "debug.h"
 
@@ -13,16 +13,16 @@
 #define FIFO_SIZE 16
 
 static const enum {
-	FIFO_FULL,
-	FIFO_EMPTY,
-	FIFO_READY,
+  FIFO_FULL,
+  FIFO_EMPTY,
+  FIFO_READY,
 } fifo_status;
 
 struct fifo_t {
-	uint8_t f_buf[FIFO_SIZE];
-	uint8_t f_head;
-	uint8_t f_tail;
-	uint8_t f_status;
+  uint8_t f_buf[FIFO_SIZE];
+  uint8_t f_head;
+  uint8_t f_tail;
+  uint8_t f_status;
 };
 
 /*

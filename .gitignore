@@ -4,3 +4,5 @@
 *.zip
 *.tar
 avr_size.txt 
+\#*\#
+.\#*

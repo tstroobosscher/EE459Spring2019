@@ -274,7 +274,14 @@ because the addresses will be different
 
 # Draft of our Block Diagram
 
-<img src="resources/EE459_Diagram.png">
+<img src="resources/EE459_Diagram_Draft_2.png">
+
+## Linked List
+Because a lot of our data operations happen in varying states, for example, the 
+OBD data set of one vehicle may be wildly different from another, or the size 
+of a file and the resources it consumes and where those resources are located
+comes in unpredictable forms, so employing a linked list to handle this kind of
+unpredictability in the characterization of a dataset has been very helpful.
 
 ## Useful Commands
 
@@ -332,6 +339,7 @@ This just pulls in other peoples changes into your own local repository.
 | February 21, 2019 | d37c9837 | 10.1% | 42.9% |
 | February 21, 2019 | f63b8958 | 11.2% | 43.1% |
 | February 24, 2019 | 46822e93 | 16.2% | 73.0% |
+| March 5, 2019 | d7c76f37 | 3.2% | 30.8% | <-- 8K SRAM |
 
 ## Issues
 Programming the board while using SPI devices can cause bus contention and can

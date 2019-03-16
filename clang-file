@@ -1,0 +1,4 @@
+#!/bin/sh
+
+clang-format-5.0 $1 > tmp 
+mv tmp $1
