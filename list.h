@@ -19,3 +19,4 @@ void list_free(struct node *ptr);
 void list_dump(struct node *ptr, void (*fptr)(void *));
 
 #endif
+

@@ -64,3 +64,4 @@ void list_dump(struct node *ptr, void (*fptr)(void *)) {
     ptr = ptr->next;
   }
 }
+

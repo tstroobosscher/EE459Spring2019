@@ -4,6 +4,23 @@
 
 #include <obd.h>
 
+struct sensor {
+
+    // name of the sensor (O2, Fuel Trim, etc.)
+    const char *name;
+
+    // AT command used to retrieve sensor data
+    command,
+
+    // function used to translate raw dato to process
+    function pointer,
+
+    // units of the data if there are any
+    units
+} obd_sensors[] = {
+
+};
+
 /*
 
         static function_util_sensor(raw data)

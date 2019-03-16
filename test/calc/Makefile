@@ -12,7 +12,7 @@ CC = gcc -Wall
 
 BINARY_FLAGS = -o
 
-SOURCE = calc.c $(TOP_DIR)/fat.c $(TOP_DIR)/utils.c
+SOURCE = calc.c #$(TOP_DIR)/fat.c $(TOP_DIR)/utils.c
 
 BINARY = calc
 
