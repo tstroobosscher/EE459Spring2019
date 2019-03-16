@@ -84,7 +84,7 @@ int main() {
   	"  MENTEITH nobleman of Scotland\n"
   	"  ANGUS,";
 
-/* atmel hardware */
+  /* atmel hardware */
   initialize_pins();
 
   UART_DBG("main: initialized pins\r\n");
@@ -99,19 +99,19 @@ int main() {
 
   /* software resources */
   if (initialize_sd(&sd) < 0)
-    UART_DBG("main: unable to initialize SD\r\n");
+    UART_DBG("main: unable to initialize sd\r\n");
   else 
     UART_DBG("main: initialized sd\r\n");
 
   if (initialize_io(&io, &sd) < 0)
-    UART_DBG("main: unable to initialize IO\r\n");
+    UART_DBG("main: unable to initialize io\r\n");
   else
-    UART_DBG("main: initialized IO\r\n");
+    UART_DBG("main: initialized io\r\n");
 
   if (initialize_fat32(&fat32, &io, &sd) < 0)
-    UART_DBG("main: unable to initialize FAT32\r\n");
+    UART_DBG("main: unable to initialize fat32\r\n");
   else
-    UART_DBG("main: initialized FAT32\r\n");
+    UART_DBG("main: initialized fat32\r\n");
   
   /* main routines */
   /* strncpy(io.output_sector_buf, str, 512); */
