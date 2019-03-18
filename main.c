@@ -17,8 +17,8 @@
 #include "sd.h"
 #include "spi.h"
 #include "time.h"
-#include "uart.h"
 #include "utils.h"
+#include "uart.h"
 
 /*
  *  okay, so multiplication on 8 bit architectures works a bit differently
@@ -115,6 +115,12 @@ int main() {
     UART_DBG("main: initialized fat32\r\n");
 
   /* main routines */
+
+  struct fat32_ctx file;
+
+  uart_write_str("Hello World!\r\n");
+  fat32_creat_file(&fat32, &file);
+  
   /* strncpy(io.output_sector_buf, str, 512); */
 
   /* io.output_sector_addr = 0x7E78; */

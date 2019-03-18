@@ -11,6 +11,19 @@
 #include "sd.h"
 #include "uart.h"
 
+#ifdef DEBUG
+#define FAT32_DBG_FILENAME(x) fat32_dump_filename(x)
+#define FAT32_DBG_ADDRESS(x) fat32_dump_address(x)
+#define LIST_DBG(x, y) list_dump(x, y)
+#define FAT32_DBG_FILE_META(x) fat32_dump_file_meta(x)
+#else
+#define FAT32_DBG_FILENAME(x)
+#define FAT32_DBG_ADDRESS(x) 
+#define LIST_DBG(x, y)
+#define FAT32_DBG_FILE_META(x)
+#endif
+
+
 static __attribute__((always inline)) uint32_t
 fat32_calc_first_cluster(uint16_t high, uint16_t low) {
   uint32_t shift_high = high;
@@ -39,28 +52,29 @@ int8_t fat32_parse_entry(struct FAT32Entry *e) {
     /* end of directory */
     return -1;
   case FILENAME_FILE_DELETED:
-    uart_write_str("fat32: deleted entry found: ");
-    fat32_dump_filename(e);
-    uart_write_str("\r\n");
+    UART_DBG("fat32: deleted entry found: ");
+    FAT32_DBG_FILENAME(e);
+    UART_DBG("\r\n");
     return 0;
   case FILENAME_FIRST_CHAR_E5:
     /* Regular file, proceed normally */
-    uart_write_str("fat32: entry found, starting with 0xE5: ");
-    fat32_dump_filename(e);
-    uart_write_str("\r\n");
+    UART_DBG("fat32: entry found, starting with 0xE5: ");
+    FAT32_DBG_FILENAME(e);
+    UART_DBG("\r\n");
     break;
   default:
     /* LFN's not yet implemented */
     if ((e->file_attr & 0x0F) == 0x0F) {
-      uart_write_str("fat32: entry found: LFN\r\n");
-      uart_write_str("    LFN's not yet implemented :(\r\n");
+      UART_DBG("fat32: entry found: LFN\r\n");
+      UART_DBG("    LFN's not yet implemented :(\r\n");
       return 0;
-    } else
+    } else {
       /* Regular file, proceed normally */
-      uart_write_str("fat32: entry found: ");
-    fat32_dump_filename(e);
-    uart_write_str("\r\n");
-    break;
+      UART_DBG("fat32: entry found: ");
+      FAT32_DBG_FILENAME(e);
+      UART_DBG("\r\n");
+      break;
+    }
   }
 
   if (e->file_attr & FILE_ATTR_RO)
@@ -79,9 +93,9 @@ int8_t fat32_parse_entry(struct FAT32Entry *e) {
   uint32_t cluster_addr = fat32_calc_first_cluster(e->first_cluster_addr_high,
                                                    e->first_cluster_addr_low);
 
-  uart_write_str("    Starting cluter address: 0x");
-  uart_write_32(cluster_addr);
-  uart_write_str("\r\n");
+  UART_DBG("    Starting cluter address: 0x");
+  UART_DBG_32(cluster_addr);
+  UART_DBG("\r\n");
 
   return 0;
 }
@@ -117,7 +131,9 @@ fat32_set_context(struct fat32_ctx *fat32, struct FAT32BootSector *bs) {
 
   fat32->fat_begin_sector = fat32->start_sector + fat32->reserved_sectors;
 
-  fat32->fat_list = NULL;
+  fat32->root_dir_entries = NULL;
+  //fat32->fat_list = NULL;
+  //fat32->file_list = NULL;
 }
 
 static __attribute__((always inline)) void fat32_dump_address(uint32_t *dat) {
@@ -139,7 +155,7 @@ fat32_get_fat(struct fat32_ctx *ctx, struct io_ctx *io, uint32_t first_cluster,
               struct node **ptr) {
   /*
    *  traverse the fat, create a heap structure pointing to a linked list
-   * containing the values, return by reference
+   *  containing the values, return by reference
    */
 
   struct node *n = (struct node *)NULL;
@@ -234,19 +250,29 @@ fat32_cache_root_dir(struct fat32_ctx *ctx, struct sd_ctx *sd,
    *
    *  save the values: pointer to linked list concerning the root
    *  directory entries
+   *
+   *  So we can't use a lookup table, the fat can be huge and would be more
+   *  challenging to make it fit. So a linked list and some extra work
+   *  would be the best way to go.
    */
 
-  /* need an upper bound on the number of entries. sizeof(fat) / sizeof(entry) ?
+  /* 
+   *  need an upper bound on the number of entries. sizeof(fat) / sizeof(entry) ?
    */
 
   /* first traverse the fat */
-  if (fat32_get_fat(ctx, io, ctx->cluster_number_root_dir, &(ctx->fat_list)) <
+
+  struct fat32_file root_dir;
+  
+  if (fat32_get_fat(ctx, io, ctx->cluster_number_root_dir, &(root_dir.fat_list)) <
       0) {
     UART_DBG("fat32: unable to get FAT\r\n");
     return -1;
   }
 
-  list_dump(ctx->fat_list, fat32_dump_address);
+  list_push_tail(&(ctx->root_dir_entries), &root_dir, sizeof(struct fat32_file));
+
+  //list_dump(ctx->fat_list, fat32_dump_address);
 
   struct fat32_file file;
 
@@ -265,28 +291,36 @@ fat32_cache_root_dir(struct fat32_ctx *ctx, struct sd_ctx *sd,
     if (fat32_parse_entry(e) < 0)
       break;
 
-    dump_bin(e, sizeof(struct FAT32Entry));
+    //UART_DBG_BIN(e, sizeof(struct FAT32Entry));
 
-    if ((e->file_attr == FILENAME_NEVER_USED) ||
-        (e->file_attr == FILENAME_FILE_DELETED) ||
-        ((e->file_attr & 0x0F) == 0x0F))
+    if ((e->filename[0] == FILENAME_NEVER_USED) ||
+        (e->filename[0] == FILENAME_FILE_DELETED) ||
+        ((e->file_attr & 0x0F) == 0x0F) ||
+	((e->file_attr & FILE_ATTR_LABEL)))
       continue;
 
     /* we should also keep a list to track directory entries, really no need to
      * open files here */
-    uart_write_str("main: file\r\n");
+
     fat32_open_file(ctx, e, io, &file);
 
-    list_dump((struct node *)file.fat_list, fat32_dump_address);
+    //list_dump((struct node *)file.fat_list, fat32_dump_address);
 
-    fat32_dump_file_meta(&file);
-    fat32_close_file(ctx, &file);
+    list_push_tail(&(ctx->root_dir_entries), &file, sizeof(struct fat32_file));
+
+    //fat32_dump_file_meta(&file);
+
+    /* restate this! memory leak! */
+    //fat32_close_file(ctx, &file);
   }
 
   return 0;
 }
 
-void fat32_close_root_dir(struct fat32_ctx *ctx) {}
+void fat32_close_root_dir(struct fat32_ctx *ctx) {
+  //list_free(ctx->fat_list);
+  //list_free(ctx->file_list);
+}
 
 int8_t initialize_fat32(struct fat32_ctx *fat32, struct io_ctx *io,
                         struct sd_ctx *sd) {
@@ -344,7 +378,71 @@ int8_t initialize_fat32(struct fat32_ctx *fat32, struct io_ctx *io,
   return 0;
 }
 
-uint8_t fat32_creat_file(struct fat32_ctx *ctx, struct fat32_file *file) {}
+int8_t fat32_address_in_dir(struct fat32_ctx *ctx, uint32_t addr) {
+  
+  struct node *n = ctx->root_dir_entries;
+  
+  while(n != NULL) {
+    
+    struct fat32_file *f = n->data;
+    struct node *t = f->fat_list;
+    
+    while(t != NULL) {
+      uint32_t *ptr = (uint32_t *) t->data;
+
+      uart_write_str("fat32: ptr: 0x");
+      uart_write_32(*ptr);
+      uart_write_str(" addr: 0x");
+      uart_write_32(addr);
+      uart_write_str("\r\n");
+      if(*ptr == addr)
+	return true;
+      
+      t = t->next;
+    }
+    
+    n = n->next;
+  }
+
+  return false;
+}
+
+int32_t fat32_get_next_cluster(struct fat32_ctx *ctx) {
+  /*
+   *  The fs cluster info is stored as a list of lists, the first list
+   *  describes the root directory entries, of which, each entry
+   *  contains a list of cluster addresses that are dedicated to that
+   *  file. The idea is to locate the lowest numerically valued cluster
+   *  address to allocate to the file being created
+   * 
+   *  root directory is always at cluster addr 2 (0 and 1 are 
+   *  dedicated to fs info), can be an arbitrary size
+   *
+   *  the list may not be in order, I dont think entry order necessarily
+   *  corresponds to a monotonic increase in address order. If we leave
+   *  it out of order this algorithm is going to be super expensive. 
+   *  essentially we have to search the entire list for every iteration
+   *  of the loop, over the entire size of the list. crazy
+   */
+
+  /* cluster addressing starts at 2 */
+  uint32_t cluster = 2;
+
+  while(fat32_address_in_dir(ctx, cluster))
+
+    cluster++;
+  
+  return cluster;
+}
+
+uint8_t fat32_creat_file(struct fat32_ctx *ctx, struct fat32_file *file) {
+
+  uint32_t res = fat32_get_next_cluster(ctx);
+
+  struct fat32_file f;
+  
+  return 0;
+}
 
 void fat32_dump_file_meta(struct fat32_file *file) {
   uart_write_str("\r\nfile size: 0x");
@@ -363,7 +461,7 @@ void fat32_dump_file_meta(struct fat32_file *file) {
 }
 
 void fat32_close_file(struct fat32_ctx *ctx, struct fat32_file *file) {
-  list_free(ctx->fat_list);
+  //list_free(ctx->fat_list);
 }
 
 int8_t fat_32_read_file_byte() {}
