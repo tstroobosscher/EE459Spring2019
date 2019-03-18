@@ -119,8 +119,26 @@ int main() {
   struct fat32_ctx file;
 
   uart_write_str("Hello World!\r\n");
-  fat32_creat_file(&fat32, &file);
+  //fat32_creat_file(&fat32, &file);
+
+  uint32_t res = 3;
+
+  struct FAT32Entry e;
+  memset(&e, 0, sizeof(struct FAT32Entry));
+
+  strncpy(e.filename, "logfile1", 8);
+  strncpy(e.filename_ext, "txt", 3);
+
+  e.first_cluster_addr_high = (res >> 16);
+  e.first_cluster_addr_low = (res);
   
+  e.file_size = 0;
+
+  uint32_t ret = 1;
+
+  io_write_nbytes(fat32.io, &e, fat32.root_dir_sector * SECTOR_SIZE + 32 * ret, sizeof(struct FAT32Entry));
+
+  io_flush_write_buffer(fat32.io);
   /* strncpy(io.output_sector_buf, str, 512); */
 
   /* io.output_sector_addr = 0x7E78; */

@@ -260,6 +260,7 @@ struct fat32_file {
 
   uint32_t file_size;
   uint32_t byte_offset;
+  uint32_t root_dir_offset;
   uint32_t current_cluster;
   uint32_t current_sector;
   uint32_t sectors_per_cluster;
@@ -292,6 +293,8 @@ struct fat32_ctx {
   
   //struct node *fat_list;
   //struct node *file_list;
+
+  struct io_ctx *io;
 };
 
 int8_t initialize_fat32(struct fat32_ctx *fat32, struct io_ctx *io,

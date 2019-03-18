@@ -169,3 +169,17 @@ int8_t io_put_byte(struct io_ctx *io, uint32_t offset, uint8_t *buf) {
   UART_DBG_HEX(*buf);
   UART_DBG("\r\n");
 }
+
+int8_t io_write_nbytes(struct io_ctx *io, void *buf, uint32_t offset,
+                      uint32_t nbytes) {
+
+  uint8_t *ptr = (uint8_t *)buf;
+
+  for (uint32_t i = 0; i < nbytes; i++) {
+    if (io_put_byte(io, offset + i, &ptr[i]) < 0)
+      return -1;
+  }
+
+  return 0;
+}
+

@@ -177,17 +177,14 @@ static __attribute__((always inline)) void sd_get_bytes(uint16_t bytes,
                                                         uint8_t *buf) {
 
   UART_DBG("sd: spi received: ");
-  // DELAY_MS(10);
 
   for (uint16_t i = 0; i < bytes; i++) {
     buf[i] = spi_read_char();
-    // DELAY_MS(10);
     UART_DBG_HEX(buf[i]);
     UART_DBG(" ");
   }
 
   UART_DBG("\r\n");
-  // DELAY_MS(10);
 }
 
 static __attribute__((always inline)) int8_t sd_init_read_sector(uint32_t arg) {
@@ -425,14 +422,12 @@ int16_t sd_get_sector(uint32_t addr, uint8_t *buf, uint16_t size) {
   if (sd_init_read_sector(addr) < 0) {
 
     UART_DBG("sd: unable to initialize sector\r\n");
-    // DELAY_MS(10);
 
     spi_device_disable(SPI_SD_CARD);
     return -1;
   }
 
   UART_DBG("sd: sector ready\r\n");
-  // DELAY_MS(10);
 
   sd_get_bytes(size, buf);
 

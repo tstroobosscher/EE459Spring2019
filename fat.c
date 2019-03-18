@@ -277,7 +277,7 @@ fat32_cache_root_dir(struct fat32_ctx *ctx, struct sd_ctx *sd,
   struct fat32_file file;
 
   /* 16 is arbitrary right now, directory entries are 0 delimited */
-  for (int j = 0; j < 16; j++) {
+  for (uint32_t j = 0; j < 16; j++) {
 
     /* fat needs to linearize the directory space, can span clusters */
     if (io_read_nbytes(io, e,
@@ -295,14 +295,17 @@ fat32_cache_root_dir(struct fat32_ctx *ctx, struct sd_ctx *sd,
 
     if ((e->filename[0] == FILENAME_NEVER_USED) ||
         (e->filename[0] == FILENAME_FILE_DELETED) ||
-        ((e->file_attr & 0x0F) == 0x0F) ||
-	((e->file_attr & FILE_ATTR_LABEL)))
+        ((e->file_attr & 0x0F) == 0x0F))
       continue;
 
     /* we should also keep a list to track directory entries, really no need to
      * open files here */
 
     fat32_open_file(ctx, e, io, &file);
+
+    file.root_dir_offset = j;
+
+    uart_write_32(file.root_dir_offset);
 
     //list_dump((struct node *)file.fat_list, fat32_dump_address);
 
@@ -330,10 +333,12 @@ int8_t initialize_fat32(struct fat32_ctx *fat32, struct io_ctx *io,
   struct PartitionTable pt[PARTITION_TABLE_ENTRIES];
   struct FAT32BootSector bs;
 
+  fat32->io = io;
+
   if (sd->sd_status == SD_DISABLED)
     return 0;
 
-  if (io_read_nbytes(io, &pt, PARTITION_TABLE_OFFSET,
+  if (io_read_nbytes(fat32->io, &pt, PARTITION_TABLE_OFFSET,
                      sizeof(struct PartitionTable) * PARTITION_TABLE_ENTRIES) <
       0) {
     UART_DBG("fat32: error reading partition table\r\n");
@@ -360,7 +365,7 @@ int8_t initialize_fat32(struct fat32_ctx *fat32, struct io_ctx *io,
   }
 
   /* read the boot sector */
-  if (io_read_nbytes(io, &bs, SECTOR_SIZE_BYTES * pt[0].start_sector,
+  if (io_read_nbytes(fat32->io, &bs, SECTOR_SIZE_BYTES * pt[0].start_sector,
                      sizeof(struct FAT32BootSector)) < 0) {
     UART_DBG("fat32: error reading FAT32 boot sector\r\n");
     return -1;
@@ -370,7 +375,7 @@ int8_t initialize_fat32(struct fat32_ctx *fat32, struct io_ctx *io,
 
   fat32_set_context(fat32, &bs);
 
-  if (fat32_cache_root_dir(fat32, sd, io, &e) < 0) {
+  if (fat32_cache_root_dir(fat32, sd, fat32->io, &e) < 0) {
     UART_DBG("fat32: unable to cache root directory\r\n");
     return -1;
   }
@@ -390,11 +395,6 @@ int8_t fat32_address_in_dir(struct fat32_ctx *ctx, uint32_t addr) {
     while(t != NULL) {
       uint32_t *ptr = (uint32_t *) t->data;
 
-      uart_write_str("fat32: ptr: 0x");
-      uart_write_32(*ptr);
-      uart_write_str(" addr: 0x");
-      uart_write_32(addr);
-      uart_write_str("\r\n");
       if(*ptr == addr)
 	return true;
       
@@ -435,11 +435,48 @@ int32_t fat32_get_next_cluster(struct fat32_ctx *ctx) {
   return cluster;
 }
 
+int8_t fat32_root_entry_found(struct fat32_ctx *ctx, uint32_t loc) {
+  for(struct node *n = ctx->root_dir_entries; n != NULL; n = n->next) {
+    struct fat32_file *file = (uint32_t *) n->data;
+    uart_write_32(file->root_dir_offset);
+    uart_write_str("\r\n");
+    if(file->root_dir_offset == loc)
+      return true;
+  }
+
+  return false;
+}
+
+uint32_t fat32_get_next_root_dir_loc(struct fat32_ctx *ctx) {
+
+  uint32_t root_dir_index = 0;
+
+  while(fat32_root_entry_found(ctx, root_dir_index))
+    root_dir_index++;
+
+  return root_dir_index;
+}
+
 uint8_t fat32_creat_file(struct fat32_ctx *ctx, struct fat32_file *file) {
 
   uint32_t res = fat32_get_next_cluster(ctx);
 
-  struct fat32_file f;
+  struct FAT32Entry e;
+  memset(&e, 0, sizeof(struct FAT32Entry));
+
+  strncpy(e.filename, "logfile1", 8);
+  strncpy(e.filename_ext, "txt", 3);
+
+  e.first_cluster_addr_high = (res >> 16);
+  e.first_cluster_addr_low = (res);
+  
+  e.file_size = 0;
+
+  uint32_t ret = fat32_get_next_root_dir_loc(ctx);
+  uart_write_32(ret);
+
+  /* may need to be flushed! */
+  io_write_nbytes(ctx->io, &e, ctx->root_dir_sector * SECTOR_SIZE + 32 * ret, sizeof(struct FAT32Entry));
   
   return 0;
 }
