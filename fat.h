@@ -257,7 +257,8 @@ struct fat32_file {
    *  The number of list items times the sector size should give
    *  the upper bound of the file size.
    */
-
+  uint8_t file_name[8];
+  uint8_t file_ext[3];
   uint32_t file_size;
   uint32_t byte_offset;
   uint32_t root_dir_offset;
@@ -302,6 +303,6 @@ int8_t initialize_fat32(struct fat32_ctx *fat32, struct io_ctx *io,
 
 int8_t fat32_parse_entry(struct FAT32Entry *e);
 void fat32_dump_file_meta(struct fat32_file *file);
-uint8_t fat32_creat_file(struct fat32_ctx *ctx, struct fat32_file *file);
+int8_t fat32_creat_file(struct fat32_ctx *ctx, struct fat32_file *file);
 
 #endif

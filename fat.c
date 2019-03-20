@@ -151,7 +151,7 @@ fat32_is_last_cluster(uint32_t dat) {
 }
 
 static __attribute__((always inline)) int8_t
-fat32_get_fat(struct fat32_ctx *ctx, struct io_ctx *io, uint32_t first_cluster,
+fat32_get_fat(struct fat32_ctx *ctx, uint32_t first_cluster,
               struct node **ptr) {
   /*
    *  traverse the fat, create a heap structure pointing to a linked list
@@ -165,7 +165,7 @@ fat32_get_fat(struct fat32_ctx *ctx, struct io_ctx *io, uint32_t first_cluster,
 
   do {
 
-    if (io_read_nbytes(io, &next_address,
+    if (io_read_nbytes(ctx->io, &next_address,
                        SECTOR_SIZE_BYTES * ctx->fat_begin_sector +
                            curr_address * 4,
                        sizeof(curr_address)) < 0) {
@@ -222,7 +222,7 @@ int8_t fat32_open_file(struct fat32_ctx *ctx, struct FAT32Entry *e,
    */
 
   /* lets build the 64 bit value and store in the context */
-  if (fat32_get_fat(ctx, io,
+  if (fat32_get_fat(ctx,
                     fat32_calc_first_cluster(e->first_cluster_addr_high,
                                              e->first_cluster_addr_low),
                     &(file->fat_list)) < 0)
@@ -230,6 +230,10 @@ int8_t fat32_open_file(struct fat32_ctx *ctx, struct FAT32Entry *e,
 
   file->file_size = e->file_size;
   file->byte_offset = 0;
+
+  strncpy(file->file_name, e->filename, 8);
+  strncpy(file->file_ext, e->filename_ext, 3);
+
   file->current_cluster = fat32_calc_first_cluster(e->first_cluster_addr_high,
                                                    e->first_cluster_addr_low);
   file->sectors_per_cluster = ctx->sectors_per_cluster;
@@ -264,15 +268,13 @@ fat32_cache_root_dir(struct fat32_ctx *ctx, struct sd_ctx *sd,
 
   struct fat32_file root_dir;
   
-  if (fat32_get_fat(ctx, io, ctx->cluster_number_root_dir, &(root_dir.fat_list)) <
+  if (fat32_get_fat(ctx, ctx->cluster_number_root_dir, &(root_dir.fat_list)) <
       0) {
     UART_DBG("fat32: unable to get FAT\r\n");
     return -1;
   }
 
   list_push_tail(&(ctx->root_dir_entries), &root_dir, sizeof(struct fat32_file));
-
-  //list_dump(ctx->fat_list, fat32_dump_address);
 
   struct fat32_file file;
 
@@ -291,8 +293,6 @@ fat32_cache_root_dir(struct fat32_ctx *ctx, struct sd_ctx *sd,
     if (fat32_parse_entry(e) < 0)
       break;
 
-    //UART_DBG_BIN(e, sizeof(struct FAT32Entry));
-
     if ((e->filename[0] == FILENAME_NEVER_USED) ||
         (e->filename[0] == FILENAME_FILE_DELETED) ||
         ((e->file_attr & 0x0F) == 0x0F))
@@ -305,7 +305,7 @@ fat32_cache_root_dir(struct fat32_ctx *ctx, struct sd_ctx *sd,
 
     file.root_dir_offset = j;
 
-    uart_write_32(file.root_dir_offset);
+    //uart_write_32(file.root_dir_offset);
 
     //list_dump((struct node *)file.fat_list, fat32_dump_address);
 
@@ -437,9 +437,7 @@ int32_t fat32_get_next_cluster(struct fat32_ctx *ctx) {
 
 int8_t fat32_root_entry_found(struct fat32_ctx *ctx, uint32_t loc) {
   for(struct node *n = ctx->root_dir_entries; n != NULL; n = n->next) {
-    struct fat32_file *file = (uint32_t *) n->data;
-    uart_write_32(file->root_dir_offset);
-    uart_write_str("\r\n");
+    struct fat32_file *file = (struct fat32_file *) n->data;
     if(file->root_dir_offset == loc)
       return true;
   }
@@ -457,26 +455,48 @@ uint32_t fat32_get_next_root_dir_loc(struct fat32_ctx *ctx) {
   return root_dir_index;
 }
 
-uint8_t fat32_creat_file(struct fat32_ctx *ctx, struct fat32_file *file) {
+int8_t fat32_file_exists(struct fat32_ctx *ctx, struct fat32_file *file) {
+  for(struct node *n = ctx->root_dir_entries; n != NULL; n = n->next) {
+    struct fat32_file *cached_file = (struct fat32_file *) n->data;
+    if(!strncmp(cached_file->file_name, file->file_name, 8) && !strncmp(cached_file->file_ext, file->file_ext, 3)) {
+      UART_DBG("fat32: file already exists\r\n");
+      return file->root_dir_offset;
+    }
+  }
+  
+  UART_DBG("fat32: creating new file entry\r\n");
+  return false;
+}
 
-  uint32_t res = fat32_get_next_cluster(ctx);
+int8_t fat32_creat_file(struct fat32_ctx *ctx, struct fat32_file *file) {
+  /*
+   *  file name needs to be filled
+   */
 
+  uint32_t root_dir_offset;
+  uint32_t first_cluster_addr;
   struct FAT32Entry e;
   memset(&e, 0, sizeof(struct FAT32Entry));
 
-  strncpy(e.filename, "logfile1", 8);
-  strncpy(e.filename_ext, "txt", 3);
+  if(!(file->root_dir_offset = fat32_file_exists(ctx, file)))
+    file->root_dir_offset = fat32_get_next_root_dir_loc(ctx);
 
-  e.first_cluster_addr_high = (res >> 16);
-  e.first_cluster_addr_low = (res);
+  UART_DBG("fat32: file pointer location offset: 0x");
+  UART_DBG_32(file->root_dir_offset);
+  UART_DBG("\r\n");
+
+  first_cluster_addr = fat32_get_next_cluster(ctx);
+
+  e.first_cluster_addr_high = (first_cluster_addr >> 16);
+  e.first_cluster_addr_low = (first_cluster_addr);
+
+  strncpy(e.filename, file->file_name, 8);
+  strncpy(e.filename_ext, file->file_ext, 3);
   
   e.file_size = 0;
 
-  uint32_t ret = fat32_get_next_root_dir_loc(ctx);
-  uart_write_32(ret);
-
   /* may need to be flushed! */
-  io_write_nbytes(ctx->io, &e, ctx->root_dir_sector * SECTOR_SIZE + 32 * ret, sizeof(struct FAT32Entry));
+  io_write_nbytes(ctx->io, &e, ctx->root_dir_sector * SECTOR_SIZE + 32 * file->root_dir_offset, sizeof(struct FAT32Entry));
   
   return 0;
 }
@@ -501,15 +521,21 @@ void fat32_close_file(struct fat32_ctx *ctx, struct fat32_file *file) {
   //list_free(ctx->fat_list);
 }
 
-int8_t fat_32_read_file_byte() {}
+//int8_t fat_32_read_file_byte() {}
 
 // int8_t fat32_read_file_nbytes() {
 
 // }
 
-// int8_t fat32_write_file_byte() {
+int8_t fat32_write_file_byte(struct fat32_ctx *ctx, struct fat32_file *file, uint8_t *buf) {
+  /*
+   *  write byte to the next position recorded by the file position, increment
+   */
 
-// }
+  //io_put_byte(ctx->io, file->cluster_begin_sector * SECTOR_SIZE + file, buf);
+
+  return 0;
+}
 
 // int8_t fat32_write_file_nbytes() {
 

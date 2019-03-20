@@ -57,34 +57,6 @@ struct fat32_file file;
 
 int main() {
 
-  char ch = 'X';
-
-  char str[] =
-      "1606\n"
-      "THE TRAGEDY OF MACBETH\n"
-      "\n"
-      "\n"
-      "by William Shakespeare\n"
-      "\n"
-      "\n"
-      "\n"
-      "Dramatis Personae\n"
-      "\n"
-      "  DUNCAN, King of Scotland\n"
-      "  MACBETH, Thane of Glamis and Cawdor, a general in the King's\n"
-      "army\n"
-      "  LADY MACBETH, his wife\n"
-      "  MACDUFF, Thane of Fife, a nobleman of Scotland\n"
-      "  LADY MACDUFF, his wife\n"
-      "  MALCOLM, elder son of Duncan\n"
-      "  DONALBAIN, younger son of Duncan\n"
-      "  BANQUO, Thane of Lochaber, a general in the King's army\n"
-      "  FLEANCE, his son\n"
-      "  LENNOX, nobleman of Scotland\n"
-      "  ROSS, nobleman of Scotland\n"
-      "  MENTEITH nobleman of Scotland\n"
-      "  ANGUS,";
-
   /* atmel hardware */
   initialize_pins();
 
@@ -115,30 +87,17 @@ int main() {
     UART_DBG("main: initialized fat32\r\n");
 
   /* main routines */
+  struct fat32_file file;
 
-  struct fat32_ctx file;
+  strncpy(file.file_name, "logfile2", 8);
+  strncpy(file.file_ext, "txt", 3);
 
-  uart_write_str("Hello World!\r\n");
-  //fat32_creat_file(&fat32, &file);
+  fat32_creat_file(&fat32, &file);
 
-  uint32_t res = 3;
+  io_flush_write_buffer(&io);
 
-  struct FAT32Entry e;
-  memset(&e, 0, sizeof(struct FAT32Entry));
-
-  strncpy(e.filename, "logfile1", 8);
-  strncpy(e.filename_ext, "txt", 3);
-
-  e.first_cluster_addr_high = (res >> 16);
-  e.first_cluster_addr_low = (res);
-  
-  e.file_size = 0;
-
-  uint32_t ret = 1;
-
-  io_write_nbytes(fat32.io, &e, fat32.root_dir_sector * SECTOR_SIZE + 32 * ret, sizeof(struct FAT32Entry));
-
-  io_flush_write_buffer(fat32.io);
+  uint32_t address = fat32.root_dir_sector;
+  UART_DBG_32(address);
   /* strncpy(io.output_sector_buf, str, 512); */
 
   /* io.output_sector_addr = 0x7E78; */
