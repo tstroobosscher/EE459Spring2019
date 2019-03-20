@@ -456,8 +456,15 @@ uint32_t fat32_get_next_root_dir_loc(struct fat32_ctx *ctx) {
 }
 
 int8_t fat32_file_exists(struct fat32_ctx *ctx, struct fat32_file *file) {
+  /*
+   *  Needs valid filename
+   */
+
+  /* search the cached root directory entries and linear search the names */
   for(struct node *n = ctx->root_dir_entries; n != NULL; n = n->next) {
+    
     struct fat32_file *cached_file = (struct fat32_file *) n->data;
+
     if(!strncmp(cached_file->file_name, file->file_name, 8) && !strncmp(cached_file->file_ext, file->file_ext, 3)) {
       UART_DBG("fat32: file already exists\r\n");
       return file->root_dir_offset;
@@ -465,7 +472,17 @@ int8_t fat32_file_exists(struct fat32_ctx *ctx, struct fat32_file *file) {
   }
   
   UART_DBG("fat32: creating new file entry\r\n");
-  return false;
+  return -1;
+}
+
+int8_t fat32_update_directory_entry(struct fat32_ctx *ctx, struct FAT32Entry *e) {
+
+  return 0;
+}
+
+int8_t fat32_update_fat(struct fat32_ctx *ctx, struct fat32_file *file) {
+
+  return 0;
 }
 
 int8_t fat32_creat_file(struct fat32_ctx *ctx, struct fat32_file *file) {
@@ -473,12 +490,11 @@ int8_t fat32_creat_file(struct fat32_ctx *ctx, struct fat32_file *file) {
    *  file name needs to be filled
    */
 
-  uint32_t root_dir_offset;
   uint32_t first_cluster_addr;
   struct FAT32Entry e;
   memset(&e, 0, sizeof(struct FAT32Entry));
 
-  if(!(file->root_dir_offset = fat32_file_exists(ctx, file)))
+  if((file->root_dir_offset = fat32_file_exists(ctx, file)) < 0)
     file->root_dir_offset = fat32_get_next_root_dir_loc(ctx);
 
   UART_DBG("fat32: file pointer location offset: 0x");
