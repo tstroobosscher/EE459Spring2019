@@ -193,7 +193,8 @@ int obd_set_supported_ops(void *dat, int bytes, struct obd_ctx *ctx);
 int obd_get_engine_load(void *dat, int bytes, struct obd_ctx *ctx);
 
 struct obd_cmd {
-  int obd_pid;
+  /* i think pids are limited to 256 */
+  unsigned char obd_pid;
   int resp_bytes;
   int obd_unit;
   const char *obd_cmd;
@@ -466,18 +467,20 @@ int obd_get_engine_load(void *dat, int bytes, struct obd_ctx *ctx) {
 
   float calc = res[3]/2.55;
 
-  printf("%f\n", calc);
+  printf("calculated engine load: %f\n", calc);
+
+  return 0;
 
 }
 
 int obd_set_supported_ops(void *dat, int bytes, struct obd_ctx *ctx) {
 
-  char *res = (char *) dat;
+  uint32_t res = *(uint32_t *)dat;
 
   ctx->linked_list = NULL;
 
   /* skip the 0 pid, not in the return data */
-  for (int i = 1; i < bytes * 8; i++)
+  for(int i = 1; i < bytes * 8; i++)
 
     /* 
      *  the msb in the res corresponds to the lowest order pid, not the 00 pid
@@ -491,7 +494,7 @@ int obd_set_supported_ops(void *dat, int bytes, struct obd_ctx *ctx) {
 
       push_head(&ctx->linked_list, &obd_cmds[i], sizeof(struct obd_cmd));
 
-    return 0;
+  return 0;
 }
 
 int set_tty_attr(int fd, int speed, int parity) {
@@ -646,6 +649,7 @@ char *obd_resp(const char *cmd, char *buf) {
 int obd_fmt_resp(char *str) {
 
   /* format the response string */
+  int n = 0;
   for (int i = 0; i < strlen(str); i++) {
 
     if (isspace(str[i]))
@@ -663,7 +667,7 @@ int obd_fmt_resp(char *str) {
   str[n] = '\0';
 
   /* check for evenness */
-  if ((strlen(data) % 2))
+  if ((strlen(str) % 2))
 
     /* incorrect response length */
     return -1;
@@ -693,7 +697,6 @@ int obd_command(int device, const char *cmd, void *dat, int size) {
   /* BUF_SIZE seems arbitrary, can be a varying number of whitespaces */
   char buf[BUF_SIZE];
   char *data;
-  int n = 0;
   unsigned char *ret = (unsigned char *)dat;
 
   printf("obd_command: %s\n", cmd);
@@ -777,7 +780,7 @@ int initialize_obd(int device, struct obd_ctx *ctx) {
 
   unsigned char dat[BUF_SIZE];
 
-  if (obd_command(device, GET_DEVS, dat, sizeof(dat)) < 0)
+  if (obd_command(device, obd_cmds[PIDS_SUPPORTED_01_02].obd_cmd, dat, sizeof(dat)) < 0)
     return -1;
 
   /*
@@ -785,22 +788,21 @@ int initialize_obd(int device, struct obd_ctx *ctx) {
    *  This is not going to work on 8 bit architecture, need to assign to larger
    *  buffers first
    */
-  uint32_t res =
-      (dat[2] << 24) | (dat[3] << 16) | (dat[4] << 8) | (dat[5] << 0);
+  uint32_t res = (dat[2] << 24) | (dat[3] << 16) | (dat[4] << 8) | (dat[5] << 0);
 
-  obd_cmds[PIDS_SUPPORTED_01_02].
+  obd_set_supported_ops(&res, sizeof(res), ctx);
 
   dump_list(ctx->linked_list, obd_print_cmd);
 
   return 0;
 }
 
-void list_data(struct node *ptr) {
-  while(ptr) {
-    if(ptr->data->handle_data != NULL)
-    (*(ptr->data->handle_data))()
-  }
-}
+// void list_data(struct node *ptr) {
+//   while(ptr) {
+//     if(ptr->data->handle_data != NULL)
+//       (*(ptr->data->handle_data))();
+//   }
+// }
 
 char buf[BUF_SIZE];
 
