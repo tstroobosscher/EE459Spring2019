@@ -20,6 +20,17 @@
  */
 #define MYUBRR ((FOSC / 16 / BAUD) - 1)
 
+static const struct uart_port {
+	uint16_t ubrr_value;
+	volatile uint8_t *uart_reg;
+	volatile uint8_t *ucsra;
+	volatile uint8_t *ucsrb;
+	volatile uint8_t *ucsrc;
+	volatile uint8_t *ubrrl;
+	volatile uint8_t *ubrrh;
+	volatile uint8_t *udr;
+}
+
 void initialize_uart(unsigned long ubrr_value);
 char uart_read_char();
 void uart_write_hex(uint8_t n);
