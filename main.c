@@ -58,7 +58,7 @@
 int main() {
 
   /* atmel hardware */
-  //initialize_pins();
+  initialize_pins();
 
   // initialize_uart(UART_PORT_0, MYUBRR(BUAD_UART_0));
 
@@ -130,9 +130,9 @@ int main() {
    */
   UCSR0B = (1 << RXEN0) | (1 << TXEN0);
 
-  while (!(UCSR0A & (1 << RXC0))) {
+  while (!(UCSR0A & (1 << UDRE0))) {
   }
-  UDR0 = "X";
+  UDR0 = 'X';
 
   while (1) {
     PORTB |= (1 << 7);
