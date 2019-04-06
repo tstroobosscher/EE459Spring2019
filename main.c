@@ -60,44 +60,42 @@ int main() {
   /* atmel hardware */
   initialize_pins();
 
-  UART_DBG("main: initialized pins\r\n");
-
-  initialize_uart(MYUBRR);
+  initialize_uart(UART_PORT_0, MYUBRR(BUAD_UART_0));
 
   UART_DBG("main: initialized uart\r\n");
 
-  initialize_spi();
+  // initialize_spi();
 
-  UART_DBG("main: initialized spi\r\n");
+  // UART_DBG("main: initialized spi\r\n");
 
-  /* software resources */
-  if (initialize_sd(&sd) < 0)
-    UART_DBG("main: unable to initialize sd\r\n");
-  else
-    UART_DBG("main: initialized sd\r\n");
+  // /* software resources */
+  // if (initialize_sd(&sd) < 0)
+  //   UART_DBG("main: unable to initialize sd\r\n");
+  // else
+  //   UART_DBG("main: initialized sd\r\n");
 
-  if (initialize_io(&io, &sd) < 0)
-    UART_DBG("main: unable to initialize io\r\n");
-  else
-    UART_DBG("main: initialized io\r\n");
+  // if (initialize_io(&io, &sd) < 0)
+  //   UART_DBG("main: unable to initialize io\r\n");
+  // else
+  //   UART_DBG("main: initialized io\r\n");
 
-  if (initialize_fat32(&fat32, &io, &sd) < 0)
-    UART_DBG("main: unable to initialize fat32\r\n");
-  else
-    UART_DBG("main: initialized fat32\r\n");
+  // if (initialize_fat32(&fat32, &io, &sd) < 0)
+  //   UART_DBG("main: unable to initialize fat32\r\n");
+  // else
+  //   UART_DBG("main: initialized fat32\r\n");
 
-  /* main routines */
-  struct fat32_file file;
+  // /* main routines */
+  // struct fat32_file file;
 
-  strncpy(file.file_name, "logfile2", 8);
-  strncpy(file.file_ext, "txt", 3);
+  // strncpy(file.file_name, "logfile2", 8);
+  // strncpy(file.file_ext, "txt", 3);
 
-  fat32_creat_file(&fat32, &file);
+  // fat32_creat_file(&fat32, &file);
 
-  io_flush_write_buffer(&io);
+  // io_flush_write_buffer(&io);
 
-  uint32_t address = fat32.root_dir_sector;
-  UART_DBG_32(address);
+  // uint32_t address = fat32.root_dir_sector;
+  // UART_DBG_32(address);
   /* strncpy(io.output_sector_buf, str, 512); */
 
   /* io.output_sector_addr = 0x7E78; */

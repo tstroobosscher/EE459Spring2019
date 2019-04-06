@@ -9,6 +9,7 @@
 #include <util/delay.h>
 
 #include "debug.h"
+#include "uart.h"
 
 #ifdef ARDUINO
 
@@ -48,12 +49,29 @@
  */
 #define BUF_SIZE 32
 
+#ifdef DEBUG
+
+#define UART_DBG(x) uart_write_str(UART_PORT_0, (int8_t *) x)
+#define UART_DBG_HEX(x) uart_write_hex(UART_PORT_0, (int8_t *) x)
+#define UART_DBG_32(x) uart_write_32(UART_PORT_0, (int8_t *) x)
+#define UART_DBG_BIN(x, y) dump_bin(UART_PORT_0, x, y)
+
+#else
+
+#define UART_DBG(x)
+#define UART_DBG_HEX(x)
+#define UART_DBG_32(x)
+#define UART_DBG_BIN(x, y)
+
+
+#endif
+
 uint32_t bind_args(uint8_t arg0, uint8_t arg1, uint8_t arg2, uint8_t arg3);
 int8_t byte_in_arr(uint8_t byte, void *buf, uint32_t size);
-void dump_nbytes(void *buf, uint16_t size);
-void dump_bin(void *buf, uint16_t nbytes);
-void dump_byte(uint8_t byte);
-void trace();
+void dump_nbytes(uint8_t port, void *buf, uint16_t size);
+void dump_bin(uint8_t port, void *buf, uint16_t nbytes);
+void dump_byte(uint8_t port, uint8_t byte);
+void trace(uint8_t port);
 
 // void log(char *msg);
 
