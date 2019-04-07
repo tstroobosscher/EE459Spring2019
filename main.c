@@ -51,7 +51,7 @@ struct io_ctx io;
  *  fat32 context should be global because we can associate more than
  *  one file with a single file system
  */
-//struct fat32_ctx fat32;
+struct fat32_ctx fat32;
 
 //struct fat32_file file;
 
@@ -79,10 +79,10 @@ int main() {
   else
     UART_DBG("main: initialized io\r\n");
 
-  // if (initialize_fat32(&fat32, &io, &sd) < 0)
-  //   UART_DBG("main: unable to initialize fat32\r\n");
-  // else
-  //   UART_DBG("main: initialized fat32\r\n");
+  if (initialize_fat32(&fat32, &io, &sd) < 0)
+    UART_DBG("main: unable to initialize fat32\r\n");
+  else
+    UART_DBG("main: initialized fat32\r\n");
 
   // /* main routines */
   // struct fat32_file file;

@@ -11,7 +11,7 @@ CLOCK      ?= 16000000
 PROGRAMMER = -c usbtiny -p m2560 -F
 PORT ?= /dev/ttyACM0
 ARDUINO_PROGRAMMER = -c arduino -b 115200 -P $(PORT)
-OBJECTS    = main.o uart.o pins.o utils.o spi.o sd.o io.o
+OBJECTS    = main.o uart.o pins.o utils.o spi.o sd.o io.o fat.o list.o
 FUSES      = -U hfuse:w:0xde:m -U lfuse:w:0xff:m -U efuse:w:0x05:m
 
 # Tune the lines below only if you know what you are doing:
