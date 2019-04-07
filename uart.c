@@ -120,13 +120,6 @@ void initialize_uart(uint8_t port, unsigned long ubrr_value) {
    *	Enable The receiver and transmitter
    */
   *(uart_ports[port].ucsrb) = (1 << uart_ports[port].rxen) | (1 << uart_ports[port].txen);
-
-  /*
-   *	flush output buffer, kind of a hack, should really be checking
-   *	buffer status
-   */
-  uart_write_str("\n\r\n\r");
-  DELAY_MS(1);
 }
 
 void uart_check_vowel_consonant() {
