@@ -30,18 +30,18 @@ int8_t byte_in_arr(uint8_t byte, void *buf, uint32_t size) {
   return 0;
 }
 
-void dump_nbytes(void *buf, uint16_t nbytes) {
+void dump_nbytes(uint8_t port, void *buf, uint16_t nbytes) {
   uint8_t *ptr = (uint8_t *)buf;
 
   for (uint16_t i = 0; i < nbytes; i++) {
     uint8_t hex[6];
     snprintf(hex, 6, "0x%02X ", ptr[i]);
-    uart_write_str(hex);
+    uart_write_str(port, hex);
   }
-  uart_write_str("\n\r");
+  uart_write_str(port, "\n\r");
 }
 
-void dump_bin(void *bin, uint16_t nbytes) {
+void dump_bin(uint8_t port, void *bin, uint16_t nbytes) {
   uint8_t *ptr = (uint8_t *)bin;
 
   const uint8_t buf_size = 18;
@@ -49,24 +49,24 @@ void dump_bin(void *bin, uint16_t nbytes) {
   uint8_t ascii[buf_size];
   uint16_t i;
 
-  uart_write_str("HEXDATA\r\n\r\n");
+  uart_write_str(port, "HEXDATA\r\n\r\n");
 
   for (i = 0; i < nbytes; i++) {
     if (!(i % 16)) {
       if (i != 0)
-        uart_write_str("  ");
-      uart_write_str(ascii);
-      uart_write_str("\r\n");
+        uart_write_str(port, "  ");
+      uart_write_str(port, ascii);
+      uart_write_str(port, "\r\n");
 
       /* output offset */
-      uart_write_str("  ");
-      uart_write_hex(i >> 8);
-      uart_write_hex(i);
-      uart_write_str("  ");
+      uart_write_str(port, "  ");
+      uart_write_hex(port, i >> 8);
+      uart_write_hex(port, i);
+      uart_write_str(port, "  ");
     }
 
-    uart_write_str(" ");
-    uart_write_hex(ptr[i]);
+    uart_write_str(port, " ");
+    uart_write_hex(port, ptr[i]);
 
     if (!isprint(ptr[i]))
       ascii[i % 16] = '.';
@@ -77,22 +77,22 @@ void dump_bin(void *bin, uint16_t nbytes) {
   }
 
   while ((i % 16) != 0) {
-    uart_write_str(" ");
+    uart_write_str(port, " ");
     i++;
   }
 
-  uart_write_str("  ");
-  uart_write_str(ascii);
-  uart_write_str("\r\n");
+  uart_write_str(port, "  ");
+  uart_write_str(port, ascii);
+  uart_write_str(port, "\r\n");
 }
 
-void dump_byte(uint8_t byte) {
+void dump_byte(uint8_t port, uint8_t byte) {
   uint8_t hex[6];
   snprintf(hex, 6, "0x%02X ", byte);
-  uart_write_str(hex);
+  uart_write_str(port, hex);
 }
 
-void trace() { uart_write_str("trace\r\n"); }
+void trace(uint8_t port) { uart_write_str(port, "trace\r\n"); }
 
 // void log(char *msg) {
 // 	uart_write_str(msg);

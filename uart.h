@@ -32,11 +32,11 @@ const typedef enum {
 } uart_port_index;
 
 void initialize_uart(uint8_t port, unsigned long ubrr_value);
-char uart_read_char();
-void uart_write_hex(uint8_t n);
-void uart_write_char(char data);
-void uart_write_32(uint32_t val);
-void uart_write_str(char *buf);
-void uart_write_strn(uint8_t *buf, uint8_t n);
-void uart_check_vowel_consonant();
+char uart_read_char(uint8_t port);
+void uart_write_hex(uint8_t port, uint8_t n);
+void uart_write_char(uint8_t port, char data);
+void uart_write_32(uint8_t port, uint32_t val);
+void uart_write_str(uint8_t port, char *buf);
+void uart_write_strn(uint8_t port, uint8_t *buf, uint8_t n);
+//void uart_check_vowel_consonant();
 #endif

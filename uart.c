@@ -57,51 +57,51 @@ static struct uart_port {
 #endif
 };
 
-char uart_read_char() {
-  while (!(UCSR0A & (1 << RXC0))) {
+char uart_read_char(uint8_t port) {
+  while (!(*(uart_ports[port].ucsra) & (1 << uart_ports[port].rxc))) {
   }
-  return UDR0;
+  return *(uart_ports[port].udr);
 }
 
-void uart_write_char(char data) {
-  while (!(UCSR0A & (1 << UDRE0))) {
+void uart_write_char(uint8_t port, char data) {
+  while (!(*(uart_ports[port].ucsra) & (1 << uart_ports[port].udre))) {
   }
-  UDR0 = data;
+  *(uart_ports[port].udr) = data;
 }
 
-void uart_write_str(char *buf) {
+void uart_write_str(uint8_t port, char *buf) {
   while (*buf) {
-    uart_write_char(*buf);
+    uart_write_char(port, *buf);
     buf++;
   }
 }
 
-void uart_write_strn(uint8_t *buf, uint8_t n) {
+void uart_write_strn(uint8_t port, uint8_t *buf, uint8_t n) {
   for (char i = 0; i < n; i++) {
     if (!isascii(*buf))
       continue;
-    uart_write_char(*buf);
+    uart_write_char(port, *buf);
     buf++;
   }
 }
 
-void uart_write_hex(uint8_t n) {
+void uart_write_hex(uint8_t port, uint8_t n) {
   if (((n >> 4) & 15) < 10)
-    uart_write_char('0' + ((n >> 4) & 15));
+    uart_write_char(port, '0' + ((n >> 4) & 15));
   else
-    uart_write_char('A' + ((n >> 4) & 15) - 10);
+    uart_write_char(port, 'A' + ((n >> 4) & 15) - 10);
   n <<= 4;
   if (((n >> 4) & 15) < 10)
-    uart_write_char('0' + ((n >> 4) & 15));
+    uart_write_char(port, '0' + ((n >> 4) & 15));
   else
-    uart_write_char('A' + ((n >> 4) & 15) - 10);
+    uart_write_char(port, 'A' + ((n >> 4) & 15) - 10);
 }
 
-void uart_write_32(uint32_t val) {
-  uart_write_hex(val >> 24);
-  uart_write_hex(val >> 16);
-  uart_write_hex(val >> 8);
-  uart_write_hex(val);
+void uart_write_32(uint8_t port, uint32_t val) {
+  uart_write_hex(port, val >> 24);
+  uart_write_hex(port, val >> 16);
+  uart_write_hex(port, val >> 8);
+  uart_write_hex(port, val);
 }
 
 void initialize_uart(uint8_t port, unsigned long ubrr_value) {
@@ -122,31 +122,31 @@ void initialize_uart(uint8_t port, unsigned long ubrr_value) {
   *(uart_ports[port].ucsrb) = (1 << uart_ports[port].rxen) | (1 << uart_ports[port].txen);
 }
 
-void uart_check_vowel_consonant() {
-  uint8_t ch = uart_read_char();
-  uint8_t buf[BUF_SIZE];
+// void uart_check_vowel_consonant() {
+//   uint8_t ch = uart_read_char();
+//   uint8_t buf[BUF_SIZE];
 
-  if ((ch >= 'a') && (ch <= 'z')) {
-    switch (ch) {
-    case 'a':
-      sprintf((char *)buf, "You entered a vowel: a\n\r");
-      break;
-    case 'e':
-      sprintf((char *)buf, "You entered a vowel: e\n\r");
-      break;
-    case 'i':
-      sprintf((char *)buf, "You entered a vowel: i\n\r");
-      break;
-    case 'o':
-      sprintf((char *)buf, "You entered a vowel: o\n\r");
-      break;
-    case 'u':
-      sprintf((char *)buf, "You entered a vowel: u\n\r");
-      break;
-    default:
-      sprintf((char *)buf, "That was the consonant: %c\n\r", ch);
-    }
+//   if ((ch >= 'a') && (ch <= 'z')) {
+//     switch (ch) {
+//     case 'a':
+//       sprintf((char *)buf, "You entered a vowel: a\n\r");
+//       break;
+//     case 'e':
+//       sprintf((char *)buf, "You entered a vowel: e\n\r");
+//       break;
+//     case 'i':
+//       sprintf((char *)buf, "You entered a vowel: i\n\r");
+//       break;
+//     case 'o':
+//       sprintf((char *)buf, "You entered a vowel: o\n\r");
+//       break;
+//     case 'u':
+//       sprintf((char *)buf, "You entered a vowel: u\n\r");
+//       break;
+//     default:
+//       sprintf((char *)buf, "That was the consonant: %c\n\r", ch);
+//     }
 
-    uart_write_str((char *)buf);
-  }
-}
+//     uart_write_str((char *)buf);
+//   }
+// }
