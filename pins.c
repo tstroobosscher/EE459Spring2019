@@ -1077,15 +1077,20 @@ void initialize_pins() {
   for (uint8_t i = 0; i < ARRAY_SIZE(atmega328_pins); i++) {
     if (atmega328_pins[i].port_reg != NULL) {
       if (atmega328_pins[i].pin_dir == ATMEL_OUTPUT) {
+        UART_DBG("pin_init: OUTPUT\r\n");
         *(atmega328_pins[i].dir_reg) |= (1 << atmega328_pins[i].port_num);
       } else if (atmega328_pins[i].pin_dir == ATMEL_INPUT) {
+        UART_DBG("pin_init: INPUT\r\n");
         *(atmega328_pins[i].dir_reg) &= ~(1 << atmega328_pins[i].port_num);
         /* set internal pull-ups if input pin */
         if (atmega328_pins[i].pull_up == ATMEL_PULL_ENA) {
           *(atmega328_pins[i].port_reg) |= (1 << atmega328_pins[i].port_num);
-        }
-      }
-    }
+        } else
+          UART_DBG("pin_init: pull-up disabled\r\n");
+      } else
+        UART_DBG("pin_init: neither input nor output\r\n");
+    } else
+      UART_DBG("pin_init: port reg NULL\r\n");
   }
 }
 
