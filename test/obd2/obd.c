@@ -25,6 +25,29 @@
  *	for a NULL char (when using printf())
  */
 
+/*
+ *  B2300 supported codes
+ * 
+ *  OXYGEN SENSOR 2 2 BANK
+ *  OXYGEN SENSOR 1 2 BANK
+ *  TOTAL OXYGEN SENSORS 2 BANKS
+ *  THROTTLE POSITION 1
+ *  MAF RATE
+ *  INTAKE AIR TEMP 1
+ *  TIMING ADVANCE
+ *  VEHICLE SPEED
+ *  ENGINE RPM
+ *  INTAKE MANIFOLD ABS PRESSURE 1
+ *  LONG TERM FUEL TRIM 1
+ *  SHORT TERM FUEL TRIM 1
+ *  ENGINE COOLANT TEMP 1
+ *  CALCULATED ENGINE LOAD
+ *  FUEL SYSTEM STATUS
+ *  MONITOR STATUS SINCE DTCS CLEARED
+*/
+
+#define _GNU_SOURCE
+
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -43,27 +66,27 @@
 #define MAX_TRIALS 64
 #define HEX_BASE 16
 #define PREAM_CONST 0x40
-#define OBD_CMD_LEN 4 + 1 /* +1 for carriage return */
+#define OBD_CMD_LEN 4  + 1
 #define OBD_PID_REGISTER_SIZE 0x20 
 
-static const enum obd_unit {
-  UNITS_NONE,
-  UNITS_PERCENT,
-  UNITS_CELCIUS,
-  UNITS_KPA,
-  UNITS_RPM,
-  UNITS_KMPH,
-  UNITS_DEG_ADV,
-  UNITS_GRAMSSEC,
-  UNITS_VOLTS,
-  UNITS_SEC,
-  UNITS_KM,
-  UNITS_RATIO,
-  UNITS_COUNT,
-  UNITS_PA,
-  UNITS_MILLIAMP,
-  UNITS_VOLTS_PERC,
-} obd_unit;
+// static const enum obd_unit {
+//   UNITS_NONE,
+//   UNITS_PERCENT,
+//   UNITS_CELCIUS,
+//   UNITS_KPA,
+//   UNITS_RPM,
+//   UNITS_KMPH,
+//   UNITS_DEG_ADV,
+//   UNITS_GRAMSSEC,
+//   UNITS_VOLTS,
+//   UNITS_SEC,
+//   UNITS_KM,
+//   UNITS_RATIO,
+//   UNITS_COUNT,
+//   UNITS_PA,
+//   UNITS_MILLIAMP,
+//   UNITS_VOLTS_PERC,
+// } __attribute__ ((unused)) obd_unit;
 
 const char *NO_DATA = "NO DATA";
 const char *OK = "OK";
@@ -169,7 +192,7 @@ static const enum obd_pid {
                                       active) [A1..A7] not used */
   /* 1F */ RUN_TIME_ENGINE_START,  /*	256A + B [seconds] [0-65,535] */
   /* 20 */  PIDS_SUPPORTED_21_40, /* Bit encoded [A7..D0] == [PID $21..PID $40] See below */
-} obd_pid;
+} __attribute__ ((unused)) obd_pid;
 
 /*
  *	The flags for the supported sensors are set in the obd init
@@ -189,270 +212,316 @@ struct obd_ctx {
   struct node *linked_list;
 };
 
-int obd_set_supported_ops(void *dat, int bytes, struct obd_ctx *ctx);
-int obd_get_engine_load(void *dat, int bytes, struct obd_ctx *ctx);
+char *obd_set_supported_ops(void *dat, int bytes, struct obd_ctx *ctx);
+char *obd_get_engine_load(void *dat, int bytes, struct obd_ctx *ctx);
+char *obd_get_coolant_temp(void *dat, int bytes, struct obd_ctx *ctx);
+char *obd_get_fuel_trim(void *dat, int bytes, struct obd_ctx *ctx);
+char *obd_get_fuel_pressure(void *dat, int bytes, struct obd_ctx *ctx);
+char *obd_get_manifold_pressure(void *dat, int bytes, struct obd_ctx *ctx);
+char *obd_get_engine_rpm(void *dat, int bytes, struct obd_ctx *ctx);
+char *obd_get_vehicle_speed(void *dat, int bytes, struct obd_ctx *ctx);
+char *obd_get_timing_advance(void *dat, int bytes, struct obd_ctx *ctx);
+char *obd_get_air_temp(void *dat, int bytes, struct obd_ctx *ctx);
+char *obd_get_maf_rate(void *dat, int bytes, struct obd_ctx *ctx);
+char *obd_get_throttle_pos(void *dat, int bytes, struct obd_ctx *ctx);
+char *obd_get_oxygen_sensors(void *dat, int bytes, struct obd_ctx *ctx);
+char *obd_get_oxygen_data(void *dat, int bytes, struct obd_ctx *ctx);
 
 struct obd_cmd {
-  int obd_pid;
+  /* i think pids are limited to 256 */
+  unsigned char obd_pid;
   int resp_bytes;
-  int obd_unit;
+  const char *obd_units;
   const char *obd_cmd;
   const char *cmd_str;
-  int (*handle_data)(void *dat, int bytes, struct obd_ctx *ctx);
+  char *(*handle_data)(void *dat, int bytes, struct obd_ctx *ctx);
 } obd_cmds[] = {
     {
         PIDS_SUPPORTED_01_02,
         4,
-        UNITS_NONE,
-        "0100",
+        /* UNITS_NONE, */
+        NULL,
+        "0100\r",
         "PIDS SUPPORTED 01 02",
         &obd_set_supported_ops,
     },
     {
         MONITOR_STATUS_SINCE_DTCS_CLEARED,
         4,
-        UNITS_NONE,
-        "0101",
+        /* UNITS_NONE, */
+        NULL,
+        "0101\ready",
         "MONITOR STATUS SINCE DTCS CLEARED",
         NULL,
     },
     {
         FREEZE_DTC,
         2,
-        UNITS_NONE,
-        "0102",
+        /* UNITS_NONE, */
+        NULL,
+        "0102\r",
         "FREEZE DTC",
         NULL,
     },
     {
         FUEL_SYSTEM_STATUS,
         2,
-        UNITS_NONE,
-        "0103",
+        /* UNITS_NONE, */
+        NULL,
+        "0103\r",
         "FUEL SYSTEM STATUS",
         NULL,
     },
     {
         CALCULATED_ENGINE_LOAD,
         1,
-        UNITS_PERCENT,
-        "0104",
+        /* UNITS_PERCENT, */
+        "%",
+        "0104\r",
         "CALCULATED ENGINE LOAD",
         &obd_get_engine_load,
     },
     {
         ENGINE_COOLANT_TEMP_1,
         1,
-        UNITS_CELCIUS,
-        "0105",
+        /* UNITS_CELCIUS, */
+        "° Celsius",
+        "0105\r",
         "ENGINE COOLANT TEMP 1",
-        NULL,
+        &obd_get_coolant_temp,
     },
     {
         SHORT_TERM_FUEL_TRIM_1,
         1,
-        UNITS_PERCENT,
-        "0106",
+        /* UNITS_PERCENT, */
+        "%",
+        "0106\r",
         "SHORT TERM FUEL TRIM 1",
-        NULL,
+        &obd_get_fuel_trim,
     },
     {
         LONG_TERM_FUEL_TRIM_1,
         1,
-        UNITS_PERCENT,
-        "0107",
+        /* UNITS_PERCENT, */
+        "%",
+        "0107\r",
         "LONG TERM FUEL TRIM 1",
-        NULL,
+        &obd_get_fuel_trim,
     },
     {
         SHORT_TERM_FUEL_TRIM_2,
         1,
-        UNITS_PERCENT,
-        "0108",
+        /* UNITS_PERCENT, */
+        "%",
+        "0108\r",
         "SHORT TERM FUEL TRIM 2",
-        NULL,
+        &obd_get_fuel_trim,
     },
     {
         LONG_TERM_FUEL_TRIM_2,
         1,
-        UNITS_PERCENT,
-        "0109",
+        /* UNITS_PERCENT, */
+        "%",
+        "0109\r",
         "LONG TERM FUEL TRIM 2",
-        NULL,
+        &obd_get_fuel_trim,
     },
     {
         FUEL_PRESSURE,
         1,
-        UNITS_KPA,
-        "010A",
+        /* UNITS_KPA, */
+        "kPa",
+        "010A\r",
         "FUEL PRESSURE",
-        NULL,
+        &obd_get_fuel_pressure,
     },
     {
         INTAKE_MANIFOLD_ABS_PRESSURE_1,
         1,
-        UNITS_KPA,
-        "010B",
+        /* UNITS_KPA, */
+        "kPa",
+        "010B\r",
         "INTAKE MANIFOLD ABS PRESSURE 1",
-        NULL,
+        &obd_get_manifold_pressure,
     },
     {
         ENGINE_RPM,
         2,
-        UNITS_RPM,
-        "010C",
+        /* UNITS_RPM, */
+        "rpm",
+        "010C\r",
         "ENGINE RPM",
-        NULL,
+        &obd_get_engine_rpm,
     },
     {
         VEHICLE_SPEED,
         1,
-        UNITS_KMPH,
-        "010D",
+        /* UNITS_KMPH, */
+        "km/h",
+        "010D\r",
         "VEHICLE SPEED",
-        NULL,
+        &obd_get_vehicle_speed,
     },
     {
         TIMING_ADVANCE,
         1,
-        UNITS_DEG_ADV,
-        "010E",
+        /* UNITS_DEG_ADV, */
+        "° before TDC",
+        "010E\r",
         "TIMING ADVANCE",
-        NULL,
+        &obd_get_timing_advance,
     },
     {
         INTAKE_AIR_TEMP_1,
         1,
-        UNITS_CELCIUS,
-        "010F",
+        /* UNITS_CELCIUS, */
+        "° Celsius",
+        "010F\r",
         "INTAKE AIR TEMP 1",
-        NULL,
+        &obd_get_air_temp,
     },
     {
         MAF_RATE,
         2,
-        UNITS_GRAMSSEC,
-        "0110",
+        /* UNITS_GRAMSSEC, */
+        "g/s",
+        "0110\r",
         "MAF RATE",
-        NULL,
+        &obd_get_maf_rate,
     },
     {
         THROTTLE_POSITION_1,
         1,
-        UNITS_PERCENT,
-        "0111",
+        /* UNITS_PERCENT, */
+        "%",
+        "0111\r",
         "THROTTLE POSITION 1",
-        NULL,
+        &obd_get_throttle_pos,
     },
     {
         COMMANDED_SECONDARY_AIR_STAT,
         1,
-        UNITS_NONE,
-        "0112",
+        /* UNITS_NONE, */
+        NULL,
+        "0112\r",
         "COMMANDED SECONDARY AIR STAT",
         NULL,
     },
     {
         TOTAL_OXYGEN_SENSORS_2_BANKS,
         1,
-        UNITS_NONE,
-        "0113",
+        /* UNITS_NONE, */
+        "Sensor(s)",
+        "0113\r",
         "TOTAL OXYGEN SENSORS 2 BANKS",
-        NULL,
+        &obd_get_oxygen_sensors,
     },
     {
         OXYGEN_SENSOR_1_2_BANK,
         2,
-        UNITS_VOLTS_PERC,
-        "0114",
+        /* UNITS_VOLTS_PERC, */
+        "Volts",
+        "0114\r",
         "OXYGEN SENSOR 1 2 BANK",
-        NULL,
+        &obd_get_oxygen_data,
     },
     {
         OXYGEN_SENSOR_2_2_BANK,
         2,
-        UNITS_VOLTS_PERC,
-        "0115",
+        /* UNITS_VOLTS_PERC, */
+        "Volts",
+        "0115\r",
         "OXYGEN SENSOR 2 2 BANK",
-        NULL,
+        &obd_get_oxygen_data,
     },
     {
         OXYGEN_SENSOR_3_2_BANK,
         2,
-        UNITS_VOLTS_PERC,
-        "0116",
+        /* UNITS_VOLTS_PERC, */
+        "Volts",
+        "0116\r",
         "OXYGEN SENSOR 3 2 BANK",
-        NULL,
+        &obd_get_oxygen_data,
     },
     {
         OXYGEN_SENSOR_4_2_BANK,
         2,
-        UNITS_VOLTS_PERC,
-        "0117",
+        /* UNITS_VOLTS_PERC, */
+        "Volts",
+        "0117\r",
         "OXYGEN SENSOR 4 2 BANK",
-        NULL,
+        &obd_get_oxygen_data,
     },
     {
         OXYGEN_SENSOR_5_2_BANK,
         2,
-        UNITS_VOLTS_PERC,
-        "0118",
+        /* UNITS_VOLTS_PERC, */
+        "Volts",
+        "0118\r",
         "OXYGEN SENSOR 5 2 BANK",
-        NULL,
+        &obd_get_oxygen_data,
     },
     {
         OXYGEN_SENSOR_6_2_BANK,
         2,
-        UNITS_VOLTS_PERC,
-        "0119",
+        /* UNITS_VOLTS_PERC, */
+        "Volts",
+        "0119\r",
         "OXYGEN SENSOR 6 2 BANK",
-        NULL,
+        &obd_get_oxygen_data,
     },
     {
         OXYGEN_SENSOR_7_2_BANK,
         2,
-        UNITS_VOLTS_PERC,
-        "011A",
+        /* UNITS_VOLTS_PERC, */
+        "Volts",
+        "011A\r",
         " OXYGEN SENSOR 7 2 BANK",
-        NULL,
+        &obd_get_oxygen_data,
     },
     {
         OXYGEN_SENSOR_8_2_BANK,
         2,
-        UNITS_VOLTS_PERC,
-        "011B",
+        /* UNITS_VOLTS_PERC, */
+        "Volts",
+        "011B\r",
         "OXYGEN SENSOR 8 2 BANK",
-        NULL,
+        &obd_get_oxygen_data,
     },
     {
         OBD_STANDARDS,
         1,
-        UNITS_NONE,
-        "011C",
+        /* UNITS_NONE, */
+        NULL,
+        "011C\r",
         "OBD STANDARDS",
         NULL,
     },
     {
+        /* lol what car has 4 banks */
         TOTAL_OXYGEN_SENSORS_4_BANKS,
         1,
-        UNITS_NONE,
-        "011D",
+        /* UNITS_NONE, */
+        NULL,
+        "011D\r",
         "TOTAL OXYGEN SENSORS 4 BANKS",
         NULL,
     },
     {
         AUXILIARY_INPUT_STATUS,
         1,
-        UNITS_NONE,
-        "011E",
+        /* UNITS_NONE, */
+        NULL,
+        "011E\r",
         "AUXILIARY INPUT STATUS",
         NULL,
     },
     {
         RUN_TIME_ENGINE_START,
         2,
-        UNITS_SEC,
-        "011F",
+        /* UNITS_SEC, */
+        "s",
+        "011F\r",
         "RUN TIME ENGINE START",
         NULL,
     },
@@ -460,24 +529,178 @@ struct obd_cmd {
 
 int obd_print_cmd(struct obd_cmd *cmd) { printf("%s\n", cmd->cmd_str); return 0;}
 
-int obd_get_engine_load(void *dat, int bytes, struct obd_ctx *ctx) {
+char *obd_get_engine_load(void *dat, int bytes, struct obd_ctx *ctx) {
 
-  char *res = (char *) dat;
+  unsigned char *res = (unsigned char *) dat;
 
-  float calc = res[3]/2.55;
+  float calc = res[2]/2.55;
 
-  printf("%f\n", calc);
+  char *ret;
+
+  asprintf(&ret, "%f", calc);
+
+  return ret;
 
 }
 
-int obd_set_supported_ops(void *dat, int bytes, struct obd_ctx *ctx) {
+char *obd_get_coolant_temp(void *dat, int bytes, struct obd_ctx *ctx) {
+  /* can be negative */
+  unsigned char *res = (unsigned char *) dat;
 
-  char *res = (char *) dat;
+  int calc = res[2] - 40;
+
+  char *ret;
+
+  asprintf(&ret, "%d", calc);
+
+  return ret;
+}
+
+char *obd_get_fuel_trim(void *dat, int bytes, struct obd_ctx *ctx) {
+  unsigned char *res = (unsigned char *) dat;
+
+  float calc = res[2]/1.28 - 100;
+
+  char *ret;
+
+  asprintf(&ret, "%f", calc);
+
+  return ret;
+}
+
+char *obd_get_fuel_pressure(void *dat, int bytes, struct obd_ctx *ctx) {
+  unsigned char *res = (unsigned char *) dat;
+
+  int calc = res[2] * 3;
+
+  char *ret;
+
+  asprintf(&ret, "%d", calc);
+
+  return ret;
+}
+
+char *obd_get_manifold_pressure(void *dat, int bytes, struct obd_ctx *ctx) {
+  unsigned char *res = (unsigned char *) dat;
+
+  int calc = res[2];
+
+  char *ret;
+
+  asprintf(&ret, "%d", calc);
+
+  return ret;
+}
+
+char *obd_get_engine_rpm(void *dat, int bytes, struct obd_ctx *ctx) {
+  unsigned char *res = (unsigned char *) dat;
+
+  int calc = (res[2] * 256 + res[3])/4;
+
+  char *ret;
+
+  asprintf(&ret, "%d", calc);
+
+  return ret;
+}
+
+char *obd_get_vehicle_speed(void *dat, int bytes, struct obd_ctx *ctx) {
+  unsigned char *res = (unsigned char *) dat;
+
+  int calc = res[2];
+
+  char *ret;
+
+  asprintf(&ret, "%d", calc);
+
+  return ret;
+}
+
+char *obd_get_timing_advance(void *dat, int bytes, struct obd_ctx *ctx) {
+  unsigned char *res = (unsigned char *) dat;
+
+  int calc = res[2]/2 - 64;
+
+  char *ret;
+
+  asprintf(&ret, "%d", calc);
+
+  return ret;
+}
+
+char *obd_get_air_temp(void *dat, int bytes, struct obd_ctx *ctx){
+  /* can be negative */
+  unsigned char *res = (unsigned char *) dat;
+
+  int calc = res[2] - 40;
+
+  char *ret;
+
+  asprintf(&ret, "%d", calc);
+
+  return ret;
+}
+
+char *obd_get_maf_rate(void *dat, int bytes, struct obd_ctx *ctx) {
+  unsigned char *res = (unsigned char *) dat;
+
+  int calc = (res[2] * 256 + res[3])/100;
+
+  char *ret;
+
+  asprintf(&ret, "%d", calc);
+
+  return ret;
+}
+
+char *obd_get_throttle_pos(void *dat, int bytes, struct obd_ctx *ctx) {
+  unsigned char *res = (unsigned char *) dat;
+
+  float calc = res[2]/2.55;
+
+  char *ret;
+
+  asprintf(&ret, "%f", calc);
+
+  return ret;
+}
+
+char *obd_get_oxygen_sensors(void *dat, int bytes, struct obd_ctx *ctx) {
+  unsigned char *res = (unsigned char *) dat;
+
+  int bank_1 = (res[2] >> 0) & 0x0F;
+  int bank_2 = (res[2] >> 4) & 0x0F;
+
+  int calc = bank_1 + bank_2;
+
+  char *ret;
+
+  asprintf(&ret, "%d", calc);
+
+  return ret;
+}
+
+char *obd_get_oxygen_data(void *dat, int bytes, struct obd_ctx *ctx) {
+  unsigned char *res = (unsigned char *) dat;
+
+  /* this one can have multiple responses if permitted, % fuel trim and voltage */
+  float calc = res[2]/200;
+
+  char *ret;
+
+  asprintf(&ret, "%f", calc);
+
+  return ret;
+}
+
+char *obd_set_supported_ops(void *dat, int bytes, struct obd_ctx *ctx) {
+
+  uint32_t res = *(uint32_t *)dat;
 
   ctx->linked_list = NULL;
 
   /* skip the 0 pid, not in the return data */
-  for (int i = 1; i < bytes * 8; i++)
+  for(int i = 1; i < bytes * 8; i++)
 
     /* 
      *  the msb in the res corresponds to the lowest order pid, not the 00 pid
@@ -489,9 +712,9 @@ int obd_set_supported_ops(void *dat, int bytes, struct obd_ctx *ctx) {
      */
     if (res & (1 << (0x20 - obd_cmds[i].obd_pid)))
 
-      push_head(&ctx->linked_list, &obd_cmds[i], sizeof(struct obd_cmd));
+      push_head(&ctx->linked_list, (struct obd_cmd *) &obd_cmds[i], sizeof(struct obd_cmd));
 
-    return 0;
+  return 0;
 }
 
 int set_tty_attr(int fd, int speed, int parity) {
@@ -623,7 +846,7 @@ char *obd_resp(const char *cmd, char *buf) {
 
   char pream[3];
 
-  if ((strlen(cmd) != 5)) {
+  if ((strlen(cmd) != OBD_CMD_LEN)) {
     printf("obd_resp: strlen error\n");
     return NULL;
   }
@@ -646,6 +869,7 @@ char *obd_resp(const char *cmd, char *buf) {
 int obd_fmt_resp(char *str) {
 
   /* format the response string */
+  int n = 0;
   for (int i = 0; i < strlen(str); i++) {
 
     if (isspace(str[i]))
@@ -663,7 +887,7 @@ int obd_fmt_resp(char *str) {
   str[n] = '\0';
 
   /* check for evenness */
-  if ((strlen(data) % 2))
+  if ((strlen(str) % 2))
 
     /* incorrect response length */
     return -1;
@@ -693,10 +917,7 @@ int obd_command(int device, const char *cmd, void *dat, int size) {
   /* BUF_SIZE seems arbitrary, can be a varying number of whitespaces */
   char buf[BUF_SIZE];
   char *data;
-  int n = 0;
   unsigned char *ret = (unsigned char *)dat;
-
-  printf("obd_command: %s\n", cmd);
 
   if ((strlen(cmd) != OBD_CMD_LEN)) {
     printf("obd_command: incorrect command format\n");
@@ -777,7 +998,7 @@ int initialize_obd(int device, struct obd_ctx *ctx) {
 
   unsigned char dat[BUF_SIZE];
 
-  if (obd_command(device, GET_DEVS, dat, sizeof(dat)) < 0)
+  if (obd_command(device, obd_cmds[PIDS_SUPPORTED_01_02].obd_cmd, dat, sizeof(dat)) < 0)
     return -1;
 
   /*
@@ -785,21 +1006,13 @@ int initialize_obd(int device, struct obd_ctx *ctx) {
    *  This is not going to work on 8 bit architecture, need to assign to larger
    *  buffers first
    */
-  uint32_t res =
-      (dat[2] << 24) | (dat[3] << 16) | (dat[4] << 8) | (dat[5] << 0);
+  uint32_t res = (dat[2] << 24) | (dat[3] << 16) | (dat[4] << 8) | (dat[5] << 0);
 
-  obd_cmds[PIDS_SUPPORTED_01_02].
+  obd_set_supported_ops(&res, sizeof(res), ctx);
 
-  dump_list(ctx->linked_list, obd_print_cmd);
+  dump_list(ctx->linked_list, (void *) obd_print_cmd);
 
   return 0;
-}
-
-void list_data(struct node *ptr) {
-  while(ptr) {
-    if(ptr->data->handle_data != NULL)
-    (*(ptr->data->handle_data))()
-  }
 }
 
 char buf[BUF_SIZE];
@@ -837,7 +1050,25 @@ int main(int argc, char *argv[]) {
     printf("initialize_obd: error\n");
 
   while(1) {
+    struct node *ptr = obd.linked_list;
 
+    while(ptr) {
+
+      /* the compiler needs offset information to dereference void pointers */
+      struct obd_cmd *cmd = (struct obd_cmd *) ptr->data;
+
+      if(cmd->handle_data != NULL) {
+        if(obd_command(fd, cmd->obd_cmd, buf, BUF_SIZE) < 0) {
+          ptr = ptr->next;
+          continue;
+        }
+        char *res = (*(cmd->handle_data))(buf, cmd->resp_bytes, &obd);
+        printf("%s = %s %s\n", cmd->cmd_str, res, cmd->obd_units);
+        free(res);
+      }
+      ptr = ptr->next;
+    }
+    sleep(2);
   }
 
   return 0;

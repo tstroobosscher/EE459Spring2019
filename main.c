@@ -10,13 +10,13 @@
 #include <stdint.h>
 
 #include "debug.h"
-#include "fat.h"
-#include "fifo.h"
-#include "io.h"
+//#include "fat.h"
+//#include "fifo.h"
+//#include "io.h"
 #include "pins.h"
-#include "sd.h"
-#include "spi.h"
-#include "time.h"
+//#include "sd.h"
+//#include "spi.h"
+//#include "time.h"
 #include "utils.h"
 #include "uart.h"
 
@@ -32,38 +32,37 @@
  *	memory and then referenced by macro
  */
 
-struct FAT32Entry e;
+//struct FAT32Entry e;
 
 /*
  *  Can we push these valeus into successive data structures so we aren't
  *  keeping stale data in the dataspace? What do we actually need?
  */
 
-struct sd_ctx sd;
+//struct sd_ctx sd;
 
 /*
  *  the io level should also be global because a single io structure
  *  can operate on more than one instance of a file
  */
-struct io_ctx io;
+//struct io_ctx io;
 
 /*
  *  fat32 context should be global because we can associate more than
  *  one file with a single file system
  */
-struct fat32_ctx fat32;
+//struct fat32_ctx fat32;
 
-struct fat32_file file;
+//struct fat32_file file;
 
 int main() {
 
   /* atmel hardware */
   initialize_pins();
 
-  UART_DBG("main: initialized pins\r\n");
+  initialize_uart(MYUBRR(BUAD_UART_0));
 
-  initialize_uart(MYUBRR);
-
+  UART_DBG("main: initialized uart\r\n");
   UART_DBG("main: initialized uart\r\n");
 
   // initialize_spi();
@@ -118,11 +117,13 @@ int main() {
   /*   UART_DBG("main: successfully flushed write buffer\r\n"); */
 
   while (1) {
-    if (pin_high(26) < 0)
-      UART_DBG("pin_high error\r\n");
+    if (pin_high(26) < 0){
+      //UART_DBG("pin_high error\r\n");
+    }
     DELAY_MS(1000);
-    if (pin_low(26) < 0)
-      UART_DBG("pin_low error\r\n");
+    if (pin_low(26) < 0){
+      //UART_DBG("pin_low error\r\n");
+    }
     DELAY_MS(1000);
   }
 

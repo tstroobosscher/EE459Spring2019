@@ -6,19 +6,30 @@
 #define UART_H
 
 #include <stdint.h>
+#include <avr/io.h>
 
 #include "debug.h"
 #include "utils.h"
 
 /*
- *	UART Baud rate
+ *	UART Baud rate uart 0
  */
-#define BAUD 19200
+#define BUAD_UART_0 19200
 
 /*
- *	Value for UBRR0 register
+ *	UART Baud rate uart 1, ELM327 standard
  */
-#define MYUBRR ((FOSC / 16 / BAUD) - 1)
+#define BUAD_UART_1 38400
+
+/*
+ *	preprocessor for UBRR register
+ */
+#define MYUBRR(x) ((FOSC / 16 / x) - 1)
+
+const typedef enum {
+	UART_PORT_0,
+	UART_PORT_1,
+} uart_port_index;
 
 void initialize_uart(unsigned long ubrr_value);
 char uart_read_char();

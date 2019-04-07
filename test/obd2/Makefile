@@ -16,8 +16,10 @@ SOURCE = obd.c
 
 BINARY = obd
 
+LINKER_FLAGS = 
+
 all:
-	$(CC) $(SOURCE) $(BINARY_FLAGS) $(BINARY)
+	$(CC) $(SOURCE) $(LINKER_FLAGS) $(BINARY_FLAGS) $(BINARY)
 
 clean:
 	rm $(BINARY)
