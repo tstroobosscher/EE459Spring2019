@@ -39,7 +39,7 @@
  *  keeping stale data in the dataspace? What do we actually need?
  */
 
-//struct sd_ctx sd;
+struct sd_ctx sd;
 
 /*
  *  the io level should also be global because a single io structure
@@ -68,11 +68,11 @@ int main() {
 
   UART_DBG("main: initialized spi\r\n");
 
-  // /* software resources */
-  // if (initialize_sd(&sd) < 0)
-  //   UART_DBG("main: unable to initialize sd\r\n");
-  // else
-  //   UART_DBG("main: initialized sd\r\n");
+  /* software resources */
+  if (initialize_sd(&sd) < 0)
+    UART_DBG("main: unable to initialize sd\r\n");
+  else
+    UART_DBG("main: initialized sd\r\n");
 
   // if (initialize_io(&io, &sd) < 0)
   //   UART_DBG("main: unable to initialize io\r\n");
