@@ -2,10 +2,13 @@
  *	USC EE459 Spring 2019 Team 17 - Utils
  */
 
+#include <stdio.h>
+#include <ctype.h>
+
 #include "utils.h"
 #include "debug.h"
 
-/* gnu avr gcc does not like this function - very weak; write avr est case */
+/* gnu avr gcc does not like this function - very weak; write avr test case */
 uint32_t bind_args(uint8_t arg0, uint8_t arg1, uint8_t arg2, uint8_t arg3) {
 
   /* convert to 32 bit buffers */
@@ -16,18 +19,17 @@ uint32_t bind_args(uint8_t arg0, uint8_t arg1, uint8_t arg2, uint8_t arg3) {
 
 int8_t byte_in_arr(uint8_t byte, void *buf, uint32_t size) {
   /*
-   *	return pos of byte in arr, 0 if not, logic is inconsistent but
-   *	its readable
+   *	return pos of byte in arr, -1 if not
    */
 
   for (uint32_t i = 0; i < size; i++) {
     /* dereferencing a void pointer is undefined */
     uint8_t *ch = (uint8_t *)buf;
     if (byte == *ch)
-      return 1;
+      return i;
     buf++;
   }
-  return 0;
+  return -1;
 }
 
 void dump_nbytes(uint8_t port, void *buf, uint16_t nbytes) {
@@ -46,7 +48,7 @@ void dump_bin(uint8_t port, void *bin, uint16_t nbytes) {
 
   const uint8_t buf_size = 18;
 
-  uint8_t ascii[buf_size];
+  int8_t ascii[buf_size];
   uint16_t i;
 
   uart_write_str(port, "HEXDATA\r\n\r\n");
