@@ -64,9 +64,9 @@ int main() {
 
   UART_DBG("main: initialized uart\r\n");
 
-  // initialize_spi();
+  initialize_spi();
 
-  // UART_DBG("main: initialized spi\r\n");
+  UART_DBG("main: initialized spi\r\n");
 
   // /* software resources */
   // if (initialize_sd(&sd) < 0)
