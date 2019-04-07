@@ -51,9 +51,9 @@
 
 #ifdef DEBUG
 
-#define UART_DBG(x) uart_write_str(UART_PORT_0, (int8_t *) x)
-#define UART_DBG_HEX(x) uart_write_hex(UART_PORT_0, (int8_t *) x)
-#define UART_DBG_32(x) uart_write_32(UART_PORT_0, (int8_t *) x)
+#define UART_DBG(x) uart_write_str(UART_PORT_0, x)
+#define UART_DBG_HEX(x) uart_write_hex(UART_PORT_0, x)
+#define UART_DBG_32(x) uart_write_32(UART_PORT_0, x)
 #define UART_DBG_BIN(x, y) dump_bin(UART_PORT_0, x, y)
 
 #else
@@ -62,7 +62,6 @@
 #define UART_DBG_HEX(x)
 #define UART_DBG_32(x)
 #define UART_DBG_BIN(x, y)
-
 
 #endif
 

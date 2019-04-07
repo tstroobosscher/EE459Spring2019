@@ -18,7 +18,7 @@ static struct uart_port {
   volatile uint8_t *ubrrh;
   volatile uint8_t *udr;
   volatile uint8_t ucsz0;
-  volatile uint8_t uscz1;
+  volatile uint8_t ucsz1;
   volatile uint8_t rxen;
   volatile uint8_t txen;
   volatile uint8_t rxc;
@@ -29,8 +29,8 @@ static struct uart_port {
     &UCSR0A,
     &UCSR0B,
     &UCSR0C,
-    &UBRR0H,
     &UBRR0L,
+    &UBRR0H,
     &UDR0,
     UCSZ00,
     UCSZ01,
@@ -45,8 +45,8 @@ static struct uart_port {
     &UCSR1A,
     &UCSR1B,
     &UCSR1C,
-    &UBRR1H,
     &UBRR1L,
+    &UBRR1H,
     &UDR1,
     UCSZ10,
     UCSZ11,
@@ -59,26 +59,26 @@ static struct uart_port {
 };
 
 char uart_read_char(uint8_t port) {
-  while (!(*uart_ports[port].ucsra & (1 << uart_ports[port].rxc))) {
+  while (!(*(uart_ports[port].ucsra) & (1 << uart_ports[port].rxc))) {
   }
-  return *uart_ports[port].udr;
+  return *(uart_ports[port].udr);
 }
 
-void uart_write_char(uint8_t port, uint8_t data) {
-  while (!(*uart_ports[port].ucsra & (1 << uart_ports[port].rxc))) {
+void uart_write_char(uint8_t port, char data) {
+  while (!(*(uart_ports[port].ucsra) & (1 << uart_ports[port].udre))) {
   }
-  *uart_ports[port].udr = data;
+  *(uart_ports[port].udr) = data;
 }
 
-void uart_write_str(uint8_t port, int8_t *buf) {
+void uart_write_str(uint8_t port, char *buf) {
   while (*buf) {
     uart_write_char(port, *buf);
     buf++;
   }
 }
 
-void uart_write_strn(uint8_t port, int8_t *buf, uint8_t n) {
-  for (uint8_t i = 0; i < n; i++) {
+void uart_write_strn(uint8_t port, uint8_t *buf, uint8_t n) {
+  for (char i = 0; i < n; i++) {
     if (!isascii(*buf))
       continue;
     uart_write_char(port, *buf);
@@ -105,43 +105,22 @@ void uart_write_32(uint8_t port, uint32_t val) {
   uart_write_hex(port, val);
 }
 
-int8_t initialize_uart(uint8_t port, unsigned long ubrr_value) {
-  /*
-   *  the uart structures are already enumerated, just need 
-   *  to be indexed
-   */
-
-  (void) uart_ports;
-
-  if(port >= ARRAY_SIZE(uart_ports))
-
-    return -1;
-
-  struct uart_port *uart = &uart_ports[port];
-
+void initialize_uart(uint8_t port, unsigned long ubrr_value) {
   /*
    * Set Baud rate
    */
-  *(uart->ubrrh) = (unsigned char)(ubrr_value >> 8);
-  *(uart->ubrrl) = (unsigned char)(ubrr_value & 255);
+  *(uart_ports[port].ubrrh) = (unsigned char)(ubrr_value >> 8);
+  *(uart_ports[port].ubrrl) = (unsigned char)(ubrr_value & 255);
 
   /*
    *	Frame Format: asynchronous, no parity, 1 stop bit, char size 8
    */
-  *(uart->ucsrc) = (1 << UCSZ01) | (1 << UCSZ00);
+  *(uart_ports[port].ucsrc) = (1 << uart_ports[port].ucsz1) | (1 << uart_ports[port].ucsz0);
 
   /*
    *	Enable The receiver and transmitter
    */
-  *(uart->ucsrb)= (1 << RXEN0) | (1 << TXEN0);
-
-  /*
-   *	flush output buffer, kind of a hack, should really be checking
-   *	buffer status
-   */
-  uart_write_str(port, (int8_t *) "\n\r\n\r");
-
-  return 0;
+  *(uart_ports[port].ucsrb) = (1 << uart_ports[port].rxen) | (1 << uart_ports[port].txen);
 }
 
 // void uart_check_vowel_consonant() {

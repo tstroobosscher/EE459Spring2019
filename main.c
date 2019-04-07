@@ -32,28 +32,28 @@
  *	memory and then referenced by macro
  */
 
-struct FAT32Entry e;
+//struct FAT32Entry e;
 
 /*
  *  Can we push these valeus into successive data structures so we aren't
  *  keeping stale data in the dataspace? What do we actually need?
  */
 
-struct sd_ctx sd;
+//struct sd_ctx sd;
 
 /*
  *  the io level should also be global because a single io structure
  *  can operate on more than one instance of a file
  */
-struct io_ctx io;
+//struct io_ctx io;
 
 /*
  *  fat32 context should be global because we can associate more than
  *  one file with a single file system
  */
-struct fat32_ctx fat32;
+//struct fat32_ctx fat32;
 
-struct fat32_file file;
+//struct fat32_file file;
 
 int main() {
 
@@ -116,11 +116,13 @@ int main() {
   /*   UART_DBG("main: successfully flushed write buffer\r\n"); */
 
   while (1) {
-    if (pin_high(26) < 0)
+    if (pin_high(26) < 0){
       UART_DBG("pin_high error\r\n");
+    }
     DELAY_MS(1000);
-    if (pin_low(26) < 0)
+    if (pin_low(26) < 0){
       UART_DBG("pin_low error\r\n");
+    }
     DELAY_MS(1000);
   }
 

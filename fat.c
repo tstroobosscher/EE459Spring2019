@@ -41,9 +41,9 @@ fat32_calc_lba_from_cluster(uint32_t cluster_begin_lba,
 
 static __attribute__((always inline)) void
 fat32_dump_filename(struct FAT32Entry *e) {
-  uart_write_strn(e->filename, 8);
-  uart_write_str(".");
-  uart_write_strn(e->filename_ext, 3);
+  uart_write_strn(UART_PORT_0, e->filename, 8);
+  uart_write_str(UART_PORT_0, ".");
+  uart_write_strn(UART_PORT_0, e->filename_ext, 3);
 }
 
 int8_t fat32_parse_entry(struct FAT32Entry *e) {
@@ -137,9 +137,9 @@ fat32_set_context(struct fat32_ctx *fat32, struct FAT32BootSector *bs) {
 }
 
 static __attribute__((always inline)) void fat32_dump_address(uint32_t *dat) {
-  uart_write_str("fat list item: ");
-  uart_write_32(*dat);
-  uart_write_str("\r\n");
+  uart_write_str(UART_PORT_0, "fat list item: ");
+  uart_write_32(UART_PORT_0, *dat);
+  uart_write_str(UART_PORT_0, "\r\n");
 }
 
 static __attribute__((always inline)) int8_t
@@ -518,19 +518,19 @@ int8_t fat32_creat_file(struct fat32_ctx *ctx, struct fat32_file *file) {
 }
 
 void fat32_dump_file_meta(struct fat32_file *file) {
-  uart_write_str("\r\nfile size: 0x");
-  uart_write_32(file->file_size);
-  uart_write_str("\r\nfile position: 0x");
-  uart_write_32(file->byte_offset);
-  uart_write_str("\r\ncurrent cluster: 0x");
-  uart_write_32(file->current_cluster);
-  uart_write_str("\r\nsectors per cluster: 0x");
-  uart_write_32(file->sectors_per_cluster);
-  uart_write_str("\r\ncurrent sector: 0x");
-  uart_write_32(file->current_sector);
-  uart_write_str("\r\nlist pointer: 0x");
-  uart_write_32(file->fat_list);
-  uart_write_str("\r\n");
+  uart_write_str(UART_PORT_0, "\r\nfile size: 0x");
+  uart_write_32(UART_PORT_0, file->file_size);
+  uart_write_str(UART_PORT_0, "\r\nfile position: 0x");
+  uart_write_32(UART_PORT_0, file->byte_offset);
+  uart_write_str(UART_PORT_0, "\r\ncurrent cluster: 0x");
+  uart_write_32(UART_PORT_0, file->current_cluster);
+  uart_write_str(UART_PORT_0, "\r\nsectors per cluster: 0x");
+  uart_write_32(UART_PORT_0, file->sectors_per_cluster);
+  uart_write_str(UART_PORT_0, "\r\ncurrent sector: 0x");
+  uart_write_32(UART_PORT_0, file->current_sector);
+  uart_write_str(UART_PORT_0, "\r\nlist pointer: 0x");
+  uart_write_32(UART_PORT_0, (uint32_t) file->fat_list);
+  uart_write_str(UART_PORT_0, "\r\n");
 }
 
 void fat32_close_file(struct fat32_ctx *ctx, struct fat32_file *file) {
