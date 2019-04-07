@@ -10,13 +10,13 @@
 #include <stdint.h>
 
 #include "debug.h"
-//#include "fat.h"
-//#include "fifo.h"
-//#include "io.h"
+#include "fat.h"
+#include "fifo.h"
+#include "io.h"
 #include "pins.h"
-//#include "sd.h"
-//#include "spi.h"
-//#include "time.h"
+#include "sd.h"
+#include "spi.h"
+#include "time.h"
 #include "utils.h"
 #include "uart.h"
 
@@ -60,9 +60,8 @@ int main() {
   /* atmel hardware */
   initialize_pins();
 
-  initialize_uart(MYUBRR(BUAD_UART_0));
+  initialize_uart(0, MYUBRR(BUAD_UART_0));
 
-  UART_DBG("main: initialized uart\r\n");
   UART_DBG("main: initialized uart\r\n");
 
   // initialize_spi();

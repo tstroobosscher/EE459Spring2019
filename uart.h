@@ -31,7 +31,7 @@ const typedef enum {
 	UART_PORT_1,
 } uart_port_index;
 
-void initialize_uart(unsigned long ubrr_value);
+void initialize_uart(uint8_t port, unsigned long ubrr_value);
 char uart_read_char();
 void uart_write_hex(uint8_t n);
 void uart_write_char(char data);

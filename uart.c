@@ -104,28 +104,29 @@ void uart_write_32(uint32_t val) {
   uart_write_hex(val);
 }
 
-void initialize_uart(unsigned long ubrr_value) {
+void initialize_uart(uint8_t port, unsigned long ubrr_value) {
   /*
    * Set Baud rate
    */
-  *(uart_ports[0].ubrrh) = (unsigned char)(ubrr_value >> 8);
-  *(uart_ports[0].ubrrl) = (unsigned char)(ubrr_value & 255);
+  *(uart_ports[port].ubrrh) = (unsigned char)(ubrr_value >> 8);
+  *(uart_ports[port].ubrrl) = (unsigned char)(ubrr_value & 255);
 
   /*
    *	Frame Format: asynchronous, no parity, 1 stop bit, char size 8
    */
-  *(uart_ports[0].ucsrc) = (1 << uart_ports[0].ucsz1) | (1 << uart_ports[0].ucsz0);
+  *(uart_ports[port].ucsrc) = (1 << uart_ports[port].ucsz1) | (1 << uart_ports[port].ucsz0);
 
   /*
    *	Enable The receiver and transmitter
    */
-  *(uart_ports[0].ucsrb) = (1 << uart_ports[0].rxen) | (1 << uart_ports[0].txen);
+  *(uart_ports[port].ucsrb) = (1 << uart_ports[port].rxen) | (1 << uart_ports[port].txen);
 
   /*
    *	flush output buffer, kind of a hack, should really be checking
    *	buffer status
    */
   uart_write_str("\n\r\n\r");
+  DELAY_MS(1);
 }
 
 void uart_check_vowel_consonant() {
