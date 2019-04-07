@@ -83,12 +83,14 @@ int main() {
   /* main routines */
   struct fat32_file file;
 
-  strncpy(file.file_name, "logfile2", 8);
+  strncpy(file.file_name, "logfile3", 8);
   strncpy(file.file_ext, "txt", 3);
 
   fat32_creat_file(&fat32, &file);
 
   io_flush_write_buffer(&io);
+
+loop:
 
   while (1) {
     if (pin_high(26) < 0){
