@@ -9,6 +9,54 @@
 #include "uart.h"
 #include "utils.h"
 
+static struct uart_port {
+  volatile uint8_t *ucsra;
+  volatile uint8_t *ucsrb;
+  volatile uint8_t *ucsrc;
+  volatile uint8_t *ubrrl;
+  volatile uint8_t *ubrrh;
+  volatile uint8_t *udr;
+  volatile uint8_t ucsz0;
+  volatile uint8_t ucsz1;
+  volatile uint8_t rxen;
+  volatile uint8_t txen;
+  volatile uint8_t rxc;
+  volatile uint8_t udre;
+} uart_ports[] = {
+  /* serial port 0 */
+  {
+    &UCSR0A,
+    &UCSR0B,
+    &UCSR0C,
+    &UBRR0L,
+    &UBRR0H,
+    &UDR0,
+    UCSZ00,
+    UCSZ01,
+    RXEN0,
+    TXEN0,
+    RXC0,
+    UDRE0,
+  },
+  /* serial port 1, mega1284 and mega2560 */
+#if defined ATMEGA2560 || defined ATMEGA1284
+  {
+    &UCSR1A,
+    &UCSR1B,
+    &UCSR1C,
+    &UBRR1L,
+    &UBRR1H,
+    &UDR1,
+    UCSZ10,
+    UCSZ11,
+    RXEN1,
+    TXEN1,
+    RXC1,
+    UDRE1,
+  },
+#endif
+};
+
 char uart_read_char() {
   while (!(UCSR0A & (1 << RXC0))) {
   }
@@ -60,18 +108,18 @@ void initialize_uart(unsigned long ubrr_value) {
   /*
    * Set Baud rate
    */
-  UBRR0H = (unsigned char)(ubrr_value >> 8);
-  UBRR0L = (unsigned char)(ubrr_value & 255);
+  *(uart_ports[0].ubrrh) = (unsigned char)(ubrr_value >> 8);
+  *(uart_ports[0].ubrrl) = (unsigned char)(ubrr_value & 255);
 
   /*
    *	Frame Format: asynchronous, no parity, 1 stop bit, char size 8
    */
-  UCSR0C = (1 << UCSZ01) | (1 << UCSZ00);
+  *(uart_ports[0].ucsrc) = (1 << uart_ports[0].ucsz1) | (1 << uart_ports[0].ucsz0);
 
   /*
    *	Enable The receiver and transmitter
    */
-  UCSR0B = (1 << RXEN0) | (1 << TXEN0);
+  *(uart_ports[0].ucsrb) = (1 << uart_ports[0].rxen) | (1 << uart_ports[0].txen);
 
   /*
    *	flush output buffer, kind of a hack, should really be checking
