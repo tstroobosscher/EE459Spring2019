@@ -60,7 +60,7 @@ int main() {
   /* atmel hardware */
   initialize_pins();
 
-  initialize_uart(0, MYUBRR(BUAD_UART_0));
+  initialize_uart(UART_PORT_0, MYUBRR(BUAD_UART_0));
 
   UART_DBG("main: initialized uart\r\n");
 
@@ -117,11 +117,11 @@ int main() {
 
   while (1) {
     if (pin_high(26) < 0){
-      //UART_DBG("pin_high error\r\n");
+      UART_DBG("pin_high error\r\n");
     }
     DELAY_MS(1000);
     if (pin_low(26) < 0){
-      //UART_DBG("pin_low error\r\n");
+      UART_DBG("pin_low error\r\n");
     }
     DELAY_MS(1000);
   }
