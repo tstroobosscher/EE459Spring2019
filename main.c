@@ -45,7 +45,7 @@ struct sd_ctx sd;
  *  the io level should also be global because a single io structure
  *  can operate on more than one instance of a file
  */
-//struct io_ctx io;
+struct io_ctx io;
 
 /*
  *  fat32 context should be global because we can associate more than
@@ -74,10 +74,10 @@ int main() {
   else
     UART_DBG("main: initialized sd\r\n");
 
-  // if (initialize_io(&io, &sd) < 0)
-  //   UART_DBG("main: unable to initialize io\r\n");
-  // else
-  //   UART_DBG("main: initialized io\r\n");
+  if (initialize_io(&io, &sd) < 0)
+    UART_DBG("main: unable to initialize io\r\n");
+  else
+    UART_DBG("main: initialized io\r\n");
 
   // if (initialize_fat32(&fat32, &io, &sd) < 0)
   //   UART_DBG("main: unable to initialize fat32\r\n");
