@@ -3,9 +3,9 @@
  */
 
 #include <avr/io.h>
+#include <ctype.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <ctype.h>
 
 #include "uart.h"
 #include "utils.h"
@@ -24,37 +24,37 @@ static struct uart_port {
   volatile uint8_t rxc;
   volatile uint8_t udre;
 } uart_ports[] = {
-  /* serial port 0 */
-  {
-    &UCSR0A,
-    &UCSR0B,
-    &UCSR0C,
-    &UBRR0L,
-    &UBRR0H,
-    &UDR0,
-    UCSZ00,
-    UCSZ01,
-    RXEN0,
-    TXEN0,
-    RXC0,
-    UDRE0,
-  },
-  /* serial port 1, mega1284 and mega2560 */
+    /* serial port 0 */
+    {
+        &UCSR0A,
+        &UCSR0B,
+        &UCSR0C,
+        &UBRR0L,
+        &UBRR0H,
+        &UDR0,
+        UCSZ00,
+        UCSZ01,
+        RXEN0,
+        TXEN0,
+        RXC0,
+        UDRE0,
+    },
+/* serial port 1, mega1284 and mega2560 */
 #if defined ATMEGA2560 || defined ATMEGA1284
-  {
-    &UCSR1A,
-    &UCSR1B,
-    &UCSR1C,
-    &UBRR1L,
-    &UBRR1H,
-    &UDR1,
-    UCSZ10,
-    UCSZ11,
-    RXEN1,
-    TXEN1,
-    RXC1,
-    UDRE1,
-  },
+    {
+        &UCSR1A,
+        &UCSR1B,
+        &UCSR1C,
+        &UBRR1L,
+        &UBRR1H,
+        &UDR1,
+        UCSZ10,
+        UCSZ11,
+        RXEN1,
+        TXEN1,
+        RXC1,
+        UDRE1,
+    },
 #endif
 };
 
@@ -115,12 +115,14 @@ void initialize_uart(uint8_t port, unsigned long ubrr_value) {
   /*
    *	Frame Format: asynchronous, no parity, 1 stop bit, char size 8
    */
-  *(uart_ports[port].ucsrc) = (1 << uart_ports[port].ucsz1) | (1 << uart_ports[port].ucsz0);
+  *(uart_ports[port].ucsrc) =
+      (1 << uart_ports[port].ucsz1) | (1 << uart_ports[port].ucsz0);
 
   /*
    *	Enable The receiver and transmitter
    */
-  *(uart_ports[port].ucsrb) = (1 << uart_ports[port].rxen) | (1 << uart_ports[port].txen);
+  *(uart_ports[port].ucsrb) =
+      (1 << uart_ports[port].rxen) | (1 << uart_ports[port].txen);
 }
 
 // void uart_check_vowel_consonant() {

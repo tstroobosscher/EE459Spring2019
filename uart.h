@@ -5,8 +5,8 @@
 #ifndef UART_H
 #define UART_H
 
-#include <stdint.h>
 #include <avr/io.h>
+#include <stdint.h>
 
 #include "debug.h"
 #include "utils.h"
@@ -27,8 +27,8 @@
 #define MYUBRR(x) ((FOSC / 16 / x) - 1)
 
 const typedef enum {
-	UART_PORT_0,
-	UART_PORT_1,
+  UART_PORT_0,
+  UART_PORT_1,
 } uart_port_index;
 
 void initialize_uart(uint8_t port, unsigned long ubrr_value);
@@ -38,5 +38,5 @@ void uart_write_char(uint8_t port, char data);
 void uart_write_32(uint8_t port, uint32_t val);
 void uart_write_str(uint8_t port, char *buf);
 void uart_write_strn(uint8_t port, uint8_t *buf, uint8_t n);
-//void uart_check_vowel_consonant();
+// void uart_check_vowel_consonant();
 #endif
