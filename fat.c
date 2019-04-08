@@ -632,6 +632,7 @@ int8_t fat32_creat_file(struct fat32_ctx *ctx, struct fat32_file *file) {
     /* file already exists */
     UART_DBG("fat32: file already exists\r\n");
     /* just return the cached file information */
+    file->root_dir_offset = f->root_dir_offset;
   } else {
     UART_DBG("fat32: creating new file entry\r\n");
     file->root_dir_offset = fat32_get_next_root_dir_loc(ctx);
@@ -653,7 +654,7 @@ int8_t fat32_creat_file(struct fat32_ctx *ctx, struct fat32_file *file) {
   strncpy(e.filename, file->file_name, 8);
   strncpy(e.filename_ext, file->file_ext, 3);
   
-  e.file_size = 2;
+  e.file_size = 0;
 
   file->fat_list = NULL;
 
