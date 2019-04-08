@@ -88,6 +88,30 @@ int main() {
 
   fat32_creat_file(&fat32, &file);
 
+  UART_DBG("main: file current_cluster = 0x");
+  UART_DBG_32(file.current_cluster);
+  UART_DBG("\r\n");
+
+  UART_DBG("main: fat32 cluster_begin_sector = 0x");
+  UART_DBG_32(fat32.cluster_begin_sector);
+  UART_DBG("\r\n");
+
+  UART_DBG("main: fat32 sectors_per_cluster = 0x");
+  UART_DBG_32(fat32.sectors_per_cluster);
+  UART_DBG("\r\n");
+
+  // char buf[10];
+
+  // io_read_nbytes(&io, buf, fat32.cluster_begin_sector * SECTOR_SIZE + file.current_cluster * fat32.sectors_per_cluster * SECTOR_SIZE, 1);
+
+  // buf[1] = '\0';
+
+  // UART_DBG("main: buf = ");
+  // UART_DBG(buf);
+  // UART_DBG("\r\n");
+
+  // fat32_update_file_size(&fat32, &file);
+
   io_flush_write_buffer(&io);
 
 loop:

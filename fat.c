@@ -46,6 +46,28 @@ fat32_dump_filename(struct FAT32Entry *e) {
   uart_write_strn(UART_PORT_0, e->filename_ext, 3);
 }
 
+void fat32_dump_file_meta(struct fat32_file *file) {
+  uart_write_str(UART_PORT_0, "\r\nfile name: ");
+   uart_write_strn(UART_PORT_0, file->file_name, 8);
+  uart_write_str(UART_PORT_0, ".");
+  uart_write_strn(UART_PORT_0, file->file_ext, 3);
+  uart_write_str(UART_PORT_0, "\r\nfile size: 0x");
+  uart_write_32(UART_PORT_0, file->file_size);
+  uart_write_str(UART_PORT_0, "\r\nfile position: 0x");
+  uart_write_32(UART_PORT_0, file->byte_offset);
+  uart_write_str(UART_PORT_0, "\r\ncurrent cluster: 0x");
+  uart_write_32(UART_PORT_0, file->current_cluster);
+  uart_write_str(UART_PORT_0, "\r\nsectors per cluster: 0x");
+  uart_write_32(UART_PORT_0, file->sectors_per_cluster);
+  uart_write_str(UART_PORT_0, "\r\ncurrent sector: 0x");
+  uart_write_32(UART_PORT_0, file->current_sector);
+  uart_write_str(UART_PORT_0, "\r\nlist pointer: 0x");
+  uart_write_32(UART_PORT_0, (uint32_t)file->fat_list);
+  uart_write_str(UART_PORT_0, "\r\nroot_dir_offset: 0x");
+  uart_write_32(UART_PORT_0, file->root_dir_offset);
+  uart_write_str(UART_PORT_0, "\r\n");
+}
+
 int8_t fat32_parse_entry(struct FAT32Entry *e) {
   switch (e->filename[0]) {
   case FILENAME_NEVER_USED:
@@ -116,14 +138,33 @@ fat32_set_context(struct fat32_ctx *fat32, struct FAT32BootSector *bs) {
    */
 
   fat32->reserved_sectors = bs->reserved_sectors;
-  fat32->number_of_fats = bs->number_of_fats;
-  fat32->sectors_per_fat_32 = bs->sectors_per_fat_32;
-  fat32->sectors_per_cluster = bs->sectors_per_cluster;
-  fat32->cluster_number_root_dir = bs->cluster_number_root_dir;
 
+  UART_DBG("fat32: reserved_sectors = ");
+  UART_DBG_32(fat32->reserved_sectors);
+  UART_DBG("\r\n");
+  fat32->number_of_fats = bs->number_of_fats;
+  UART_DBG("fat32: number_of_fats = ");
+  UART_DBG_32(fat32->number_of_fats);
+  UART_DBG("\r\n");
+  fat32->sectors_per_fat_32 = bs->sectors_per_fat_32;
+  UART_DBG("fat32: sectors_per_fat_32 = ");
+  UART_DBG_32(fat32->sectors_per_fat_32);
+  UART_DBG("\r\n");
+  fat32->sectors_per_cluster = bs->sectors_per_cluster;
+  UART_DBG("fat32: sectors_per_cluster = ");
+  UART_DBG_32(fat32->sectors_per_cluster);
+  UART_DBG("\r\n");
+  fat32->cluster_number_root_dir = bs->cluster_number_root_dir;
+  UART_DBG("fat32: cluster_number_root_dir = ");
+  UART_DBG_32(fat32->cluster_number_root_dir);
+  UART_DBG("\r\n");
   fat32->cluster_begin_sector =
       fat32->start_sector + fat32->reserved_sectors +
       (fat32->number_of_fats * fat32->sectors_per_fat_32);
+
+  UART_DBG("fat32: cluster_begin_sector = ");
+  UART_DBG_32(fat32->cluster_begin_sector);
+  UART_DBG("\r\n");
 
   fat32->root_dir_sector =
       (fat32->cluster_begin_sector +
@@ -265,19 +306,6 @@ fat32_cache_root_dir(struct fat32_ctx *ctx, struct sd_ctx *sd,
    * ?
    */
 
-  /* first traverse the fat */
-
-  struct fat32_file root_dir;
-
-  if (fat32_get_fat(ctx, ctx->cluster_number_root_dir, &(root_dir.fat_list)) <
-      0) {
-    UART_DBG("fat32: unable to get FAT\r\n");
-    return -1;
-  }
-
-  list_push_tail(&(ctx->root_dir_entries), &root_dir,
-                 sizeof(struct fat32_file));
-
   struct fat32_file file;
 
   /* 16 is arbitrary right now, directory entries are 0 delimited */
@@ -307,11 +335,15 @@ fat32_cache_root_dir(struct fat32_ctx *ctx, struct sd_ctx *sd,
 
     file.root_dir_offset = j;
 
+    UART_DBG("fat32: caching file entry at root dir offset 0x");
+    UART_DBG_32(file.root_dir_offset);
+    UART_DBG("\r\n");
+
     // uart_write_32(file.root_dir_offset);
 
     // list_dump((struct node *)file.fat_list, fat32_dump_address);
 
-    list_push_tail(&(ctx->root_dir_entries), &file, sizeof(struct fat32_file));
+    list_push_tail(&ctx->root_dir_entries, &file, sizeof(struct fat32_file));
 
     // fat32_dump_file_meta(&file);
 
@@ -380,6 +412,13 @@ int8_t initialize_fat32(struct fat32_ctx *fat32, struct io_ctx *io,
   if (fat32_cache_root_dir(fat32, sd, fat32->io, &e) < 0) {
     UART_DBG("fat32: unable to cache root directory\r\n");
     return -1;
+  }
+
+  struct node *n;
+
+  for(n = fat32->root_dir_entries; n != NULL; n = n->next) {
+    UART_DBG("fat32: cached file entry: \r\n");
+    fat32_dump_file_meta((struct fat32_file *)n->data);
   }
 
   return 0;
@@ -474,7 +513,7 @@ uint32_t fat32_get_next_root_dir_loc(struct fat32_ctx *ctx) {
   return root_dir_index;
 }
 
-uint32_t fat32_file_exists(struct fat32_ctx *ctx, struct fat32_file *file) {
+struct fat32_file *fat32_file_exists(struct fat32_ctx *ctx, struct fat32_file *file) {
   /*
    *  Needs valid filename
    */
@@ -484,18 +523,32 @@ uint32_t fat32_file_exists(struct fat32_ctx *ctx, struct fat32_file *file) {
 
     struct fat32_file *cached_file = (struct fat32_file *)n->data;
 
-    UART_DBG("fat32: file:)");
-    UART_DBG(cached_file->file_name);
-    UART_DBG(cached_file->file_ext);
-    UART_DBG("\r\n");
+    /* not a null terminated string */
+    // UART_DBG("fat32: cached file_name = ");
+    // uart_write_strn(0, cached_file->file_name, 8);
+    // UART_DBG("\r\n");
+    // UART_DBG("fat32: cached file_ext = ");
+    // uart_write_strn(0, cached_file->file_ext, 3);
+    // UART_DBG("\r\n");
+
+    // UART_DBG("fat32: new file_name = ");
+    // uart_write_strn(0, file->file_name, 8);
+    // UART_DBG("\r\n");
+    // UART_DBG("fat32: new file_ext = ");
+    // uart_write_strn(0, file->file_ext, 3);
+    // UART_DBG("\r\n");
+
+    // UART_DBG("fat32: cached file root dir offset = ");
+    // UART_DBG_32(file->root_dir_offset);
+    // UART_DBG("\r\n");
 
     if (!strncmp(cached_file->file_name, file->file_name, 8) &&
         !strncmp(cached_file->file_ext, file->file_ext, 3)) {
-      return file->root_dir_offset;
+      return cached_file;
     }
   }
 
-  return 0;
+  return NULL;
 }
 
 int8_t fat32_update_directory_entry(struct fat32_ctx *ctx,
@@ -504,7 +557,63 @@ int8_t fat32_update_directory_entry(struct fat32_ctx *ctx,
   return 0;
 }
 
-int8_t fat32_update_fat(struct fat32_ctx *ctx, struct fat32_file *file) {
+int8_t fat32_update_fat(struct fat32_ctx *ctx, struct fat32_file *file, uint32_t cluster) {
+  /* 
+   * updating the fat: first find the new cluster, then push the cluster data 
+   * to the file fat list, then write the next cluster address to the previous
+   * fat entry, then write the delimiter to the next fat entry
+   */
+
+  struct node *n = file->fat_list;
+  uint32_t next = cluster;
+  uint32_t delimiter = 0x0FFFFFFF;
+
+  /* if fat_list is empty, then first cluster so dont write the next entry to the fat */
+  if(n != NULL) {
+    /* list is not empty */
+
+    uint32_t prev;
+    while(n != NULL) {
+      prev = n->data;
+      n = n->next;
+    }
+
+    UART_DBG("fat32: previous tail: 0x");
+    UART_DBG_32(prev);
+    UART_DBG("\r\n");
+
+    /* update the previous tail, if there is one */
+    io_write_nbytes(ctx->io, &next, ctx->fat_begin_sector * SECTOR_SIZE + 4 * prev, sizeof(prev));
+  }
+
+  /* push cluster to fat_list */
+  list_push_tail(&file->fat_list, &next, sizeof(next));
+
+  UART_DBG("fat32: updating delimiter at address: 0x");
+  UART_DBG_32(next);
+  UART_DBG("\r\n");
+
+  /* write the delimiter to the fat */
+  io_write_nbytes(ctx->io, &delimiter, ctx->fat_begin_sector * SECTOR_SIZE + 4 * next, sizeof(delimiter));
+  return 0;
+}
+
+int8_t fat32_update_file_size(struct fat32_ctx *ctx, struct fat32_file *file) {
+
+  struct FAT32Entry e;
+
+  if (io_read_nbytes(ctx->io, &e,
+                       (ctx->root_dir_sector * SECTOR_SIZE) +
+                           (file->root_dir_offset * sizeof(struct FAT32Entry)),
+                       sizeof(struct FAT32Entry)) < 0) {
+      UART_DBG("main: error reading FAT32 root entry\r\n");
+  }
+
+  UART_DBG("fat32: incrementing file size: ");
+  UART_DBG_32(e.file_size++);
+  UART_DBG("\r\n");
+
+  io_write_nbytes(ctx->io, &e, ctx->root_dir_sector * SECTOR_SIZE + 32 * file->root_dir_offset, sizeof(struct FAT32Entry));
 
   return 0;
 }
@@ -517,20 +626,26 @@ int8_t fat32_creat_file(struct fat32_ctx *ctx, struct fat32_file *file) {
   uint32_t first_cluster_addr;
   struct FAT32Entry e;
   memset(&e, 0, sizeof(struct FAT32Entry));
+  struct fat32_file *f;
 
-  if(file->root_dir_offset = fat32_file_exists(ctx, file)) {
+  if((f = fat32_file_exists(ctx, file)) != NULL) {
     /* file already exists */
     UART_DBG("fat32: file already exists\r\n");
+    /* just return the cached file information */
   } else {
     UART_DBG("fat32: creating new file entry\r\n");
     file->root_dir_offset = fat32_get_next_root_dir_loc(ctx);
   }
 
-  UART_DBG("fat32: file pointer location offset: 0x");
+  UART_DBG("fat32: creat: root dir offset: 0x");
   UART_DBG_32(file->root_dir_offset);
   UART_DBG("\r\n");
 
   first_cluster_addr = fat32_get_next_cluster(ctx);
+
+  UART_DBG("fat32: next cluster address: 0x");
+  UART_DBG_32(first_cluster_addr);
+  UART_DBG("\r\n");
 
   e.first_cluster_addr_high = (first_cluster_addr >> 16);
   e.first_cluster_addr_low = (first_cluster_addr);
@@ -538,30 +653,18 @@ int8_t fat32_creat_file(struct fat32_ctx *ctx, struct fat32_file *file) {
   strncpy(e.filename, file->file_name, 8);
   strncpy(e.filename_ext, file->file_ext, 3);
   
-  e.file_size = 0;
+  e.file_size = 2;
+
+  file->fat_list = NULL;
 
   /* may need to be flushed! */
   io_write_nbytes(ctx->io, &e, ctx->root_dir_sector * SECTOR_SIZE + 32 * file->root_dir_offset, sizeof(struct FAT32Entry));
 
-  /* update fat, write 0x0FFFFFFF to the table location at address 'cluster' */
-  
-  return 0;
-}
+  // fat32_update_fat(ctx, file, first_cluster_addr);
 
-void fat32_dump_file_meta(struct fat32_file *file) {
-  uart_write_str(UART_PORT_0, "\r\nfile size: 0x");
-  uart_write_32(UART_PORT_0, file->file_size);
-  uart_write_str(UART_PORT_0, "\r\nfile position: 0x");
-  uart_write_32(UART_PORT_0, file->byte_offset);
-  uart_write_str(UART_PORT_0, "\r\ncurrent cluster: 0x");
-  uart_write_32(UART_PORT_0, file->current_cluster);
-  uart_write_str(UART_PORT_0, "\r\nsectors per cluster: 0x");
-  uart_write_32(UART_PORT_0, file->sectors_per_cluster);
-  uart_write_str(UART_PORT_0, "\r\ncurrent sector: 0x");
-  uart_write_32(UART_PORT_0, file->current_sector);
-  uart_write_str(UART_PORT_0, "\r\nlist pointer: 0x");
-  uart_write_32(UART_PORT_0, (uint32_t)file->fat_list);
-  uart_write_str(UART_PORT_0, "\r\n");
+  // file->current_cluster = first_cluster_addr;
+
+  return 0;
 }
 
 void fat32_close_file(struct fat32_ctx *ctx, struct fat32_file *file) {
@@ -580,7 +683,7 @@ int8_t fat32_write_file_byte(struct fat32_ctx *ctx, struct fat32_file *file,
    *  write byte to the next position recorded by the file position, increment
    */
 
-  // io_put_byte(ctx->io, file->cluster_begin_sector * SECTOR_SIZE + file, buf);
+  //io_put_byte(ctx->io, file->cluster_begin_sector * SECTOR_SIZE + file, buf);
 
   return 0;
 }
