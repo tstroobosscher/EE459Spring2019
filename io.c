@@ -108,6 +108,14 @@ int8_t io_read_nbytes(struct io_ctx *io, void *buf, uint32_t offset,
   return 0;
 }
 
+int8_t io_flush_read_buffer(struct io_ctx *io) {
+  /*
+   * unconditional write out to the flash
+   */
+  return sd_get_sector(io->input_sector_addr, io->input_sector_buf,
+                       SECTOR_SIZE);
+}
+
 int8_t io_flush_write_buffer(struct io_ctx *io) {
   /*
    * unconditional write out to the flash

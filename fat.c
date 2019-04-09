@@ -48,7 +48,7 @@ fat32_dump_filename(struct FAT32Entry *e) {
 
 void fat32_dump_file_meta(struct fat32_file *file) {
   uart_write_str(UART_PORT_0, "\r\nfile name: ");
-   uart_write_strn(UART_PORT_0, file->file_name, 8);
+  uart_write_strn(UART_PORT_0, file->file_name, 8);
   uart_write_str(UART_PORT_0, ".");
   uart_write_strn(UART_PORT_0, file->file_ext, 3);
   uart_write_str(UART_PORT_0, "\r\nfile size: 0x");
@@ -598,6 +598,18 @@ int8_t fat32_update_fat(struct fat32_ctx *ctx, struct fat32_file *file, uint32_t
   return 0;
 }
 
+void fat32_dump_entry(struct FAT32Entry *e) {
+  uart_write_str(UART_PORT_0, "file name: ");
+  uart_write_strn(UART_PORT_0, e->filename, 8);
+  uart_write_str(UART_PORT_0, ".");
+  uart_write_strn(UART_PORT_0, e->filename_ext, 3);
+  uart_write_str(UART_PORT_0, "\r\nfile size: 0x");
+  uart_write_32(UART_PORT_0, e->file_size);
+  uart_write_str(UART_PORT_0, "\r\nfirst cluster address: 0x");
+  uart_write_32(UART_PORT_0, fat32_calc_first_cluster(e->first_cluster_addr_high, e->first_cluster_addr_low));
+  uart_write_str(UART_PORT_0, "\r\n");
+}
+
 int8_t fat32_update_file_size(struct fat32_ctx *ctx, struct fat32_file *file, uint32_t size) {
 
   struct FAT32Entry e;
@@ -611,7 +623,13 @@ int8_t fat32_update_file_size(struct fat32_ctx *ctx, struct fat32_file *file, ui
 
   e.file_size = size;
 
-  io_write_nbytes(ctx->io, &e, ctx->root_dir_sector * SECTOR_SIZE + 32 * file->root_dir_offset, sizeof(struct FAT32Entry));
+  UART_DBG("fat32: updating file size at root dir offset 0x");
+  UART_DBG_32(file->root_dir_offset);
+  UART_DBG("\r\n");
+
+  fat32_dump_entry(&e);
+
+  io_write_nbytes(ctx->io, &e, ctx->root_dir_sector * SECTOR_SIZE + sizeof(struct FAT32Entry) * file->root_dir_offset, sizeof(struct FAT32Entry));
 
   return 0;
 }
@@ -646,7 +664,8 @@ int8_t fat32_creat_file(struct fat32_ctx *ctx, struct fat32_file *file) {
     UART_DBG_32(file->root_dir_offset);
     UART_DBG("\r\n");
 
-    first_cluster_addr = fat32_get_next_cluster(ctx);
+    //first_cluster_addr = fat32_get_next_cluster(ctx) + 1;
+    first_cluster_addr = 5;
 
     UART_DBG("fat32: next cluster address: 0x");
     UART_DBG_32(first_cluster_addr);
@@ -659,6 +678,7 @@ int8_t fat32_creat_file(struct fat32_ctx *ctx, struct fat32_file *file) {
     strncpy(e.filename_ext, file->file_ext, 3);
 
     e.file_size = 0;
+    file->file_size = 0;
 
     /* may need to be flushed! */
     io_write_nbytes(ctx->io, &e, ctx->root_dir_sector * SECTOR_SIZE + 32 * file->root_dir_offset, sizeof(struct FAT32Entry));

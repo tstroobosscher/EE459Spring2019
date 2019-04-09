@@ -100,18 +100,49 @@ int main() {
   UART_DBG_32(fat32.sectors_per_cluster);
   UART_DBG("\r\n");
 
-  char *buf = "Hello World!";
+  char *buf = "1606\n"
+  "THE TRAGEDY OF MACBETH\n"
+  "\n"
+  "\n"
+  "by Walliam Shakespeare\n"
+  "\n"
+  "\n"
+  "\n"
+  "Dramatis Personae\n"
+  "\n"
+  "  DUNCAN, King of Scotland\n"
+    "  MACBETH, Thane of Glamis and Cawdor, a general in the King's\n"
+  "army\n"
+    "  LADY MACBETH, his wife\n"
+    "  MACDUFF, Thane of Fife, a nobleman of Scotland\n"
+    "  LADY MACDUFF, his wife\n"
+    "  MALCOLM, elder son of Duncan\n"
+    "  DONALBAIN, younger son of Duncan\n"
+    "  BANQUO, Thane of Lochaber, a general in the King's army\n"
+    "  FLEANCE, his son\n"
+    "  LENNOX, nobleman of Scotland\n"
+    "  ROSS, nobleman of Scotland\n"
+    "  MENTEITH nobleman of Scotland\n"
+    "  ANGUS,";
 
-  uint64_t addr = fat32.cluster_begin_sector * SECTOR_SIZE + (file.current_cluster) * fat32.sectors_per_cluster * SECTOR_SIZE;
+  /* jesus christ the 2 unit translation is frustrating */
+  uint64_t addr = fat32.cluster_begin_sector * SECTOR_SIZE + (file.current_cluster - 2) * fat32.sectors_per_cluster * SECTOR_SIZE;
 
   UART_DBG("main: fat32 writing to byte address 0x");
   UART_DBG_32(addr >> 32);
   UART_DBG_32(addr);
   UART_DBG("\r\n");
 
-  io_write_nbytes(&io, buf, addr, sizeof(buf));
+  UART_DBG("main: buf size: 0x");
+  UART_DBG_32((uint32_t) strlen(buf));
+  UART_DBG("\r\n");
 
-  fat32_update_file_size(&fat32, &file, sizeof(buf));
+  io_write_nbytes(&io, buf, addr, strlen(buf));
+
+  io_flush_read_buffer(&io);
+  io_flush_write_buffer(&io);
+
+  fat32_update_file_size(&fat32, &file, strlen(buf));
 
   io_flush_write_buffer(&io);
 
