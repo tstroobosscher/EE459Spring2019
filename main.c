@@ -88,13 +88,21 @@ int main() {
 
   fat32_creat_file(&fat32, &file);
 
-  char *buf = "The directory entries tell you where the first cluster of each file (or subdirectory) is located on the disk, and of course you find the first cluster of the root directory from the volume ID sector.";
+  char *buf_1 = "Hello World!\n";
 
-  fat32_write_file_nbytes(&fat32, &file, buf, strlen(buf));
+  fat32_write_file_nbytes(&fat32, &file, buf_1, strlen(buf_1));
 
-  char *new_buf = "Hello World!";
+  char *buf_2 = "Goodbye World!\n";
 
-  fat32_write_file_nbytes(&fat32, &file, new_buf, strlen(new_buf));
+  fat32_write_file_nbytes(&fat32, &file, buf_2, strlen(buf_2));
+
+  char *buf_3 = "How Are You Doing World!\n";
+
+  fat32_write_file_nbytes(&fat32, &file, buf_3, strlen(buf_3));
+
+  char *buf_4 = "I Am Doing Well World!\n";
+
+  fat32_write_file_nbytes(&fat32, &file, buf_4, strlen(buf_4));
 
   io_flush_write_buffer(&io);
 

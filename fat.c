@@ -24,6 +24,10 @@
 #define FAT32_DBG_FILE_META(x)
 #endif
 
+#define UART_DBG(x)
+#define UART_DBG_HEX(x)
+#define UART_DBG_32(x)
+
 static __attribute__((always inline)) uint32_t
 fat32_calc_first_cluster(uint16_t high, uint16_t low) {
   uint32_t shift_high = high;
