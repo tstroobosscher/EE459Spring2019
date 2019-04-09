@@ -100,30 +100,7 @@ int main() {
   UART_DBG_32(fat32.sectors_per_cluster);
   UART_DBG("\r\n");
 
-  char *buf = "1606\n"
-  "THE TRAGEDY OF MACBETH\n"
-  "\n"
-  "\n"
-  "by Walliam Shakespeare\n"
-  "\n"
-  "\n"
-  "\n"
-  "Dramatis Personae\n"
-  "\n"
-  "  DUNCAN, King of Scotland\n"
-    "  MACBETH, Thane of Glamis and Cawdor, a general in the King's\n"
-  "army\n"
-    "  LADY MACBETH, his wife\n"
-    "  MACDUFF, Thane of Fife, a nobleman of Scotland\n"
-    "  LADY MACDUFF, his wife\n"
-    "  MALCOLM, elder son of Duncan\n"
-    "  DONALBAIN, younger son of Duncan\n"
-    "  BANQUO, Thane of Lochaber, a general in the King's army\n"
-    "  FLEANCE, his son\n"
-    "  LENNOX, nobleman of Scotland\n"
-    "  ROSS, nobleman of Scotland\n"
-    "  MENTEITH nobleman of Scotland\n"
-    "  ANGUS,";
+  char *buf = "The directory entries tell you where the first cluster of each file (or subdirectory) is located on the disk, and of course you find the first cluster of the root directory from the volume ID sector.";
 
   /* jesus christ the 2 unit translation is frustrating */
   uint64_t addr = fat32.cluster_begin_sector * SECTOR_SIZE + (file.current_cluster - 2) * fat32.sectors_per_cluster * SECTOR_SIZE;

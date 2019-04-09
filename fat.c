@@ -113,7 +113,7 @@ int8_t fat32_parse_entry(struct FAT32Entry *e) {
     UART_DBG("    Attribute: ARCHIVE\r\n");
 
   uint32_t cluster_addr = fat32_calc_first_cluster(e->first_cluster_addr_high,
-                                                   e->first_cluster_addr_low);
+                                                   e->first_cluster_addr_low) + 2;
 
   UART_DBG("    Starting cluter address: 0x");
   UART_DBG_32(cluster_addr);
@@ -265,7 +265,7 @@ int8_t fat32_open_file(struct fat32_ctx *ctx, struct FAT32Entry *e,
   /* lets build the 64 bit value and store in the context */
   if (fat32_get_fat(ctx,
                     fat32_calc_first_cluster(e->first_cluster_addr_high,
-                                             e->first_cluster_addr_low),
+                                             e->first_cluster_addr_low) + 2,
                     &(file->fat_list)) < 0)
     return -1;
 
@@ -276,7 +276,7 @@ int8_t fat32_open_file(struct fat32_ctx *ctx, struct FAT32Entry *e,
   strncpy(file->file_ext, e->filename_ext, 3);
 
   file->current_cluster = fat32_calc_first_cluster(e->first_cluster_addr_high,
-                                                   e->first_cluster_addr_low);
+                                                   e->first_cluster_addr_low) + 2;
   file->sectors_per_cluster = ctx->sectors_per_cluster;
   file->current_sector = 0;
 
@@ -664,8 +664,7 @@ int8_t fat32_creat_file(struct fat32_ctx *ctx, struct fat32_file *file) {
     UART_DBG_32(file->root_dir_offset);
     UART_DBG("\r\n");
 
-    //first_cluster_addr = fat32_get_next_cluster(ctx) + 1;
-    first_cluster_addr = 5;
+    first_cluster_addr = fat32_get_next_cluster(ctx);
 
     UART_DBG("fat32: next cluster address: 0x");
     UART_DBG_32(first_cluster_addr);
