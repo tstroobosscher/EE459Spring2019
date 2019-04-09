@@ -18,18 +18,24 @@
 struct spi_device {
   uint8_t dev_id;
   uint8_t clock_div;
+  uint64_t select_pin;
+  const char *dev_name;
 } spi_devices[] {
 
   /* default speed has been working fine */
   {
     SPI_SD_CARD,
     SPI_FOSC_OVER_4,
+    PIN_SS_SD,
+    "SD Card",
   },
 
   /* LCD needs the slowest possible clock */
   {
     SPI_LCD,
     SPI_FOSC_OVER_128,
+    PIN_SS_LCD,
+    "LCD",
   }
 };
 
@@ -76,30 +82,37 @@ void initialize_spi() {
 
 int8_t spi_device_enable(uint8_t dev) {
   /* clear pins first */
-  pin_high(PIN_SS_SD);
+  for(uint8_t i = 0; i < ARRAY_SIZE(spi_devices); i++) {
+    if(pin_high(spi_devices[i].select_pin) < 0) {
+      UART_DBG("spi: unable to clear select pin for device: ");
+      UART_DBG(spi_devices[i].dev_name);
+      UART_DBG("\r\n");
 
-  /* set device enable */
-  switch (dev) {
-  case SPI_SD_CARD:
-    if (pin_low(PIN_SS_SD) < 0)
       return -1;
-    UART_DBG("spi: SD slave select enabled\r\n");
-    return 0;
-  default:
-    return -1;
+    }
+  }
+
+  for(uint8_t i = 0; i < ARRAY_SIZE(spi_devices); i++) {
+    if(spi_devices[i].dev_id == dev)
+      if (pin_low(spi_devices[i].select_pin) < 0)
+        return -1;
+
+      UART_DBG("spi: SD slave select enabled for device: ");
+      UART_DBG(spi_devices[i].dev_name);
+      UART_DBG("\r\n");
   }
 }
 
 int8_t spi_device_disable(uint8_t dev) {
   /* set device disable */
-  switch (dev) {
-  case SPI_SD_CARD:
-    if (pin_high(PIN_SS_SD) < 0)
-      return -1;
-    UART_DBG("spi: SD slave select disabled\r\n");
-    return 0;
-  default:
-    return -1;
+   for(uint8_t i = 0; i < ARRAY_SIZE(spi_devices); i++) {
+    if(spi_devices[i].dev_id == dev)
+      if (pin_high(spi_devices[i].select_pin) < 0)
+        return -1;
+
+      UART_DBG("spi: SD slave select disabled for device: ");
+      UART_DBG(spi_devices[i].dev_name);
+      UART_DBG("\r\n");
   }
 }
 
