@@ -8,12 +8,7 @@
 static const enum {
   SPI_SD_CARD,
   SPI_LCD,
-}
-
-struct spi_device {
-  uint8_t dev_id;
-  uint8_t spi_flags;
-} spi_devices
+};
 
 void initialize_spi();
 uint8_t spi_write_char(uint8_t ch);

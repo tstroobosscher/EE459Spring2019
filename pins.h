@@ -72,6 +72,7 @@ static const enum {
 #define PIN_RX 2
 #define PIN_TX 3
 #define PIN_SS_SD 19
+#define PIN_SS_LCD 18
 #define PIN_MOSI 21
 #define PIN_MISO 22 /* input ! */
 #define PIN_SCK 20

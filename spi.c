@@ -20,7 +20,7 @@ struct spi_device {
   uint8_t clock_div;
   uint64_t select_pin;
   const char *dev_name;
-} spi_devices[] {
+} spi_devices[] = {
 
   /* default speed has been working fine */
   {
