@@ -83,43 +83,18 @@ int main() {
   /* main routines */
   struct fat32_file file;
 
-  strncpy(file.file_name, "logfile3", 8);
+  strncpy(file.file_name, "logfile1", 8);
   strncpy(file.file_ext, "txt", 3);
 
   fat32_creat_file(&fat32, &file);
 
-  UART_DBG("main: file current_cluster = 0x");
-  UART_DBG_32(file.current_cluster);
-  UART_DBG("\r\n");
-
-  UART_DBG("main: fat32 cluster_begin_sector = 0x");
-  UART_DBG_32(fat32.cluster_begin_sector);
-  UART_DBG("\r\n");
-
-  UART_DBG("main: fat32 sectors_per_cluster = 0x");
-  UART_DBG_32(fat32.sectors_per_cluster);
-  UART_DBG("\r\n");
-
   char *buf = "The directory entries tell you where the first cluster of each file (or subdirectory) is located on the disk, and of course you find the first cluster of the root directory from the volume ID sector.";
 
-  /* jesus christ the 2 unit translation is frustrating */
-  uint64_t addr = fat32.cluster_begin_sector * SECTOR_SIZE + (file.current_cluster - 2) * fat32.sectors_per_cluster * SECTOR_SIZE;
+  fat32_write_file_nbytes(&fat32, &file, buf, strlen(buf));
 
-  UART_DBG("main: fat32 writing to byte address 0x");
-  UART_DBG_32(addr >> 32);
-  UART_DBG_32(addr);
-  UART_DBG("\r\n");
+  char *new_buf = "Hello World!";
 
-  UART_DBG("main: buf size: 0x");
-  UART_DBG_32((uint32_t) strlen(buf));
-  UART_DBG("\r\n");
-
-  io_write_nbytes(&io, buf, addr, strlen(buf));
-
-  io_flush_read_buffer(&io);
-  io_flush_write_buffer(&io);
-
-  fat32_update_file_size(&fat32, &file, strlen(buf));
+  fat32_write_file_nbytes(&fat32, &file, new_buf, strlen(new_buf));
 
   io_flush_write_buffer(&io);
 

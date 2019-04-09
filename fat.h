@@ -260,9 +260,11 @@ struct fat32_file {
   uint8_t file_name[8];
   uint8_t file_ext[3];
   uint32_t file_size;
-  uint32_t byte_offset;
+  uint32_t start_byte_offset;
+  uint32_t current_byte_offset;
   uint32_t root_dir_offset;
   uint32_t current_cluster;
+  uint32_t first_cluster;
   uint32_t current_sector;
   uint32_t sectors_per_cluster;
 
@@ -305,5 +307,7 @@ int8_t fat32_parse_entry(struct FAT32Entry *e);
 void fat32_dump_file_meta(struct fat32_file *file);
 int8_t fat32_creat_file(struct fat32_ctx *ctx, struct fat32_file *file);
 int8_t fat32_update_file_size(struct fat32_ctx *ctx, struct fat32_file *file, uint32_t size);
+int8_t fat32_write_file_nbytes(struct fat32_ctx *ctx, struct fat32_file *file,
+                             uint8_t *buf, uint32_t nbytes);
 
 #endif

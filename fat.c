@@ -54,7 +54,7 @@ void fat32_dump_file_meta(struct fat32_file *file) {
   uart_write_str(UART_PORT_0, "\r\nfile size: 0x");
   uart_write_32(UART_PORT_0, file->file_size);
   uart_write_str(UART_PORT_0, "\r\nfile position: 0x");
-  uart_write_32(UART_PORT_0, file->byte_offset);
+  uart_write_32(UART_PORT_0, file->start_byte_offset);
   uart_write_str(UART_PORT_0, "\r\ncurrent cluster: 0x");
   uart_write_32(UART_PORT_0, file->current_cluster);
   uart_write_str(UART_PORT_0, "\r\nsectors per cluster: 0x");
@@ -270,7 +270,8 @@ int8_t fat32_open_file(struct fat32_ctx *ctx, struct FAT32Entry *e,
     return -1;
 
   file->file_size = e->file_size;
-  file->byte_offset = 0;
+  file->start_byte_offset = 0;
+  file->current_byte_offset = 0;
 
   strncpy(file->file_name, e->filename, 8);
   strncpy(file->file_ext, e->filename_ext, 3);
@@ -621,7 +622,7 @@ int8_t fat32_update_file_size(struct fat32_ctx *ctx, struct fat32_file *file, ui
       UART_DBG("main: error reading FAT32 root entry\r\n");
   }
 
-  e.file_size = size;
+  e.file_size += size;
 
   UART_DBG("fat32: updating file size at root dir offset 0x");
   UART_DBG_32(file->root_dir_offset);
@@ -648,6 +649,7 @@ int8_t fat32_creat_file(struct fat32_ctx *ctx, struct fat32_file *file) {
     file->root_dir_offset = f->root_dir_offset;
     file->file_size = f->file_size;
     file->fat_list = f->fat_list;
+    file->current_cluster = f->current_cluster;
 
   } else {
 
@@ -688,6 +690,9 @@ int8_t fat32_creat_file(struct fat32_ctx *ctx, struct fat32_file *file) {
     file->current_cluster = first_cluster_addr;
   }
 
+  file->start_byte_offset = ctx->cluster_begin_sector * SECTOR_SIZE + (file->current_cluster - 2) * ctx->sectors_per_cluster * SECTOR_SIZE;
+  file->current_byte_offset = file->start_byte_offset;
+
   return 0;
 }
 
@@ -701,11 +706,32 @@ void fat32_close_file(struct fat32_ctx *ctx, struct fat32_file *file) {
 
 // }
 
-int8_t fat32_write_file_byte(struct fat32_ctx *ctx, struct fat32_file *file,
-                             uint8_t *buf) {
+int8_t fat32_write_file_nbytes(struct fat32_ctx *ctx, struct fat32_file *file,
+                             uint8_t *buf, uint32_t nbytes) {
   /*
    *  write byte to the next position recorded by the file position, increment
    */
+
+  /* jesus christ the 2 unit translation is frustrating */
+  uint64_t addr =  + file->current_byte_offset;
+
+  UART_DBG("main: fat32 writing to byte address 0x");
+  UART_DBG_32(addr >> 32);
+  UART_DBG_32(addr);
+  UART_DBG("\r\n");
+
+  UART_DBG("main: buf size: 0x");
+  UART_DBG_32(nbytes);
+  UART_DBG("\r\n");
+
+  io_write_nbytes(ctx->io, buf, addr, nbytes);
+
+  io_flush_read_buffer(ctx->io);
+  io_flush_write_buffer(ctx->io);
+
+  fat32_update_file_size(ctx, file, nbytes);
+
+  file->current_byte_offset += nbytes;
 
   //io_put_byte(ctx->io, file->cluster_begin_sector * SECTOR_SIZE + file, buf);
 
