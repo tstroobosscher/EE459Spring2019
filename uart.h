@@ -14,7 +14,7 @@
 /*
  *	UART Baud rate uart 0
  */
-#define BUAD_UART_0 19200
+#define BUAD_UART_0 38400
 
 /*
  *	UART Baud rate uart 1, ELM327 standard

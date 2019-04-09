@@ -27,21 +27,12 @@ int elm_response_complete(const char *buf) {
   return 0;
 }
 
-int elm_write(int device, const char *buf, int len) {
+int elm_write(uint8_t device, const char *buf, uint32_t len) {
   /*
    *	write n bytes from the buffer
    */
 
-  int ret = 0;
-
-  while (len > 0) {
-
-    ret = write(device, buf, len);
-    if (ret < 0)
-      return -1;
-
-    len -= ret;
-  }
+  uart_write_strn(device, buf, len);
 
   /* why was this here ? */
   // write(device, "\r", 1);

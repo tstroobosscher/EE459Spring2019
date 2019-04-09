@@ -28,7 +28,7 @@ struct obd_cmd {
         4,
         /* UNITS_NONE, */
         NULL,
-        "0101\ready",
+        "0101\r",
         "MONITOR STATUS SINCE DTCS CLEARED",
         NULL,
     },

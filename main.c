@@ -60,63 +60,70 @@ int main() {
 
   UART_DBG("main: initialized uart\r\n");
 
-  initialize_spi();
+  // initialize_spi();
 
-  UART_DBG("main: initialized spi\r\n");
+  // UART_DBG("main: initialized spi\r\n");
 
-  /* software resources */
-  if (initialize_sd(&sd) < 0)
-    UART_DBG("main: unable to initialize sd\r\n");
-  else
-    UART_DBG("main: initialized sd\r\n");
+  // /* software resources */
+  // if (initialize_sd(&sd) < 0)
+  //   UART_DBG("main: unable to initialize sd\r\n");
+  // else
+  //   UART_DBG("main: initialized sd\r\n");
 
-  if (initialize_io(&io, &sd) < 0)
-    UART_DBG("main: unable to initialize io\r\n");
-  else
-    UART_DBG("main: initialized io\r\n");
+  // if (initialize_io(&io, &sd) < 0)
+  //   UART_DBG("main: unable to initialize io\r\n");
+  // else
+  //   UART_DBG("main: initialized io\r\n");
 
-  if (initialize_fat32(&fat32, &io, &sd) < 0)
-    UART_DBG("main: unable to initialize fat32\r\n");
-  else
-    UART_DBG("main: initialized fat32\r\n");
+  // if (initialize_fat32(&fat32, &io, &sd) < 0)
+  //   UART_DBG("main: unable to initialize fat32\r\n");
+  // else
+  //   UART_DBG("main: initialized fat32\r\n");
 
-  /* main routines */
-  struct fat32_file file;
+  // /* main routines */
+  // struct fat32_file file;
 
-  strncpy(file.file_name, "logfile1", 8);
-  strncpy(file.file_ext, "txt", 3);
+  // strncpy(file.file_name, "logfile1", 8);
+  // strncpy(file.file_ext, "txt", 3);
 
-  fat32_creat_file(&fat32, &file);
+  // fat32_creat_file(&fat32, &file);
 
-  char *buf_1 = "Hello World!\n";
+  // char *buf_1 = "Hello World!\n";
 
-  fat32_write_file_nbytes(&fat32, &file, buf_1, strlen(buf_1));
+  // fat32_write_file_nbytes(&fat32, &file, buf_1, strlen(buf_1));
 
-  char *buf_2 = "Goodbye World!\n";
+  // char *buf_2 = "Goodbye World!\n";
 
-  fat32_write_file_nbytes(&fat32, &file, buf_2, strlen(buf_2));
+  // fat32_write_file_nbytes(&fat32, &file, buf_2, strlen(buf_2));
 
-  char *buf_3 = "How Are You Doing World!\n";
+  // char *buf_3 = "How Are You Doing World!\n";
 
-  fat32_write_file_nbytes(&fat32, &file, buf_3, strlen(buf_3));
+  // fat32_write_file_nbytes(&fat32, &file, buf_3, strlen(buf_3));
 
-  char *buf_4 = "I Am Doing Well World!\n";
+  // char *buf_4 = "I Am Doing Well World!\n";
 
-  fat32_write_file_nbytes(&fat32, &file, buf_4, strlen(buf_4));
+  // fat32_write_file_nbytes(&fat32, &file, buf_4, strlen(buf_4));
 
-  io_flush_write_buffer(&io);
+  // io_flush_write_buffer(&io);
+
+  initialize_uart(UART_PORT_1, MYUBRR(BUAD_UART_1));
 
 loop:
 
   while (1) {
-    if (pin_high(26) < 0){
-      UART_DBG("pin_high error\r\n");
-    }
-    DELAY_MS(1000);
-    if (pin_low(26) < 0){
-      UART_DBG("pin_low error\r\n");
-    }
-    DELAY_MS(1000);
+    /* UART 1 - UART 0 loopback */
+
+    /* read from UART 0 */
+    char out = uart_read_char(UART_PORT_0);
+
+    /* write to UART 1 */
+    uart_write_char(UART_PORT_1, out);
+
+    /* read from UART 1 */
+    char in = uart_read_char(UART_PORT_1);
+
+    /* write to UART 0 */
+    uart_write_char(UART_PORT_0, in);
   }
 
   return (0);
