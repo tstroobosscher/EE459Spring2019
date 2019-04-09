@@ -15,6 +15,25 @@
 #define UART_DBG(x)
 #define UART_DBG_HEX(x)
 
+struct spi_device {
+  uint8_t dev_id;
+  uint8_t clock_div;
+} spi_devices[] {
+
+  /* default speed has been working fine */
+  {
+    SPI_SD_CARD,
+    SPI_FOSC_OVER_4,
+  },
+
+  /* LCD needs the slowest possible clock */
+  {
+    SPI_LCD,
+    SPI_FOSC_OVER_128,
+  }
+};
+
+
 static __attribute__((always inline)) void
 spi_initialize_slave_select(uint8_t pin) {
   /*
@@ -24,6 +43,12 @@ spi_initialize_slave_select(uint8_t pin) {
     UART_DBG("spi: unable to initialize slave select pin\n\r");
   else
     UART_DBG("spi: succesfully initialized slave select pin\n\r");
+}
+
+void spi_set_speed(uint8_t flags) {
+  /* clear lower SPR1, SPR0 */
+  SPCR &= ~(0x03);
+  SPCR |= (flags);
 }
 
 void initialize_spi() {
@@ -48,8 +73,6 @@ void initialize_spi() {
    *	No division results in a SPI speed of FOSC/4
    */
 }
-
-void spi_set_speed() {}
 
 int8_t spi_device_enable(uint8_t dev) {
   /* clear pins first */
