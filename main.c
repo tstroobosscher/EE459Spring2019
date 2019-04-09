@@ -100,17 +100,18 @@ int main() {
   UART_DBG_32(fat32.sectors_per_cluster);
   UART_DBG("\r\n");
 
-  // char buf[10];
+  char *buf = "Hello World!";
 
-  // io_read_nbytes(&io, buf, fat32.cluster_begin_sector * SECTOR_SIZE + file.current_cluster * fat32.sectors_per_cluster * SECTOR_SIZE, 1);
+  uint64_t addr = fat32.cluster_begin_sector * SECTOR_SIZE + (file.current_cluster) * fat32.sectors_per_cluster * SECTOR_SIZE;
 
-  // buf[1] = '\0';
+  UART_DBG("main: fat32 writing to byte address 0x");
+  UART_DBG_32(addr >> 32);
+  UART_DBG_32(addr);
+  UART_DBG("\r\n");
 
-  // UART_DBG("main: buf = ");
-  // UART_DBG(buf);
-  // UART_DBG("\r\n");
+  io_write_nbytes(&io, buf, addr, sizeof(buf));
 
-  // fat32_update_file_size(&fat32, &file);
+  fat32_update_file_size(&fat32, &file, sizeof(buf));
 
   io_flush_write_buffer(&io);
 

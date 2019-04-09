@@ -304,5 +304,6 @@ int8_t initialize_fat32(struct fat32_ctx *fat32, struct io_ctx *io,
 int8_t fat32_parse_entry(struct FAT32Entry *e);
 void fat32_dump_file_meta(struct fat32_file *file);
 int8_t fat32_creat_file(struct fat32_ctx *ctx, struct fat32_file *file);
+int8_t fat32_update_file_size(struct fat32_ctx *ctx, struct fat32_file *file, uint32_t size);
 
 #endif

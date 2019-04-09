@@ -598,7 +598,7 @@ int8_t fat32_update_fat(struct fat32_ctx *ctx, struct fat32_file *file, uint32_t
   return 0;
 }
 
-int8_t fat32_update_file_size(struct fat32_ctx *ctx, struct fat32_file *file) {
+int8_t fat32_update_file_size(struct fat32_ctx *ctx, struct fat32_file *file, uint32_t size) {
 
   struct FAT32Entry e;
 
@@ -609,9 +609,7 @@ int8_t fat32_update_file_size(struct fat32_ctx *ctx, struct fat32_file *file) {
       UART_DBG("main: error reading FAT32 root entry\r\n");
   }
 
-  UART_DBG("fat32: incrementing file size: ");
-  UART_DBG_32(e.file_size++);
-  UART_DBG("\r\n");
+  e.file_size = size;
 
   io_write_nbytes(ctx->io, &e, ctx->root_dir_sector * SECTOR_SIZE + 32 * file->root_dir_offset, sizeof(struct FAT32Entry));
 
@@ -623,9 +621,6 @@ int8_t fat32_creat_file(struct fat32_ctx *ctx, struct fat32_file *file) {
    *  file name needs to be filled
    */
 
-  uint32_t first_cluster_addr;
-  struct FAT32Entry e;
-  memset(&e, 0, sizeof(struct FAT32Entry));
   struct fat32_file *f;
 
   if((f = fat32_file_exists(ctx, file)) != NULL) {
@@ -633,37 +628,46 @@ int8_t fat32_creat_file(struct fat32_ctx *ctx, struct fat32_file *file) {
     UART_DBG("fat32: file already exists\r\n");
     /* just return the cached file information */
     file->root_dir_offset = f->root_dir_offset;
+    file->file_size = f->file_size;
+    file->fat_list = f->fat_list;
+
   } else {
+
+    /* only write to the root directory if the file isn't there */
+    uint32_t first_cluster_addr;
+    struct FAT32Entry e;
+    memset(&e, 0, sizeof(struct FAT32Entry));
+
     UART_DBG("fat32: creating new file entry\r\n");
+
     file->root_dir_offset = fat32_get_next_root_dir_loc(ctx);
+
+    UART_DBG("fat32: creat: root dir offset: 0x");
+    UART_DBG_32(file->root_dir_offset);
+    UART_DBG("\r\n");
+
+    first_cluster_addr = fat32_get_next_cluster(ctx);
+
+    UART_DBG("fat32: next cluster address: 0x");
+    UART_DBG_32(first_cluster_addr);
+    UART_DBG("\r\n");
+
+    e.first_cluster_addr_high = (first_cluster_addr >> 16);
+    e.first_cluster_addr_low = (first_cluster_addr);
+
+    strncpy(e.filename, file->file_name, 8);
+    strncpy(e.filename_ext, file->file_ext, 3);
+
+    e.file_size = 0;
+
+    /* may need to be flushed! */
+    io_write_nbytes(ctx->io, &e, ctx->root_dir_sector * SECTOR_SIZE + 32 * file->root_dir_offset, sizeof(struct FAT32Entry));
+
+    // fat32_update_fat(ctx, file, first_cluster_addr);
+    file->fat_list = NULL;
+
+    file->current_cluster = first_cluster_addr;
   }
-
-  UART_DBG("fat32: creat: root dir offset: 0x");
-  UART_DBG_32(file->root_dir_offset);
-  UART_DBG("\r\n");
-
-  first_cluster_addr = fat32_get_next_cluster(ctx);
-
-  UART_DBG("fat32: next cluster address: 0x");
-  UART_DBG_32(first_cluster_addr);
-  UART_DBG("\r\n");
-
-  e.first_cluster_addr_high = (first_cluster_addr >> 16);
-  e.first_cluster_addr_low = (first_cluster_addr);
-
-  strncpy(e.filename, file->file_name, 8);
-  strncpy(e.filename_ext, file->file_ext, 3);
-  
-  e.file_size = 0;
-
-  file->fat_list = NULL;
-
-  /* may need to be flushed! */
-  io_write_nbytes(ctx->io, &e, ctx->root_dir_sector * SECTOR_SIZE + 32 * file->root_dir_offset, sizeof(struct FAT32Entry));
-
-  // fat32_update_fat(ctx, file, first_cluster_addr);
-
-  // file->current_cluster = first_cluster_addr;
 
   return 0;
 }
