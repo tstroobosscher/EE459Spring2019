@@ -2,7 +2,16 @@
  *	USC EE459 Spring 2019 Team 17 - ELM327 Communication
  */
 
+#include <stdint.h>
+
 #include "elm.h"
+#include "uart.h"
+
+static const char *OK = "OK";
+
+static const char *ELM_RESET = "ATZ\r";
+static const char *ECHO_OFF = "ATE0\r";
+static const char *SEARCH_BUS = "ATSP0\r";
 
 /*
  *	The idea for this file is to provide a layer of abstraction between the 
@@ -16,7 +25,7 @@
  *	to convert from UART ascii to actual bytes of data.
  */
 
-int elm_response_complete(const char *buf) {
+static int elm_response_complete(const char *buf) {
   /*
    *	console will send a '>' once it is ready for the next command
    */
@@ -27,12 +36,12 @@ int elm_response_complete(const char *buf) {
   return 0;
 }
 
-int elm_write(uint8_t device, const char *buf, uint32_t len) {
+int elm_write(uint8_t device, const char *buf) {
   /*
    *	write n bytes from the buffer
    */
 
-  uart_write_strn(device, buf, len);
+  uart_write_str(device, buf);
 
   /* why was this here ? */
   // write(device, "\r", 1);
@@ -40,21 +49,31 @@ int elm_write(uint8_t device, const char *buf, uint32_t len) {
   return 0;
 }
 
-int elm_read(int device, char *buf, int len) {
+static int elm_read(int device, char *buf, int len) {
   /*
    *	read n bytes and put into the buffer
    */
+  
+  memset(buf, 0, len);
 
   char *cur = buf;
   int ret = 0;
   int n;
 
   while (len) {
-    n = read(device, cur, 1);
 
-    cur += n;
-    ret += n;
-    len -= n;
+    if (!uart_data_available(device))
+      continue;
+
+    *cur = uart_read_char(device);
+
+    UART_DBG("elm: read buf: ");
+    UART_DBG(buf);
+    UART_DBG("\r\n");
+
+    cur++;
+    ret++;
+    len--;
 
     *cur = '\0';
 
@@ -62,15 +81,17 @@ int elm_read(int device, char *buf, int len) {
       break;
   }
 
-  return 0;
+  return ret;
 }
 
 int elm_command(int device, const char *cmd, int len, char *buf, int size) {
   /*
    *	send the command and then get the raw bytes until the '>', or tout
    */
-
-  if (elm_write(device, cmd, len) < 0)
+  UART_DBG("elm: writing cmd: ");
+  UART_DBG(cmd);
+  UART_DBG("\r\n");
+  if (elm_write(device, cmd) < 0)
     return -1;
 
   return (elm_read(device, buf, size));
@@ -80,22 +101,25 @@ int initialize_elm(int device) {
 
   char buf[BUF_SIZE];
 
-  if (elm_command(device, ELM_RESET, sizeof(ELM_RESET), buf, sizeof(buf)) < 0)
+  UART_DBG("elm: resetting device\r\n");
+  if (elm_command(device, ELM_RESET, strlen(ELM_RESET), buf, BUF_SIZE) < 0)
     return -1;
 
-  printf("ATZ: %s\n", buf);
+  UART_DBG("elm reset successful\r\n");
 
-  if (elm_command(device, ECHO_OFF, sizeof(ECHO_OFF), buf, sizeof(buf)) < 0)
+  // //printf("ATZ: %s\n", buf);
+
+  if (elm_command(device, ECHO_OFF, strlen(ECHO_OFF), buf, BUF_SIZE) < 0)
     if (!strstr(buf, OK))
       return -1;
 
-  printf("ATE0: %s\n", buf);
+  // //printf("ATE0: %s\n", buf);
 
-  if (elm_command(device, SEARCH_BUS, sizeof(SEARCH_BUS), buf, sizeof(buf)) < 0)
-    if (!strstr(buf, OK))
-      return -1;
+  // if (elm_command(device, SEARCH_BUS, sizeof(SEARCH_BUS), buf, sizeof(buf)) < 0)
+  //   if (!strstr(buf, OK))
+  //     return -1;
 
-  printf("ATSP0: %s\n", buf);
+  // //printf("ATSP0: %s\n", buf);
 
   return 0;
 }

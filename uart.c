@@ -64,6 +64,20 @@ char uart_read_char(uint8_t port) {
   return *(uart_ports[port].udr);
 }
 
+char uart_data_available(port) {
+  return (*(uart_ports[port].ucsra) & (1 << uart_ports[port].rxc));
+}
+
+void uart_read_strn(uint8_t port, uint8_t *buf, uint8_t n) {
+  /* this needs a timeout */
+  for (char i = 0; i < n; i++) {
+    if (!isascii(*buf))
+      continue;
+    *buf = uart_read_char(port);
+    buf++;
+  }
+}
+
 void uart_write_char(uint8_t port, char data) {
   while (!(*(uart_ports[port].ucsra) & (1 << uart_ports[port].udre))) {
   }

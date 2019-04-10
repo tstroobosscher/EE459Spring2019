@@ -6,19 +6,24 @@
 // hi its hanna
 // hello it's paul
 
+#include <avr/interrupt.h>
 #include <avr/io.h>
-#include <stdint.h>
+//#include <stdint.h>
 
 #include "debug.h"
-#include "fat.h"
-#include "fifo.h"
-#include "io.h"
+//#include "fat.h"
+//#include "fifo.h"
+//#include "io.h"
 #include "pins.h"
-#include "sd.h"
-#include "spi.h"
-#include "time.h"
+//#include "sd.h"
+//#include "spi.h"
+//#include "time.h"
 #include "utils.h"
 #include "uart.h"
+//#include "elm.h"
+
+//volatile struct fifo_t fifo;
+volatile int interrupt_flag = 0;
 
 /*
  *  okay, so multiplication on 8 bit architectures works a bit differently
@@ -37,19 +42,21 @@
  *  keeping stale data in the dataspace? What do we actually need?
  */
 
-struct sd_ctx sd;
+//struct sd_ctx sd;
 
 /*
  *  the io level should also be global because a single io structure
  *  can operate on more than one instance of a file
  */
-struct io_ctx io;
+//struct io_ctx io;
 
 /*
  *  fat32 context should be global because we can associate more than
  *  one file with a single file system
  */
-struct fat32_ctx fat32;
+//struct fat32_ctx fat32;
+
+//char buffer[1];
 
 int main() {
 
@@ -58,7 +65,11 @@ int main() {
 
   initialize_uart(UART_PORT_0, MYUBRR(BUAD_UART_0));
 
-  UART_DBG("main: initialized uart\r\n");
+  //UART_DBG("main: initialized uart\r\n");
+
+  //initialize_fifo(&fifo);
+
+  //UART_DBG("main: initialized fifo\r\n");
 
   // initialize_spi();
 
@@ -106,25 +117,39 @@ int main() {
 
   // io_flush_write_buffer(&io);
 
-  initialize_uart(UART_PORT_1, MYUBRR(BUAD_UART_1));
-
-loop:
+  //initialize_uart(UART_PORT_1, MYUBRR(BUAD_UART_1));
+  sei();
+  UCSR0B |= (1 << RXCIE0);
 
   while (1) {
     /* UART 1 - UART 0 loopback */
 
     /* read from UART 0 */
-    char out = uart_read_char(UART_PORT_0);
+    // if(uart_data_available(UART_PORT_0)) {
+    //   char out = uart_read_char(UART_PORT_0);
 
-    /* write to UART 1 */
-    uart_write_char(UART_PORT_1, out);
+    //   /* write to UART 1 */
+    //   uart_write_char(UART_PORT_1, out);
+    // }
 
-    /* read from UART 1 */
-    char in = uart_read_char(UART_PORT_1);
+    // if(uart_data_available(UART_PORT_1)) {
+    //   /* read from UART 1 */
+    //   char in = uart_read_char(UART_PORT_1);
 
-    /* write to UART 0 */
-    uart_write_char(UART_PORT_0, in);
+    //   /* write to UART 0 */
+    //   uart_write_char(UART_PORT_0, in);
+    // }
+    
+    // UART_DBG("main: interrupt_flag = ");
+    // UART_DBG_32(interrupt_flag);
+    // UART_DBG("\r\n");
+
+    // DELAY_MS(1000);
   }
 
   return (0);
+}
+
+ISR(USART0_RX_vect) {
+  UART_DBG("main: isr!\r\n");
 }

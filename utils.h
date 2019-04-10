@@ -55,6 +55,7 @@
 #define UART_DBG_HEX(x) uart_write_hex(UART_PORT_0, x)
 #define UART_DBG_32(x) uart_write_32(UART_PORT_0, x)
 #define UART_DBG_BIN(x, y) dump_bin(UART_PORT_0, x, y)
+#define UART_DBG_N(x, y) uart_write_strn(UART_PORT_0, x, y)
 
 #else
 

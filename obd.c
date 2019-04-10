@@ -5,6 +5,9 @@
 #include "obd.h"
 #include "list.h"
 
+static const char *NO_DATA = "NO DATA";
+static const char *NO_CONNECT = "UNABLE TO CONNECT";
+
 struct obd_cmd {
   /* i think pids are limited to 256 */
   unsigned char obd_pid;

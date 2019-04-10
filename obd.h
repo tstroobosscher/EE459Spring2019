@@ -12,13 +12,6 @@
 #define OBD_CMD_LEN 4 + 1 /* +1 for carriage return */
 #define OBD_PID_REGISTER_SIZE 0x20 
 
-const char *NO_DATA = "NO DATA";
-const char *OK = "OK";
-const char *NO_CONNECT = "UNABLE TO CONNECT";
-
-const char *ELM_RESET = "ATZ\r";
-const char *ECHO_OFF = "ATE0\r";
-const char *SEARCH_BUS = "ATSP0\r";
 const char *GET_DEVS = "0100\r";
 
 static const enum {
