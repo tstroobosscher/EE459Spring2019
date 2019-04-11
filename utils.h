@@ -10,6 +10,7 @@
 
 #include "debug.h"
 #include "uart.h"
+#include "avr_stdio.h"
 
 #ifdef ARDUINO
 
@@ -50,6 +51,8 @@
 #define BUF_SIZE 32
 
 #ifdef DEBUG
+
+#define DBG(...) printf(__VA_ARGS__)
 
 #define UART_DBG(x) uart_write_str(UART_PORT_0, x)
 #define UART_DBG_HEX(x) uart_write_hex(UART_PORT_0, x)

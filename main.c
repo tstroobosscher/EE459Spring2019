@@ -74,9 +74,13 @@ int main() {
 
   initialize_uart(UART_PORT_0, MYUBRR(BUAD_UART_0));
 
-  // UART_DBG("main: initialized uart\r\n");
+  UART_DBG("main: initialized uart\r\n");
+
+  initialize_stdio(&stdout);
 
   // initialize_fifo(&fifo);
+
+  DBG("Hello World! \n%s\n", "Goodbye World!");
 
   // UART_DBG("main: initialized fifo\r\n");
 
@@ -141,11 +145,6 @@ int main() {
   //   UART_DBG("main: initialized obd\r\n");
 
   // char buf[64];
-
-  initialize_stdio(&stdout);
-
-  printf("Hello World!\n");
-  printf("Goodbye World!\n");
 
   while (1) {
     // struct node *ptr = obd.linked_list;
