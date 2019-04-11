@@ -19,7 +19,7 @@ void initialize_fifo(struct fifo_t *fifo) {
   return;
 }
 
-static char fifo_write_byte(struct fifo_t *fifo, unsigned char *byte) {
+char fifo_write_byte(struct fifo_t *fifo, unsigned char *byte) {
   /*
    *	write a single byte to the fifo, increment the head
    *	if fifo is full, return -1
@@ -45,6 +45,8 @@ static char fifo_write_byte(struct fifo_t *fifo, unsigned char *byte) {
     /* check buf status */
     if (fifo->f_head == fifo->f_tail)
       fifo->f_status = FIFO_FULL;
+    else
+      fifo->f_status = FIFO_READY;
 
     return 0;
   }
@@ -53,7 +55,7 @@ static char fifo_write_byte(struct fifo_t *fifo, unsigned char *byte) {
   return -1;
 }
 
-static char fifo_read_byte(struct fifo_t *fifo, unsigned char *byte) {
+char fifo_read_byte(struct fifo_t *fifo, unsigned char *byte) {
   /*
    *	read a single byte the fifo, increment the tail
    *	if fifo is empty, return -1
@@ -113,4 +115,42 @@ char fifo_readn(struct fifo_t *fifo, void *buf, int nbytes) {
       return -1;
 
   return 0;
+}
+
+void fifo_dump_mem(struct fifo_t *fifo) {
+  /* 
+   * dump the fifo struct contents 
+   */
+
+  UART_DBG("fifo status: ");
+  switch(fifo->f_status) {
+    case FIFO_FULL  :
+      UART_DBG("full\r\n");
+      break;
+    case FIFO_EMPTY :
+      UART_DBG("empty\r\n");
+      break;
+    case FIFO_READY :
+      UART_DBG("ready\r\n");
+      break;
+    default     :
+      UART_DBG("unhandled status\r\n");
+      break; 
+  }
+
+  for(int i = 0; i < ARRAY_SIZE(fifo->f_buf); i++){
+    UART_DBG("fifo address: ");
+    UART_DBG_32(i); 
+    UART_DBG(" data: ");
+    UART_DBG_32(fifo->f_buf[i]);
+    if(fifo->f_head == i)
+      UART_DBG(" <- head");
+    if(fifo->f_tail == i)
+      UART_DBG(" <- tail");
+
+    UART_DBG("\r\n");
+  }
+
+
+  return;
 }

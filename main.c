@@ -12,7 +12,7 @@
 
 #include "debug.h"
 //#include "fat.h"
-//#include "fifo.h"
+#include "fifo.h"
 //#include "io.h"
 #include "pins.h"
 //#include "sd.h"
@@ -20,10 +20,15 @@
 //#include "time.h"
 #include "utils.h"
 #include "uart.h"
-//#include "elm.h"
+#include "elm.h"
+#include "obd.h"
 
-//volatile struct fifo_t fifo;
-volatile int interrupt_flag = 0;
+struct elm_ctx elm;
+
+volatile struct fifo_t fifo;
+
+struct obd_ctx obd;
+// volatile int interrupt_flag = 0;
 
 /*
  *  okay, so multiplication on 8 bit architectures works a bit differently
@@ -65,11 +70,11 @@ int main() {
 
   initialize_uart(UART_PORT_0, MYUBRR(BUAD_UART_0));
 
-  //UART_DBG("main: initialized uart\r\n");
+  UART_DBG("main: initialized uart\r\n");
 
-  //initialize_fifo(&fifo);
+  initialize_fifo(&fifo);
 
-  //UART_DBG("main: initialized fifo\r\n");
+  UART_DBG("main: initialized fifo\r\n");
 
   // initialize_spi();
 
@@ -117,39 +122,54 @@ int main() {
 
   // io_flush_write_buffer(&io);
 
-  //initialize_uart(UART_PORT_1, MYUBRR(BUAD_UART_1));
+  initialize_uart(UART_PORT_1, MYUBRR(BUAD_UART_1));
   sei();
-  UCSR0B |= (1 << RXCIE0);
+  UCSR1B |= (1 << RXCIE1);
+
+  if (initialize_elm(&fifo, &elm, UART_PORT_1) < 0) 
+    UART_DBG("main: unable to initialize elm\r\n");
+  else
+    UART_DBG("main: initialized elm\r\n");
+
+  if (initialize_obd(&elm, &obd) < 0)
+    UART_DBG("main: unable to initialize obd\r\n");
+  else
+    UART_DBG("main: initialized obd\r\n");
+
+  char buf[64];
 
   while (1) {
-    /* UART 1 - UART 0 loopback */
+    // struct node *ptr = obd.linked_list;
 
-    /* read from UART 0 */
-    // if(uart_data_available(UART_PORT_0)) {
-    //   char out = uart_read_char(UART_PORT_0);
+    // while(ptr) {
 
-    //   /* write to UART 1 */
-    //   uart_write_char(UART_PORT_1, out);
+    //   /* the compiler needs offset information to dereference void pointers */
+    //   struct obd_cmd *cmd = (struct obd_cmd *) ptr->data;
+
+    //   char ret[64];
+
+    //   if(cmd->handle_data != NULL) {
+    //     if(obd_command(&obd, cmd->obd_cmd, buf, BUF_SIZE) < 0) {
+    //       ptr = ptr->next;
+    //       continue;
+    //     }
+    //     (*(cmd->handle_data))(ret, buf, cmd->resp_bytes, &obd);
+    //     UART_DBG(cmd->cmd_str);
+    //     UART_DBG(" = ");
+    //     UART_DBG(ret);
+    //     UART_DBG(" ");
+    //     UART_DBG(cmd->obd_units);
+    //     UART_DBG("\r\n");
+    //     //printf("%s = %s %s\n", cmd->cmd_str, res, cmd->obd_units);
+    //   }
+    //   ptr = ptr->next;
     // }
-
-    // if(uart_data_available(UART_PORT_1)) {
-    //   /* read from UART 1 */
-    //   char in = uart_read_char(UART_PORT_1);
-
-    //   /* write to UART 0 */
-    //   uart_write_char(UART_PORT_0, in);
-    // }
-    
-    // UART_DBG("main: interrupt_flag = ");
-    // UART_DBG_32(interrupt_flag);
-    // UART_DBG("\r\n");
-
     // DELAY_MS(1000);
   }
 
   return (0);
 }
 
-ISR(USART0_RX_vect) {
-  UART_DBG("main: isr!\r\n");
+ISR(USART1_RX_vect) {
+  fifo_write_byte(&fifo, &UDR1);
 }

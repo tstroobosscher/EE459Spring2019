@@ -5,14 +5,34 @@
 #ifndef OBD_H
 #define OBD_H
 
+#include "elm.h"
+#include "list.h"
+
+struct obd_ctx {
+  struct elm_ctx *elm;
+
+  uint32_t supported_devices;
+
+  // linked list for supported devices
+  struct node *linked_list;
+};
+
+struct obd_cmd {
+  /* i think pids are limited to 256 */
+  unsigned char obd_pid;
+  int resp_bytes;
+  const char *obd_units;
+  const char *obd_cmd;
+  const char *cmd_str;
+  void (*handle_data)(char *buf, void *dat, int bytes, struct obd_ctx *ctx);
+};
+
 #define BUF_SIZE 64
 #define MAX_TRIALS 64
 #define HEX_BASE 16
 #define PREAM_CONST 0x40
 #define OBD_CMD_LEN 4 + 1 /* +1 for carriage return */
 #define OBD_PID_REGISTER_SIZE 0x20 
-
-const char *GET_DEVS = "0100\r";
 
 static const enum {
 	/* 00 */	PIDS_SUPPORTED_01_02,	/* [01 - 20] Bit encoded [A7..D0] == [PID $01..PID $20] See below */
@@ -141,14 +161,14 @@ static const enum {
 	/* 76 */	TURBO_TEMP_2,
 	/* 77 */	INTERCOOLER_TEMP,
 	/* 78 */	EXHAUST_TEMP_BANK_1,
-	/* 79 */	EXHAUST_TEMP_BANK_2
+	/* 79 */	EXHAUST_TEMP_BANK_2,
 	/* 7A */	DIESEL_PARTICULATE_FILTER_1,
 	/* 7B */	DIESEL_PARTICULATE_FILTER_2,
 	/* 7C */	DIESEL_PARTICULATE_FILTER_TEMP,
 	/* 7D */	NOX_CONTROL_STATUS,
 	/* 7E */	PM_CONTROL_STATUS,
 	/* 7F */	ENGINE_RUN_TIME,
-	/* 80 */	PIDS_SUPPORTED_81_A0	/* Bit encoded [A7..D0] == [PID $81..PID $A0] See below */
+	/* 80 */	PIDS_SUPPORTED_81_A0,	/* Bit encoded [A7..D0] == [PID $81..PID $A0] See below */
 	/* 81 */	ENGINE_RUN_TIME_AUX_EMMISSION_1,
 	/* 82 */	ENGINE_RUN_TIME_AUX_EMMISSION_2,
 	/* 83 */	NOX_SENSOR,
@@ -174,7 +194,7 @@ static const enum {
 	/* 9A */	HYBRID_EV_DATA,
 	/* 9B */	DIESEL_EXHAUST_FLUID,
 	/* 9C */	OXYGEN_SENSOR_DATA,
-	/* 9D */	ENGINE_FUEL_RATE_2
+	/* 9D */	ENGINE_FUEL_RATE_2,
 	/* 9E */	EXHAUST_FLOW_RATE,
 	/* 9F */	FUEL_SYSTEM_PERCENT,
 	/* A0 */	PIDS_SUPPORTED_A1_C0,
@@ -187,19 +207,21 @@ static const enum {
 } __attribute__ ((unused)) obd_pid;
 
 /* callbacks */
-char *obd_set_supported_ops(void *dat, int bytes, struct obd_ctx *ctx);
-char *obd_get_engine_load(void *dat, int bytes, struct obd_ctx *ctx);
-char *obd_get_coolant_temp(void *dat, int bytes, struct obd_ctx *ctx);
-char *obd_get_fuel_trim(void *dat, int bytes, struct obd_ctx *ctx);
-char *obd_get_fuel_pressure(void *dat, int bytes, struct obd_ctx *ctx);
-char *obd_get_manifold_pressure(void *dat, int bytes, struct obd_ctx *ctx);
-char *obd_get_engine_rpm(void *dat, int bytes, struct obd_ctx *ctx);
-char *obd_get_vehicle_speed(void *dat, int bytes, struct obd_ctx *ctx);
-char *obd_get_timing_advance(void *dat, int bytes, struct obd_ctx *ctx);
-char *obd_get_air_temp(void *dat, int bytes, struct obd_ctx *ctx);
-char *obd_get_maf_rate(void *dat, int bytes, struct obd_ctx *ctx);
-char *obd_get_throttle_pos(void *dat, int bytes, struct obd_ctx *ctx);
-char *obd_get_oxygen_sensors(void *dat, int bytes, struct obd_ctx *ctx);
-char *obd_get_oxygen_data(void *dat, int bytes, struct obd_ctx *ctx);
+void obd_set_supported_ops(char *buf, void *dat, int bytes, struct obd_ctx *ctx);
+void obd_get_engine_load(char *buf, void *dat, int bytes, struct obd_ctx *ctx);
+void obd_get_coolant_temp(char *buf, void *dat, int bytes, struct obd_ctx *ctx);
+void obd_get_fuel_trim(char *buf, void *dat, int bytes, struct obd_ctx *ctx);
+void obd_get_fuel_pressure(char *buf, void *dat, int bytes, struct obd_ctx *ctx);
+void obd_get_manifold_pressure(char *buf, void *dat, int bytes, struct obd_ctx *ctx);
+void obd_get_engine_rpm(char *buf, void *dat, int bytes, struct obd_ctx *ctx);
+void obd_get_vehicle_speed(char *buf, void *dat, int bytes, struct obd_ctx *ctx);
+void obd_get_timing_advance(char *buf, void *dat, int bytes, struct obd_ctx *ctx);
+void obd_get_air_temp(char *buf, void *dat, int bytes, struct obd_ctx *ctx);
+void obd_get_maf_rate(char *buf, void *dat, int bytes, struct obd_ctx *ctx);
+void obd_get_throttle_pos(char *buf, void *dat, int bytes, struct obd_ctx *ctx);
+void obd_get_oxygen_sensors(char *buf, void *dat, int bytes, struct obd_ctx *ctx);
+void obd_get_oxygen_data(char *buf, void *dat, int bytes, struct obd_ctx *ctx);
+
+int initialize_obd(struct elm_ctx *elm, struct obd_ctx *ctx);
 
 #endif

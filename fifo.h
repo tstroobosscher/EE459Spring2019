@@ -10,7 +10,7 @@
 #include "debug.h"
 
 /* fifo is statically allocated */
-#define FIFO_SIZE 16
+#define FIFO_SIZE 32
 
 static const enum {
   FIFO_FULL,
@@ -24,6 +24,10 @@ struct fifo_t {
   uint8_t f_tail;
   uint8_t f_status;
 };
+
+char fifo_write_byte(struct fifo_t *fifo, unsigned char *byte);
+char fifo_read_byte(struct fifo_t *fifo, unsigned char *byte);
+void fifo_dump_mem(struct fifo_t *fifo);
 
 /*
  *	set the head and tail for the fifo structure
