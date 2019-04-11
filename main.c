@@ -139,32 +139,32 @@ int main() {
   char buf[64];
 
   while (1) {
-    // struct node *ptr = obd.linked_list;
+    struct node *ptr = obd.linked_list;
 
-    // while(ptr) {
+    while(ptr) {
 
-    //   /* the compiler needs offset information to dereference void pointers */
-    //   struct obd_cmd *cmd = (struct obd_cmd *) ptr->data;
+      /* the compiler needs offset information to dereference void pointers */
+      struct obd_cmd *cmd = (struct obd_cmd *) ptr->data;
 
-    //   char ret[64];
+      char ret[64];
 
-    //   if(cmd->handle_data != NULL) {
-    //     if(obd_command(&obd, cmd->obd_cmd, buf, BUF_SIZE) < 0) {
-    //       ptr = ptr->next;
-    //       continue;
-    //     }
-    //     (*(cmd->handle_data))(ret, buf, cmd->resp_bytes, &obd);
-    //     UART_DBG(cmd->cmd_str);
-    //     UART_DBG(" = ");
-    //     UART_DBG(ret);
-    //     UART_DBG(" ");
-    //     UART_DBG(cmd->obd_units);
-    //     UART_DBG("\r\n");
-    //     //printf("%s = %s %s\n", cmd->cmd_str, res, cmd->obd_units);
-    //   }
-    //   ptr = ptr->next;
-    // }
-    // DELAY_MS(1000);
+      if(cmd->handle_data != NULL) {
+        if(obd_command(&obd, cmd->obd_cmd, buf, BUF_SIZE) < 0) {
+          ptr = ptr->next;
+          continue;
+        }
+        (*(cmd->handle_data))(ret, buf, cmd->resp_bytes, &obd);
+        UART_DBG(cmd->cmd_str);
+        // UART_DBG(" = ");
+        // UART_DBG(ret);
+        // UART_DBG(" ");
+        // UART_DBG(cmd->obd_units);
+        // UART_DBG("\r\n");
+        //printf("%s = %s %s\n", cmd->cmd_str, res, cmd->obd_units);
+      }
+      ptr = ptr->next;
+    }
+    DELAY_MS(1000);
   }
 
   return (0);

@@ -28,7 +28,18 @@ FUSES      = -U hfuse:w:0xde:m -U lfuse:w:0xff:m -U efuse:w:0x05:m
 # Tune the lines below only if you know what you are doing:
 
 AVRDUDE = avrdude $(PROGRAMMER) -p $(DEVICE)
-COMPILE = avr-gcc -std=c99 -Wall -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE)
+COMPILE = avr-gcc \
+			-std=c99 \
+			-Wl,-u,vfprintf \
+			-lprintf_flt \
+			-lm \
+			-Wall \
+			-Os \
+			-DF_CPU=$(CLOCK) \
+			-mmcu=$(DEVICE) \
+			-Wl,-Map=myprog.map \
+			-Wl,--cref \
+
 
 PWD = $(shell pwd)
 COMMIT = $(shell git rev-parse HEAD)
