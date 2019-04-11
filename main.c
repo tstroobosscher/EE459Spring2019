@@ -9,6 +9,7 @@
 #include <avr/interrupt.h>
 #include <avr/io.h>
 //#include <stdint.h>
+#include <stdio.h>
 
 #include "debug.h"
 //#include "fat.h"
@@ -22,12 +23,13 @@
 #include "uart.h"
 #include "elm.h"
 #include "obd.h"
+#include "avr_stdio.h"
 
-struct elm_ctx elm;
+// struct elm_ctx elm;
 
-volatile struct fifo_t fifo;
+// volatile struct fifo_t fifo;
 
-struct obd_ctx obd;
+// struct obd_ctx obd;
 // volatile int interrupt_flag = 0;
 
 /*
@@ -63,6 +65,8 @@ struct obd_ctx obd;
 
 //char buffer[1];
 
+extern FILE *stdout;
+
 int main() {
 
   /* atmel hardware */
@@ -70,11 +74,11 @@ int main() {
 
   initialize_uart(UART_PORT_0, MYUBRR(BUAD_UART_0));
 
-  UART_DBG("main: initialized uart\r\n");
+  // UART_DBG("main: initialized uart\r\n");
 
-  initialize_fifo(&fifo);
+  // initialize_fifo(&fifo);
 
-  UART_DBG("main: initialized fifo\r\n");
+  // UART_DBG("main: initialized fifo\r\n");
 
   // initialize_spi();
 
@@ -122,54 +126,59 @@ int main() {
 
   // io_flush_write_buffer(&io);
 
-  initialize_uart(UART_PORT_1, MYUBRR(BUAD_UART_1));
-  sei();
-  UCSR1B |= (1 << RXCIE1);
+  // initialize_uart(UART_PORT_1, MYUBRR(BUAD_UART_1));
+  // sei();
+  // UCSR1B |= (1 << RXCIE1);
 
-  if (initialize_elm(&fifo, &elm, UART_PORT_1) < 0) 
-    UART_DBG("main: unable to initialize elm\r\n");
-  else
-    UART_DBG("main: initialized elm\r\n");
+  // if (initialize_elm(&fifo, &elm, UART_PORT_1) < 0) 
+  //   UART_DBG("main: unable to initialize elm\r\n");
+  // else
+  //   UART_DBG("main: initialized elm\r\n");
 
-  if (initialize_obd(&elm, &obd) < 0)
-    UART_DBG("main: unable to initialize obd\r\n");
-  else
-    UART_DBG("main: initialized obd\r\n");
+  // if (initialize_obd(&elm, &obd) < 0)
+  //   UART_DBG("main: unable to initialize obd\r\n");
+  // else
+  //   UART_DBG("main: initialized obd\r\n");
 
-  char buf[64];
+  // char buf[64];
+
+  initialize_stdio(&stdout);
+
+  printf("Hello World!\n");
+  printf("Goodbye World!\n");
 
   while (1) {
-    struct node *ptr = obd.linked_list;
+    // struct node *ptr = obd.linked_list;
 
-    while(ptr) {
+    // while(ptr) {
 
-      /* the compiler needs offset information to dereference void pointers */
-      struct obd_cmd *cmd = (struct obd_cmd *) ptr->data;
+    //   /* the compiler needs offset information to dereference void pointers */
+    //   struct obd_cmd *cmd = (struct obd_cmd *) ptr->data;
 
-      char ret[64];
+    //   char ret[64];
 
-      if(cmd->handle_data != NULL) {
-        if(obd_command(&obd, cmd->obd_cmd, buf, BUF_SIZE) < 0) {
-          ptr = ptr->next;
-          continue;
-        }
-        (*(cmd->handle_data))(ret, buf, cmd->resp_bytes, &obd);
-        UART_DBG(cmd->cmd_str);
-        UART_DBG(" = ");
-        UART_DBG(ret);
-        UART_DBG(" ");
-        UART_DBG(cmd->obd_units);
-        UART_DBG("\r\n");
-        //printf("%s = %s %s\n", cmd->cmd_str, res, cmd->obd_units);
-      }
-      ptr = ptr->next;
-    }
-    DELAY_MS(1000);
+    //   if(cmd->handle_data != NULL) {
+    //     if(obd_command(&obd, cmd->obd_cmd, buf, BUF_SIZE) < 0) {
+    //       ptr = ptr->next;
+    //       continue;
+    //     }
+    //     (*(cmd->handle_data))(ret, buf, cmd->resp_bytes, &obd);
+    //     UART_DBG(cmd->cmd_str);
+    //     UART_DBG(" = ");
+    //     UART_DBG(ret);
+    //     UART_DBG(" ");
+    //     UART_DBG(cmd->obd_units);
+    //     UART_DBG("\r\n");
+    //     //printf("%s = %s %s\n", cmd->cmd_str, res, cmd->obd_units);
+    //   }
+    //   ptr = ptr->next;
+    // }
+    // DELAY_MS(1000);
   }
 
   return (0);
 }
 
-ISR(USART1_RX_vect) {
-  fifo_write_byte(&fifo, &UDR1);
-}
+// ISR(USART1_RX_vect) {
+//   fifo_write_byte(&fifo, &UDR1);
+// }

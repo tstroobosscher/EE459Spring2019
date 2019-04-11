@@ -19,6 +19,7 @@ OBJECTS    = main.o \
              elm.o \
              fifo.o \
              obd.o \
+             avr_stdio.o \
 #              spi.o \
 #              sd.o \
 #              io.o \
