@@ -155,11 +155,11 @@ int main() {
         }
         (*(cmd->handle_data))(ret, buf, cmd->resp_bytes, &obd);
         UART_DBG(cmd->cmd_str);
-        // UART_DBG(" = ");
-        // UART_DBG(ret);
-        // UART_DBG(" ");
-        // UART_DBG(cmd->obd_units);
-        // UART_DBG("\r\n");
+        UART_DBG(" = ");
+        UART_DBG(ret);
+        UART_DBG(" ");
+        UART_DBG(cmd->obd_units);
+        UART_DBG("\r\n");
         //printf("%s = %s %s\n", cmd->cmd_str, res, cmd->obd_units);
       }
       ptr = ptr->next;
