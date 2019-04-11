@@ -1,5 +1,4 @@
 DEVICE     = atmega2560
-MEGA = atmega2560
 
 # 16 MHz is the arduino's pcb clock speed. Our clock is much slower than this
 # and this line of code will actually cause bugs in our time sensitive routines
@@ -17,7 +16,7 @@ FUSES      = -U hfuse:w:0xde:m -U lfuse:w:0xff:m -U efuse:w:0x05:m
 # Tune the lines below only if you know what you are doing:
 
 AVRDUDE = avrdude $(PROGRAMMER) -p $(DEVICE)
-COMPILE = avr-gcc -std=c99 -Wall -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE)
+COMPILE = avr-gcc -Wall -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE) 
 
 # symbolic targets:
 all:	main.hex
