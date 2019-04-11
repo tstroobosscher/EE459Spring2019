@@ -620,15 +620,15 @@ static const struct atmel_328_pin {
         ATMEL_PULL_DIS,
         &DDRD,
     },
-    /* 45 */
+    /* 45, RX1 */
     {
         &PORTD,
         2,
-        ATMEL_OUTPUT,
+        ATMEL_INPUT,
         ATMEL_PULL_DIS,
         &DDRD,
     },
-    /* 46 */
+    /* 46, TX1 */
     {
         &PORTD,
         3,

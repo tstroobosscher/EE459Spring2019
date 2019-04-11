@@ -1,5 +1,4 @@
 DEVICE     = atmega2560
-MEGA = atmega2560
 
 # 16 MHz is the arduino's pcb clock speed. Our clock is much slower than this
 # and this line of code will actually cause bugs in our time sensitive routines
@@ -11,41 +10,13 @@ CLOCK      ?= 16000000
 PROGRAMMER = -c usbtiny -p m2560 -F
 PORT ?= /dev/ttyACM0
 ARDUINO_PROGRAMMER = -c arduino -b 115200 -P $(PORT)
-OBJECTS    = main.o \
-             uart.o \
-             pins.o \
-             utils.o \
-             list.o \
-             elm.o \
-             fifo.o \
-             obd.o \
-#              spi.o \
-#              sd.o \
-#              io.o \
-#              fat.o
+OBJECTS    = aspr.o
 FUSES      = -U hfuse:w:0xde:m -U lfuse:w:0xff:m -U efuse:w:0x05:m
 
 # Tune the lines below only if you know what you are doing:
 
 AVRDUDE = avrdude $(PROGRAMMER) -p $(DEVICE)
-COMPILE = avr-gcc \
-			-std=c99 \
-			-Wl,-u,vfprintf \
-			-lprintf_flt \
-			-lm \
-			-Wall \
-			-Os \
-			-DF_CPU=$(CLOCK) \
-			-mmcu=$(DEVICE) \
-			-Wl,-Map=myprog.map \
-			-Wl,--cref \
-
-
-PWD = $(shell pwd)
-COMMIT = $(shell git rev-parse HEAD)
-BRANCH = $(shell git rev-parse --abbrev-ref HEAD)
-
-STATS_FILE = $(PWD)/avr_size.txt
+COMPILE = avr-gcc -Wall -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE) 
 
 # symbolic targets:
 all:	main.hex
@@ -90,9 +61,7 @@ main.elf: $(OBJECTS)
 main.hex: main.elf
 	@rm -f main.hex
 	@avr-objcopy -j .text -j .data -O ihex main.elf main.hex
-	@echo "Commit: $(COMMIT)\n" > $(STATS_FILE)
-	@avr-size --format=avr --mcu=$(DEVICE) main.elf >> $(STATS_FILE)
-	@cat $(STATS_FILE)
+	@avr-size --format=avr --mcu=$(DEVICE) main.elf
 # If you have an EEPROM section, you must also create a hex file for the
 # EEPROM and add it to the "flash" target.
 
@@ -102,10 +71,3 @@ disasm:	main.elf
 
 cpp:
 	$(COMPILE) -E main.c
-
-.PHONY: utils
-utils:
-	@echo Lines: $(shell git ls-files | grep -v resources | \
-										grep -v test.img | \
-										grep -v macbeth.txt | \
-										xargs cat | wc -l)
