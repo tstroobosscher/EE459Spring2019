@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "obd.h"
 #include "list.h"
@@ -463,9 +464,9 @@ char *obd_resp(const char *cmd, char *buf) {
 
   char pream[5];
 
-  UART_DBG("obd: pream cmd: ");
-  UART_DBG(cmd);
-  UART_DBG("\r\n");
+  // UART_DBG("obd: pream cmd: ");
+  // UART_DBG(cmd);
+  // UART_DBG("\r\n");
 
   if ((strlen(cmd) != OBD_CMD_LEN)) {
     printf("obd_resp: strlen error\n");
@@ -480,9 +481,9 @@ char *obd_resp(const char *cmd, char *buf) {
   /* NULL terminate substr, strncpy might already do this */
   pream[2] = '\0';
 
-  UART_DBG("obd: trunc cmd: ");
-  UART_DBG(pream);
-  UART_DBG("\r\n");
+  // UART_DBG("obd: trunc cmd: ");
+  // UART_DBG(pream);
+  // UART_DBG("\r\n");
 
   /* The obd standard responds with the mode arg added to 0x40 */
   snprintf(pream, 3, "%02lX", 0x40 + strtol(pream, 0, 16));
