@@ -26,18 +26,16 @@ void uwrite_str(char *buf) {
 
 int main() {
   DDRB |= (1 << 7);
-
-  sei();           
   
   UBRR0=MYUBRR(BUAD_UART_0);
  
-  UCSR0B|=(1<<RXCIE0)|(1<<TXEN0)|(1<<RXEN0);
+  UCSR0B|=(1<<TXEN0)|(1<<RXEN0);
  
   UCSR0C|=(1<<UCSZ01)|(1<<UCSZ00);
 
 
   while(1) {
-    uwrite_str((PGM_P)pgm_read_word(&(message)));
+    uwrite_str((PGM_P)pgm_read_word(message));
     PORTB |= (1 << 7);
     _delay_ms(1000);
     PORTB &= ~(1 << 7);
