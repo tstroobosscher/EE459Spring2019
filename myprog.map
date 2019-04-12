@@ -123,7 +123,7 @@ LOAD list.o
 LOAD elm.o
 LOAD fifo.o
 LOAD obd.o
-LOAD avr_stdio.o
+LOAD astdio.o
 START GROUP
 LOAD /usr/lib/gcc/avr/5.4.0/avr6/libgcc.a
 LOAD /usr/lib/gcc/avr/5.4.0/../../../avr/lib/avr6/libm.a
@@ -407,7 +407,7 @@ END GROUP
                 0x000000000000118c                obd_fmt_resp
                 0x0000000000001226                obd_command
                 0x0000000000001366                initialize_obd
- .text          0x00000000000014e4       0x2e avr_stdio.o
+ .text          0x00000000000014e4       0x2e astdio.o
                 0x0000000000001506                initialize_stdio
  .text          0x0000000000001512        0x0 /usr/lib/gcc/avr/5.4.0/avr6/libgcc.a(_divmodhi4.o)
  .text          0x0000000000001512        0x0 /usr/lib/gcc/avr/5.4.0/avr6/libgcc.a(_exit.o)
@@ -728,7 +728,7 @@ END GROUP
  .data          0x0000000000800200        0x0 fifo.o
  .data          0x0000000000800200      0x160 obd.o
                 0x0000000000800200                obd_cmds
- .data          0x0000000000800360        0xe avr_stdio.o
+ .data          0x0000000000800360        0xe astdio.o
  .data          0x000000000080036e        0x0 /usr/lib/gcc/avr/5.4.0/avr6/libgcc.a(_divmodhi4.o)
  .data          0x000000000080036e        0x0 /usr/lib/gcc/avr/5.4.0/avr6/libgcc.a(_exit.o)
  .data          0x000000000080036e        0x0 /usr/lib/gcc/avr/5.4.0/avr6/libgcc.a(_copy_data.o)
@@ -814,7 +814,7 @@ END GROUP
  .bss           0x0000000000800c86        0x0 elm.o
  .bss           0x0000000000800c86        0x0 fifo.o
  .bss           0x0000000000800c86        0x0 obd.o
- .bss           0x0000000000800c86        0x0 avr_stdio.o
+ .bss           0x0000000000800c86        0x0 astdio.o
  .bss           0x0000000000800c86        0x0 /usr/lib/gcc/avr/5.4.0/avr6/libgcc.a(_divmodhi4.o)
  .bss           0x0000000000800c86        0x0 /usr/lib/gcc/avr/5.4.0/avr6/libgcc.a(_exit.o)
  .bss           0x0000000000800c86        0x0 /usr/lib/gcc/avr/5.4.0/avr6/libgcc.a(_copy_data.o)
@@ -927,7 +927,7 @@ END GROUP
  .comment       0x0000000000000011       0x12 elm.o
  .comment       0x0000000000000011       0x12 fifo.o
  .comment       0x0000000000000011       0x12 obd.o
- .comment       0x0000000000000011       0x12 avr_stdio.o
+ .comment       0x0000000000000011       0x12 astdio.o
  .comment       0x0000000000000011       0x12 /usr/lib/gcc/avr/5.4.0/../../../avr/lib/avr6/libc.a(malloc.o)
  .comment       0x0000000000000011       0x12 /usr/lib/gcc/avr/5.4.0/../../../avr/lib/avr6/libc.a(strtol.o)
  .comment       0x0000000000000011       0x12 /usr/lib/gcc/avr/5.4.0/../../../avr/lib/avr6/libc.a(fputc.o)
@@ -1045,7 +1045,7 @@ __do_clear_bss                                    /usr/lib/gcc/avr/5.4.0/avr6/li
                                                   /usr/lib/gcc/avr/5.4.0/../../../avr/lib/avr6/libc.a(malloc.o)
 __do_copy_data                                    /usr/lib/gcc/avr/5.4.0/avr6/libgcc.a(_copy_data.o)
                                                   /usr/lib/gcc/avr/5.4.0/../../../avr/lib/avr6/libc.a(malloc.o)
-                                                  avr_stdio.o
+                                                  astdio.o
                                                   obd.o
                                                   fifo.o
                                                   elm.o
@@ -1196,7 +1196,7 @@ initialize_fifo                                   fifo.o
 initialize_obd                                    obd.o
 initialize_pins                                   pins.o
                                                   main.o
-initialize_stdio                                  avr_stdio.o
+initialize_stdio                                  astdio.o
                                                   main.o
 initialize_uart                                   uart.o
                                                   main.o

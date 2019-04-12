@@ -23,7 +23,7 @@
 #include "uart.h"
 #include "elm.h"
 #include "obd.h"
-#include "avr_stdio.h"
+#include "astdio.h"
 
 // struct elm_ctx elm;
 

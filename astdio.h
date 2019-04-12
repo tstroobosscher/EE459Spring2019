@@ -1,5 +1,5 @@
-#ifndef AVR_STDIO_H
-#define AVR_STDIO_H
+#ifndef ASTDIO_H
+#define ASTDIO_H
 
 #include <stdio.h>
 

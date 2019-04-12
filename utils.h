@@ -10,7 +10,7 @@
 
 #include "debug.h"
 #include "uart.h"
-#include "avr_stdio.h"
+#include "astdio.h"
 
 #ifdef ARDUINO
 

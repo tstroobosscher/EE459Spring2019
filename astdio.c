@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include "uart.h"
-#include "avr_stdio.h"
+#include "astdio.h"
 
 static int stdio_putchar(char c, FILE *stream);
 
