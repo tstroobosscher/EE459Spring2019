@@ -20,10 +20,10 @@ OBJECTS    = main.o \
              fifo.o \
              obd.o \
              astdio.o \
-#              spi.o \
-#              sd.o \
-#              io.o \
-#              fat.o
+             spi.o \
+             sd.o \
+             io.o \
+             fat.o
 FUSES      = -U hfuse:w:0xde:m -U lfuse:w:0xff:m -U efuse:w:0x05:m
 
 # Tune the lines below only if you know what you are doing:

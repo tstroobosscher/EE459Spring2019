@@ -469,12 +469,12 @@ char *obd_resp(const char *cmd, char *buf) {
   // UART_DBG("\r\n");
 
   if ((strlen(cmd) != OBD_CMD_LEN)) {
-    printf("obd_resp: strlen error\n");
+    DBG("obd_resp: strlen error\n");
     return NULL;
   }
 
   if (!strncpy(pream, cmd, 2)) {
-    printf("obd_resp: strncpy error\n");
+    DBG("obd_resp: strncpy error\n");
     return NULL;
   }
 
@@ -550,31 +550,31 @@ int obd_command(struct obd_ctx *obd, const char *cmd, void *dat, int size) {
   unsigned char *ret = (unsigned char *)dat;
 
   if ((strlen(cmd) != OBD_CMD_LEN)) {
-    UART_DBG("obd_command: incorrect command format\r\n");
+    DBG("obd_command: incorrect command format\n");
     return -1;
   }
 
   /* send the OBD cmd to the ELM, put the response in the buffer */
   if (elm_command(obd->elm, cmd, strlen(cmd), buf, 64) < 0) {
-    UART_DBG("obd_command: elm device failure\r\n");
+    DBG("obd_command: elm device failure\n");
     return -1;
   }
 
   /* did the OBD CMD fail? */
   if (strstr(buf, NO_DATA) || strstr(buf, NO_CONNECT)) {
-    UART_DBG("obd_command: OBD not configured\r\n");
+    DBG("obd_command: OBD not configured\n");
     return -1;
   }
 
   /* get the pointer to the beginning of the response */
   if (!(data = obd_resp(cmd, buf))) {
-    UART_DBG("obd_command: unable to find responses\r\n");
+    DBG("obd_command: unable to find responses\n");
     return -1;
   }
 
   /* place all the hex chars into sequential order with no whitespace */
   if(obd_fmt_resp(data) < 0 ) {
-    UART_DBG("obd_command: unable to format response\r\n");
+    DBG("obd_command: unable to format response\n");
     return -1;
   }
 
@@ -610,17 +610,20 @@ int initialize_obd(struct elm_ctx *elm, struct obd_ctx *ctx) {
 
   uint32_t new_buf[BUF_SIZE];
   for(int i = 0; i < ARRAY_SIZE(dat); i++) {
-    UART_DBG("dat: ");
-    UART_DBG_HEX(dat[i]);
-    UART_DBG("\r\n");
+    DBG("obd: dat: 0x%x\r", dat[i]);
+    // UART_DBG("dat: ");
+    // UART_DBG_HEX(dat[i]);
+    // UART_DBG("\r\n");
     new_buf[i] = dat[i];
   }
 
   uint32_t res = (new_buf[2] << 24) | (new_buf[3] << 16) | (new_buf[4] << 8) | (new_buf[5] << 0);
 
-  UART_DBG("obd: res ");
-  UART_DBG_32(res);
-  UART_DBG("\r\n");
+  DBG("obd: res = %d\n", res);
+
+  // UART_DBG("obd: ");
+  // UART_DBG_32(res);
+  // UART_DBG("\r\n");
 
   obd_set_supported_ops(NULL, &res, sizeof(res), ctx);
 

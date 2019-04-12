@@ -12,12 +12,12 @@
 #include <stdio.h>
 
 #include "debug.h"
-//#include "fat.h"
+#include "fat.h"
 #include "fifo.h"
-//#include "io.h"
+#include "io.h"
 #include "pins.h"
-//#include "sd.h"
-//#include "spi.h"
+#include "sd.h"
+#include "spi.h"
 //#include "time.h"
 #include "utils.h"
 #include "uart.h"
@@ -25,12 +25,12 @@
 #include "obd.h"
 #include "astdio.h"
 
-// struct elm_ctx elm;
+struct elm_ctx elm;
 
-// volatile struct fifo_t fifo;
+volatile struct fifo_t fifo;
 
-// struct obd_ctx obd;
-// volatile int interrupt_flag = 0;
+struct obd_ctx obd;
+volatile int interrupt_flag = 0;
 
 /*
  *  okay, so multiplication on 8 bit architectures works a bit differently
@@ -49,21 +49,21 @@
  *  keeping stale data in the dataspace? What do we actually need?
  */
 
-//struct sd_ctx sd;
+struct sd_ctx sd;
 
 /*
  *  the io level should also be global because a single io structure
  *  can operate on more than one instance of a file
  */
-//struct io_ctx io;
+struct io_ctx io;
 
 /*
  *  fat32 context should be global because we can associate more than
  *  one file with a single file system
  */
-//struct fat32_ctx fat32;
+struct fat32_ctx fat32;
 
-//char buffer[1];
+char buffer[1];
 
 extern FILE *stdout;
 
@@ -74,110 +74,111 @@ int main() {
 
   initialize_uart(UART_PORT_0, MYUBRR(BUAD_UART_0));
 
-  UART_DBG("main: initialized uart\r\n");
+  DBG("main: initialized uart\n");
 
   initialize_stdio(&stdout);
 
-  // initialize_fifo(&fifo);
+  initialize_fifo(&fifo);
 
   DBG("Hello World! \n%s\n", "Goodbye World!");
 
-  // UART_DBG("main: initialized fifo\r\n");
+  DBG("main: initialized fifo\n");
 
-  // initialize_spi();
+  initialize_spi();
 
-  // UART_DBG("main: initialized spi\r\n");
+  DBG("main: initialized spi\n");
 
-  // /* software resources */
-  // if (initialize_sd(&sd) < 0)
-  //   UART_DBG("main: unable to initialize sd\r\n");
-  // else
-  //   UART_DBG("main: initialized sd\r\n");
+  /* software resources */
+  if (initialize_sd(&sd) < 0)
+    DBG("main: unable to initialize sd\n");
+  else
+    DBG("main: initialized sd\n");
 
-  // if (initialize_io(&io, &sd) < 0)
-  //   UART_DBG("main: unable to initialize io\r\n");
-  // else
-  //   UART_DBG("main: initialized io\r\n");
+  if (initialize_io(&io, &sd) < 0)
+    DBG("main: unable to initialize io\n");
+  else
+    DBG("main: initialized io\n");
 
-  // if (initialize_fat32(&fat32, &io, &sd) < 0)
-  //   UART_DBG("main: unable to initialize fat32\r\n");
-  // else
-  //   UART_DBG("main: initialized fat32\r\n");
+  if (initialize_fat32(&fat32, &io, &sd) < 0)
+    DBG("main: unable to initialize fat32\n");
+  else
+    DBG("main: initialized fat32\n");
 
-  // /* main routines */
-  // struct fat32_file file;
+  /* main routines */
+  struct fat32_file file;
 
-  // strncpy(file.file_name, "logfile1", 8);
-  // strncpy(file.file_ext, "txt", 3);
+  strncpy(file.file_name, "logfile1", 8);
+  strncpy(file.file_ext, "txt", 3);
 
-  // fat32_creat_file(&fat32, &file);
+  fat32_creat_file(&fat32, &file);
 
-  // char *buf_1 = "Hello World!\n";
+  char *buf_1 = "Hello World!\n";
 
-  // fat32_write_file_nbytes(&fat32, &file, buf_1, strlen(buf_1));
+  fat32_write_file_nbytes(&fat32, &file, buf_1, strlen(buf_1));
 
-  // char *buf_2 = "Goodbye World!\n";
+  char *buf_2 = "Goodbye World!\n";
 
-  // fat32_write_file_nbytes(&fat32, &file, buf_2, strlen(buf_2));
+  fat32_write_file_nbytes(&fat32, &file, buf_2, strlen(buf_2));
 
-  // char *buf_3 = "How Are You Doing World!\n";
+  char *buf_3 = "How Are You Doing World!\n";
 
-  // fat32_write_file_nbytes(&fat32, &file, buf_3, strlen(buf_3));
+  fat32_write_file_nbytes(&fat32, &file, buf_3, strlen(buf_3));
 
-  // char *buf_4 = "I Am Doing Well World!\n";
+  char *buf_4 = "I Am Doing Well World!\n";
 
-  // fat32_write_file_nbytes(&fat32, &file, buf_4, strlen(buf_4));
+  fat32_write_file_nbytes(&fat32, &file, buf_4, strlen(buf_4));
 
-  // io_flush_write_buffer(&io);
+  io_flush_write_buffer(&io);
 
-  // initialize_uart(UART_PORT_1, MYUBRR(BUAD_UART_1));
-  // sei();
-  // UCSR1B |= (1 << RXCIE1);
+  initialize_uart(UART_PORT_1, MYUBRR(BUAD_UART_1));
+  sei();
+  UCSR1B |= (1 << RXCIE1);
 
-  // if (initialize_elm(&fifo, &elm, UART_PORT_1) < 0) 
-  //   UART_DBG("main: unable to initialize elm\r\n");
-  // else
-  //   UART_DBG("main: initialized elm\r\n");
+  if (initialize_elm(&fifo, &elm, UART_PORT_1) < 0) 
+    DBG("main: unable to initialize elm\n");
+  else
+    DBG("main: initialized elm\n");
 
-  // if (initialize_obd(&elm, &obd) < 0)
-  //   UART_DBG("main: unable to initialize obd\r\n");
-  // else
-  //   UART_DBG("main: initialized obd\r\n");
+  if (initialize_obd(&elm, &obd) < 0)
+    DBG("main: unable to initialize obd\n");
+  else
+    DBG("main: initialized obd\n");
 
-  // char buf[64];
+  char buf[64];
 
   while (1) {
-    // struct node *ptr = obd.linked_list;
+    struct node *ptr = obd.linked_list;
 
-    // while(ptr) {
+    while(ptr) {
 
-    //   /* the compiler needs offset information to dereference void pointers */
-    //   struct obd_cmd *cmd = (struct obd_cmd *) ptr->data;
+      /* the compiler needs offset information to dereference void pointers */
+      struct obd_cmd *cmd = (struct obd_cmd *) ptr->data;
 
-    //   char ret[64];
+      char ret[64];
 
-    //   if(cmd->handle_data != NULL) {
-    //     if(obd_command(&obd, cmd->obd_cmd, buf, BUF_SIZE) < 0) {
-    //       ptr = ptr->next;
-    //       continue;
-    //     }
-    //     (*(cmd->handle_data))(ret, buf, cmd->resp_bytes, &obd);
-    //     UART_DBG(cmd->cmd_str);
-    //     UART_DBG(" = ");
-    //     UART_DBG(ret);
-    //     UART_DBG(" ");
-    //     UART_DBG(cmd->obd_units);
-    //     UART_DBG("\r\n");
-    //     //printf("%s = %s %s\n", cmd->cmd_str, res, cmd->obd_units);
-    //   }
-    //   ptr = ptr->next;
-    // }
-    // DELAY_MS(1000);
+      if(cmd->handle_data != NULL) {
+        if(obd_command(&obd, cmd->obd_cmd, buf, BUF_SIZE) < 0) {
+          ptr = ptr->next;
+          continue;
+        }
+        (*(cmd->handle_data))(ret, buf, cmd->resp_bytes, &obd);
+        DBG("main: %s = %s %s\n", cmd->cmd_str, ret, cmd->obd_units);
+        // UART_DBG(cmd->cmd_str);
+        // UART_DBG(" = ");
+        // UART_DBG(ret);
+        // UART_DBG(" ");
+        // UART_DBG(cmd->obd_units);
+        // UART_DBG("\r\n");
+        //printf("%s = %s %s\n", cmd->cmd_str, res, cmd->obd_units);
+      }
+      ptr = ptr->next;
+    }
+    DELAY_MS(1000);
   }
 
   return (0);
 }
 
-// ISR(USART1_RX_vect) {
-//   fifo_write_byte(&fifo, &UDR1);
-// }
+ISR(USART1_RX_vect) {
+  fifo_write_byte(&fifo, &UDR1);
+}
