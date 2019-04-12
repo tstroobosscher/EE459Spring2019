@@ -14,7 +14,8 @@
 /* Set for debug builds */
 #define DEBUG
 
-#define ATMEGA2560
-#define ARDUINO
+//#define ATMEGA2560
+//#define ARDUINO
+#define ATMEGA1284
 
 #endif

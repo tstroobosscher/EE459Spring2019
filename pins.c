@@ -1068,6 +1068,335 @@ static const struct atmel_328_pin {
         ATMEL_PULL_INVAL,
         NULL,
     },
+#elif defined ATMEGA1284
+    /* 0 */
+    {
+        NULL,
+        0,
+        ATMEL_DIR_INVAL,
+        ATMEL_PULL_INVAL,
+        NULL,
+    },
+    /* 1 */
+    {
+        &PORTB,
+        0,
+        ATMEL_OUTPUT,
+        ATMEL_PULL_DIS,
+        &DDRB,
+    },
+    /* 2 */
+    {
+        &PORTB,
+        1,
+        ATMEL_OUTPUT,
+        ATMEL_PULL_DIS,
+        &DDRB,
+    },
+    /* 3 */
+    {
+        &PORTB,
+        2,
+        ATMEL_OUTPUT,
+        ATMEL_PULL_DIS,
+        &DDRB,
+    },
+    /* 4  */
+    {
+        &PORTB,
+        3,
+        ATMEL_OUTPUT,
+        ATMEL_PULL_DIS,
+        &DDRB,
+    },
+    /* 5, Slave Select SD */
+    {
+        &PORTB,
+        4,
+        ATMEL_OUTPUT,
+        ATMEL_PULL_DIS,
+        &DDRB,
+    },
+    /* 6, MOSI */
+    {
+        &PORTB,
+        5,
+        ATMEL_OUTPUT,
+        ATMEL_PULL_DIS,
+        &DDRB,
+    },
+    /* 7, MISO  */
+    {
+        &PORTB,
+        6,
+        ATMEL_INPUT,
+        ATMEL_PULL_ENA,
+        &DDRB,
+    },
+    /* 8, SCK */
+    {
+        &PORTB,
+        7,
+        ATMEL_OUTPUT,
+        ATMEL_PULL_DIS,
+        &DDRB,
+    },
+    /* 9, ~Reset  */
+    {
+        NULL,
+        0,
+        ATMEL_DIR_INVAL,
+        ATMEL_PULL_INVAL,
+        NULL,
+    },
+    /* 10, VCC */
+    {
+        NULL,
+        0,
+        ATMEL_DIR_INVAL,
+        ATMEL_PULL_INVAL,
+        NULL,
+    },
+    /* 11, GND */
+    {
+        NULL,
+        0,
+        ATMEL_DIR_INVAL,
+        ATMEL_PULL_INVAL,
+        NULL,
+    },
+    /* 12, XTAL1 */
+    {
+        NULL,
+        0,
+        ATMEL_DIR_INVAL,
+        ATMEL_PULL_INVAL,
+        NULL,
+    },
+    /* 13, XTAL2 */
+    {
+        NULL,
+        0,
+        ATMEL_DIR_INVAL,
+        ATMEL_PULL_INVAL,
+        NULL,
+    },
+    /* 14, RX0 */
+    {
+        &PORTD,
+        0,
+        ATMEL_OUTPUT,
+        ATMEL_PULL_DIS,
+        &DDRD,
+    },
+    /* 15, TX0 */
+    {
+        &PORTD,
+        1,
+        ATMEL_OUTPUT,
+        ATMEL_PULL_DIS,
+        &DDRD,
+    },
+    /* 16 */
+    {
+        &PORTD,
+        2,
+        ATMEL_OUTPUT,
+        ATMEL_PULL_DIS,
+        &DDRD,
+    },
+    /* 17 */
+    {
+        &PORTD,
+        3,
+        ATMEL_OUTPUT,
+        ATMEL_PULL_DIS,
+        &DDRD,
+    },
+    /* 18 */
+    {
+        &PORTD,
+        4,
+        ATMEL_OUTPUT,
+        ATMEL_PULL_DIS,
+        &DDRD,
+    },
+    /* 19 */
+    {
+        &PORTD,
+        5,
+        ATMEL_OUTPUT,
+        ATMEL_PULL_DIS,
+        &DDRD,
+    },
+    /* 20 */
+    {
+        &PORTD,
+        6,
+        ATMEL_OUTPUT,
+        ATMEL_PULL_DIS,
+        &DDRD,
+    },
+    /* 21 */
+    {
+        &PORTD,
+        7,
+        ATMEL_OUTPUT,
+        ATMEL_PULL_DIS,
+        &DDRD,
+    },
+    /* 22 */
+    {
+        &PORTC,
+        0,
+        ATMEL_OUTPUT,
+        ATMEL_PULL_DIS,
+        &DDRC,
+    },
+    /* 23 */
+    {
+        &PORTC,
+        1,
+        ATMEL_OUTPUT,
+        ATMEL_PULL_DIS,
+        &DDRC,
+    },
+    /* 24 */
+    {
+        &PORTC,
+        2,
+        ATMEL_OUTPUT,
+        ATMEL_PULL_DIS,
+        &DDRC,
+    },
+    /* 25 */
+    {
+        &PORTC,
+        3,
+        ATMEL_OUTPUT,
+        ATMEL_PULL_DIS,
+        &DDRC,
+    },
+    /* 26 */
+    {
+        &PORTC,
+        4,
+        ATMEL_OUTPUT,
+        ATMEL_PULL_DIS,
+        &DDRC,
+    },
+    /* 27 */
+    {
+        &PORTC,
+        5,
+        ATMEL_OUTPUT,
+        ATMEL_PULL_DIS,
+        &DDRC,
+    },
+    /* 28 */
+    {
+        &PORTC,
+        6,
+        ATMEL_OUTPUT,
+        ATMEL_PULL_DIS,
+        &DDRC,
+    },
+    /* 29 */
+    {
+        &PORTC,
+        7,
+        ATMEL_OUTPUT,
+        ATMEL_PULL_DIS,
+        &DDRC,
+    },
+    /* 30, AVCC */
+    {
+        NULL,
+        0,
+        ATMEL_DIR_INVAL,
+        ATMEL_PULL_INVAL,
+        NULL,
+    },
+    /* 31, GND */
+    {
+        NULL,
+        0,
+        ATMEL_DIR_INVAL,
+        ATMEL_PULL_INVAL,
+        NULL,
+    },
+    /* 32, AREF */
+    {
+        NULL,
+        0,
+        ATMEL_DIR_INVAL,
+        ATMEL_PULL_INVAL,
+        NULL,
+    },
+    /* 33 */
+    {
+        &PORTA,
+        7,
+        ATMEL_OUTPUT,
+        ATMEL_PULL_DIS,
+        &DDRA,
+    },
+    /* 34 */
+    {
+        &PORTA,
+        6,
+        ATMEL_OUTPUT,
+        ATMEL_PULL_DIS,
+        &DDRA,
+    },
+    /* 35 */
+    {
+        &PORTA,
+        5,
+        ATMEL_OUTPUT,
+        ATMEL_PULL_DIS,
+        &DDRA,
+    },
+    /* 36 */
+    {
+        &PORTA,
+        4,
+        ATMEL_OUTPUT,
+        ATMEL_PULL_DIS,
+        &DDRA,
+    },
+    /* 37 */
+    {
+        &PORTA,
+        3,
+        ATMEL_OUTPUT,
+        ATMEL_PULL_DIS,
+        &DDRA,
+    },
+    /* 38 */
+    {
+        &PORTA,
+        2,
+        ATMEL_OUTPUT,
+        ATMEL_PULL_DIS,
+        &DDRA,
+    },
+    /* 39 */
+    {
+        &PORTA,
+        1,
+        ATMEL_OUTPUT,
+        ATMEL_PULL_DIS,
+        &DDRA,
+    },
+    /* 40 */
+    {
+        &PORTA,
+        0,
+        ATMEL_OUTPUT,
+        ATMEL_PULL_DIS,
+        &DDRA,
+    },
 
 #endif
 };

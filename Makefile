@@ -1,5 +1,4 @@
-DEVICE     = atmega2560
-MEGA = atmega2560
+DEVICE     = atmega1284p
 
 # 16 MHz is the arduino's pcb clock speed. Our clock is much slower than this
 # and this line of code will actually cause bugs in our time sensitive routines
@@ -7,18 +6,18 @@ MEGA = atmega2560
 
 # 7.3728MHz oscillator !  
 
-CLOCK      ?= 16000000
-PROGRAMMER = -c usbtiny -p m2560 -F
+CLOCK      ?= 7372800
+PROGRAMMER = -c usbtiny -p m1284p -F
 PORT ?= /dev/ttyACM0
 ARDUINO_PROGRAMMER = -c arduino -b 115200 -P $(PORT)
 OBJECTS    = main.o \
              uart.o \
              pins.o \
              utils.o \
-             list.o \
-             elm.o \
-             fifo.o \
-             obd.o \
+#              list.o \
+#              elm.o \
+#              fifo.o \
+#              obd.o \
 #              spi.o \
 #              sd.o \
 #              io.o \

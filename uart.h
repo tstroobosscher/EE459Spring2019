@@ -14,7 +14,7 @@
 /*
  *	UART Baud rate uart 0
  */
-#define BUAD_UART_0 38400
+#define BUAD_UART_0 2400
 
 /*
  *	UART Baud rate uart 1, ELM327 standard
@@ -24,7 +24,7 @@
 /*
  *	preprocessor for UBRR register
  */
-#define MYUBRR(x) ((FOSC / 16 / x) - 1)
+#define MYUBRR(x) ((FOSC / 16 / x))
 
 const typedef enum {
   UART_PORT_0,
