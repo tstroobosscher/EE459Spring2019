@@ -317,7 +317,7 @@ void obd_get_engine_load(char* buf, void *dat, int bytes, struct obd_ctx *ctx) {
 
   float calc = res[2]/2.55;
 
-  sprintf(buf, "%f", calc);
+  sprintf(buf, "%.2f", calc);
 }
 
 void obd_get_coolant_temp(char *buf, void *dat, int bytes, struct obd_ctx *ctx) {
@@ -334,7 +334,7 @@ void obd_get_fuel_trim(char *buf, void *dat, int bytes, struct obd_ctx *ctx) {
 
   float calc = res[2]/1.28 - 100;
 
-  sprintf(buf, "%f", calc);
+  sprintf(buf, "%.2f", calc);
 }
 
 void obd_get_fuel_pressure(char *buf, void *dat, int bytes, struct obd_ctx *ctx) {
@@ -401,7 +401,7 @@ void obd_get_throttle_pos(char *buf, void *dat, int bytes, struct obd_ctx *ctx) 
 
   float calc = res[2]/2.55;
 
-  sprintf(buf, "%f", calc);
+  sprintf(buf, "%.2f", calc);
 }
 
 void obd_get_oxygen_sensors(char *buf, void *dat, int bytes, struct obd_ctx *ctx) {
@@ -421,9 +421,7 @@ void obd_get_oxygen_data(char *buf, void *dat, int bytes, struct obd_ctx *ctx) {
   /* this one can have multiple responses if permitted, % fuel trim and voltage */
   float calc = res[2]/200;
 
-  char *ret;
-
-  sprintf(&ret, "%f", calc);
+  sprintf(buf, "%.2f", calc);
 }
 
 void obd_set_supported_ops(char *buf, void *dat, int bytes, struct obd_ctx *ctx) {

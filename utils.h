@@ -12,21 +12,21 @@
 #include "uart.h"
 #include "astdio.h"
 
-#ifdef ARDUINO
+//#ifdef ARDUINO
 
 /*
  * 16 Mhz Crystal (Arduino)
  */
-#define FOSC 16000000
+//#define FOSC 16000000
 
-#else
+//#else
 
 /*
  * 7.3728 Mhz Crystal
  */
 #define FOSC 7372800
 
-#endif
+//#endif
 
 /*
  * Calculate number of arr elements
