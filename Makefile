@@ -14,9 +14,9 @@ OBJECTS    = main.o \
              uart.o \
              pins.o \
              utils.o \
-#              list.o \
-#              elm.o \
-#              fifo.o \
+             list.o \
+             elm.o \
+             fifo.o \
 #              obd.o \
 #              spi.o \
 #              sd.o \

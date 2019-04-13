@@ -10,7 +10,7 @@
 #include "debug.h"
 
 /* fifo is statically allocated */
-#define FIFO_SIZE 32
+#define FIFO_SIZE 64
 
 static const enum {
   FIFO_FULL,
