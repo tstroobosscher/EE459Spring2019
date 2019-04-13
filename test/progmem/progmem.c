@@ -3,13 +3,15 @@
 #include <util/delay.h>
 #include <avr/pgmspace.h>
  
-#define FOSC 16000000
+#define FOSC 7372800
 
-#define BUAD_UART_0 9600
+#define BUAD_UART_0 38400
 
 #define MYUBRR(x) ((FOSC / 16 / x) - 1)
 
-const char message[] PROGMEM = "Hello World!";
+const char message[] PROGMEM = "Hello World!\r\n";
+
+const char *const strings[] PROGMEM = {message};
 
 void uart_write_char(char data) {
   while (!(UCSR0A & (1 << UDRE0))) {
@@ -25,7 +27,7 @@ void uwrite_str(char *buf) {
 }
 
 int main() {
-  DDRB |= (1 << 7);
+  DDRB |= (1 << 0);
   
   UBRR0=MYUBRR(BUAD_UART_0);
  
@@ -35,10 +37,11 @@ int main() {
 
 
   while(1) {
-    uwrite_str((PGM_P)pgm_read_word(message));
-    PORTB |= (1 << 7);
-    _delay_ms(1000);
-    PORTB &= ~(1 << 7);
+    char buf[64];
+    strcpy_P(buf, (char *)pgm_read_word(&(strings[0])));
+    uwrite_str(buf);
+    //uwrite_str("Hello World\r\n");
+    PORTB ^= (1 << 0);
     _delay_ms(1000);
   }
 
