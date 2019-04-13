@@ -65,11 +65,6 @@ struct obd_ctx obd;
 
 int main() {
 
-  DELAY_MS(1000);
-
-  UART_DBG("\r\n\r\n\r\n\r\n\r\n\r\n");
-  UART_DBG("\r\n\r\n\r\n\r\n\r\n\r\n");
-
   /* atmel hardware */
   initialize_pins();
 
@@ -136,31 +131,40 @@ int main() {
   else
     UART_DBG("main: initialized elm\r\n");
 
-  // if (initialize_obd(&elm, &obd) < 0)
-  //   UART_DBG("main: unable to initialize obd\r\n");
-  // else
-  //   UART_DBG("main: initialized obd\r\n");
+  if (initialize_obd(&elm, &obd) < 0)
+    UART_DBG("main: unable to initialize obd\r\n");
+  else
+    UART_DBG("main: initialized obd\r\n");
 
-  // char buf[64];
+  char buf[64];
 
   while (1) {
-    /* read from UART 0 */
-    if(uart_data_available(UART_PORT_0)) {
-      char out = uart_read_char(UART_PORT_0);
+    struct node *ptr = obd.linked_list;
 
-      /* write to UART 1 */
-      uart_write_char(UART_PORT_1, out);
+    while(ptr) {
+
+      /* the compiler needs offset information to dereference void pointers */
+      struct obd_cmd *cmd = (struct obd_cmd *) ptr->data;
+
+      char ret[64];
+
+      if(cmd->handle_data != NULL) {
+        if(obd_command(&obd, cmd->obd_cmd, buf, BUF_SIZE) < 0) {
+          ptr = ptr->next;
+          continue;
+        }
+        (*(cmd->handle_data))(ret, buf, cmd->resp_bytes, &obd);
+        UART_DBG(cmd->cmd_str);
+        UART_DBG(" = ");
+        UART_DBG(ret);
+        UART_DBG(" ");
+        UART_DBG(cmd->obd_units);
+        UART_DBG("\r\n");
+        //printf("%s = %s %s\n", cmd->cmd_str, res, cmd->obd_units);
+      }
+      ptr = ptr->next;
     }
-
-    if(fifo.f_status == FIFO_READY || fifo.f_status == FIFO_FULL) {
-      /* read from UART 1 */
-      char in;
-      fifo_read_byte(&fifo, &in);
-
-      /* write to UART 0 */
-      uart_write_char(UART_PORT_0, in);
-    }
-    //fifo_dump_mem(&fifo);
+    DELAY_MS(1000);
   }
 
   return (0);

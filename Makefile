@@ -17,7 +17,7 @@ OBJECTS    = main.o \
              list.o \
              elm.o \
              fifo.o \
-#              obd.o \
+             obd.o \
 #              spi.o \
 #              sd.o \
 #              io.o \
