@@ -9,9 +9,13 @@
 
 #define MYUBRR(x) ((FOSC / 16 / x) - 1)
 
-const char message[] PROGMEM = "Hello World!\r\n";
-
-const char *const strings[] PROGMEM = {message};
+const struct message {
+  const char *string;
+} strings[] PROGMEM = {
+  {
+  "Hello World!\r\n",
+  },
+};
 
 void uart_write_char(char data) {
   while (!(UCSR0A & (1 << UDRE0))) {
@@ -38,7 +42,7 @@ int main() {
 
   while(1) {
     char buf[64];
-    strcpy_P(buf, (char *)pgm_read_word(&(strings[0])));
+    strcpy_P(buf, (char *)pgm_read_word(&strings[0]));
     uwrite_str(buf);
     //uwrite_str("Hello World\r\n");
     PORTB ^= (1 << 0);
