@@ -18,11 +18,6 @@
  *	the address space of the io module is the entire SD card
  */
 
-/* the io DBG's spam the log, lets just keep them quiet for now */
-#define UART_DBG(x)
-#define UART_DBG_HEX(x)
-#define UART_DBG_32(x)
-
 int8_t initialize_io(struct io_ctx *io, struct sd_ctx *sd) {
   /* get first sector, set sector pointer */
 
@@ -87,10 +82,6 @@ io_get_byte(struct io_ctx *io, uint32_t offset, uint8_t *buf) {
 
   io->input_byte_addr = sector_addr + sector_offset;
 
-  UART_DBG("io: byte received: ");
-  UART_DBG_HEX(*buf);
-  UART_DBG("\r\n");
-
   return 0;
 }
 
@@ -136,13 +127,9 @@ int8_t io_put_byte(struct io_ctx *io, uint32_t offset, uint8_t *buf) {
   /* sector address is the byte address divided by the sector size */
   uint32_t sector_addr = (offset / 512);
 
-  UART_DBG("io: offset: 0x");
-  UART_DBG_32(offset);
-  UART_DBG("\r\n");
+  DBG("io: offset: 0x%X\n", offset);
 
-  UART_DBG("io: sector addr: 0x");
-  UART_DBG_32(sector_addr);
-  UART_DBG("\r\n");
+  DBG("io: sector addr: 0x%X\n", sector_addr);
 
   /* intra sector address of the specified byte */
   uint32_t sector_offset = offset % SECTOR_SIZE;
@@ -152,7 +139,7 @@ int8_t io_put_byte(struct io_ctx *io, uint32_t offset, uint8_t *buf) {
 
     /* write back previous data unconditionally */
     if (io_flush_write_buffer(io) < 0) {
-      UART_DBG("io: unable to flush write buffer\r\n");
+      DBG("io: unable to flush write buffer\n");
       return -1;
     }
 
@@ -160,7 +147,7 @@ int8_t io_put_byte(struct io_ctx *io, uint32_t offset, uint8_t *buf) {
 
     if (sd_get_sector(sector_addr, io->output_sector_buf, 512) < 0) {
 
-      UART_DBG("io: unable to get write data, failing\r\n");
+      DBG("io: unable to get write data, failing\n");
       return -1;
     }
 
@@ -172,10 +159,6 @@ int8_t io_put_byte(struct io_ctx *io, uint32_t offset, uint8_t *buf) {
   io->output_sector_buf[sector_offset] = *buf;
 
   io->output_byte_addr = sector_addr + sector_offset;
-
-  UART_DBG("io: byte written: ");
-  UART_DBG_HEX(*buf);
-  UART_DBG("\r\n");
 }
 
 int8_t io_write_nbytes(struct io_ctx *io, void *buf, uint32_t offset,

@@ -18,7 +18,7 @@
 #include "pins.h"
 #include "sd.h"
 #include "spi.h"
-//#include "time.h"
+#include "time.h"
 #include "utils.h"
 #include "uart.h"
 #include "elm.h"
@@ -101,15 +101,15 @@ int main() {
   else
     DBG("main: initialized sd\n");
 
-  // if (initialize_io(&io, &sd) < 0)
-  //   DBG("main: unable to initialize io\n");
-  // else
-  //   DBG("main: initialized io\n");
+  if (initialize_io(&io, &sd) < 0)
+    DBG("main: unable to initialize io\n");
+  else
+    DBG("main: initialized io\n");
 
-  // if (initialize_fat32(&fat32, &io, &sd) < 0)
-  //   DBG("main: unable to initialize fat32\n");
-  // else
-  //   DBG("main: initialized fat32\n");
+  if (initialize_fat32(&fat32, &io, &sd) < 0)
+    DBG("main: unable to initialize fat32\n");
+  else
+    DBG("main: initialized fat32\n");
 
   /* main routines */
   if (initialize_elm(&fifo, &elm, UART_PORT_1) < 0) 

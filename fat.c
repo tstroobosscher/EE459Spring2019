@@ -25,10 +25,6 @@
 #define FAT32_DBG_FILE_META(x)
 #endif
 
-#define UART_DBG(x)
-#define UART_DBG_HEX(x)
-#define UART_DBG_32(x)
-
 static __attribute__((always inline)) uint32_t
 fat32_calc_first_cluster(uint16_t high, uint16_t low) {
   uint32_t shift_high = high;
@@ -87,50 +83,42 @@ int8_t fat32_parse_entry(struct FAT32Entry *e) {
     /* end of directory */
     return -1;
   case FILENAME_FILE_DELETED:
-    UART_DBG("fat32: deleted entry found: ");
-    FAT32_DBG_FILENAME(e);
-    UART_DBG("\r\n");
+    DBG("fat32: deleted entry found: %s.%s\n", e->filename, e->filename_ext);
     return 0;
   case FILENAME_FIRST_CHAR_E5:
     /* Regular file, proceed normally */
-    UART_DBG("fat32: entry found, starting with 0xE5: ");
-    FAT32_DBG_FILENAME(e);
-    UART_DBG("\r\n");
+    DBG("fat32: entry found, starting with 0xE5: %s.%s\n", e->filename, e->filename_ext);
     break;
   default:
     /* LFN's not yet implemented */
     if ((e->file_attr & 0x0F) == 0x0F) {
-      UART_DBG("fat32: entry found: LFN\r\n");
-      UART_DBG("    LFN's not yet implemented :(\r\n");
+      DBG("fat32: entry found: LFN\n");
+      DBG("    LFN's not yet implemented :(\n");
       return 0;
     } else {
       /* Regular file, proceed normally */
-      UART_DBG("fat32: entry found: ");
-      FAT32_DBG_FILENAME(e);
-      UART_DBG("\r\n");
+      DBG("fat32: entry found: %s.%s\n", e->filename, e->filename_ext);
       break;
     }
   }
 
   if (e->file_attr & FILE_ATTR_RO)
-    UART_DBG("    Attribute: READONLY\r\n");
+    DBG("    Attribute: READONLY\n");
   if (e->file_attr & FILE_ATTR_HIDDEN)
-    UART_DBG("    Attribute: HIDDEN\r\n");
+    DBG("    Attribute: HIDDEN\n");
   if (e->file_attr & FILE_ATTR_SYSTEM)
-    UART_DBG("    Attribute: SYSTEM\r\n");
+    DBG("    Attribute: SYSTEM\n");
   if (e->file_attr & FILE_ATTR_LABEL)
-    UART_DBG("    Attribute: LABEL\r\n");
+    DBG("    Attribute: LABEL\n");
   if (e->file_attr & FILE_ATTR_SUBDIR)
-    UART_DBG("    Attribute: SUBDIR\r\n");
+    DBG("    Attribute: SUBDIR\n");
   if (e->file_attr & FILE_ATTR_ARCHIVE)
-    UART_DBG("    Attribute: ARCHIVE\r\n");
+    DBG("    Attribute: ARCHIVE\n");
 
   uint32_t cluster_addr = fat32_calc_first_cluster(e->first_cluster_addr_high,
                                                    e->first_cluster_addr_low) + 2;
 
-  UART_DBG("    Starting cluter address: 0x");
-  UART_DBG_32(cluster_addr);
-  UART_DBG("\r\n");
+  DBG("    Starting cluter address: 0x%X\n", cluster_addr);
 
   return 0;
 }
