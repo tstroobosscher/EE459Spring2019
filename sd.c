@@ -12,10 +12,7 @@
 #include "time.h"
 #include "uart.h"
 #include "utils.h"
-
-/* turn off SD dbg messages */
-#define UART_DBG(x)
-#define UART_DBG_HEX(x)
+#include "astdio.h"
 
 static __attribute__((always inline)) int8_t sd_wake_up() {
   /* enable sd card */
@@ -24,13 +21,13 @@ static __attribute__((always inline)) int8_t sd_wake_up() {
     /* sanity check */
     return -1;
 
-  UART_DBG("sd: SD slave select disabled\r\n");
+  DBG("sd: SD slave select disabled\r\n");
 
   /* 80 clocks, init card */
   for (uint8_t i = 0; i < 10; i++)
     spi_write_char(0xFF);
 
-  UART_DBG("sd: 80 clocks send to SPI bus\r\n");
+  DBG("sd: 80 clocks send to SPI bus\r\n");
 
   return 0;
 }
@@ -41,9 +38,7 @@ int8_t sd_is_busy() {
 
   uint8_t ch = spi_read_char();
 
-  UART_DBG("SPI busy char: ");
-  UART_DBG_HEX(ch);
-  UART_DBG("\r\n");
+  DBG("SPI busy char: %C\n", ch);
 
   if (ch != 0xFF)
     return true;
@@ -82,9 +77,7 @@ sd_command(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t bytes,
     uint8_t ret;
     uint8_t trials = 0;
 
-    UART_DBG("CMD ");
-    UART_DBG_HEX(cmd);
-    UART_DBG(" ");
+    DBG("CMD %X ", cmd);
 
     DELAY_MS(10);
 
@@ -99,7 +92,7 @@ sd_command(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t bytes,
 
       if (++trials >= MAX_CMD_TRIALS) {
 
-        UART_DBG("\r\n");
+        DBG("\n");
 
         /* MSB set is an error response */
         return R1_RESPONSE_ERR;
@@ -107,7 +100,7 @@ sd_command(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t bytes,
 
     } while ((ret & RET_MSB_MASK) == RET_MSB_MASK);
 
-    UART_DBG("\r\n");
+    DBG("\n");
     DELAY_MS(10);
 
     /* MSB is unset */
@@ -132,7 +125,7 @@ sd_acommand(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t bytes,
   if (sd_command(CMD55, bind_args(NOARG, NOARG, NOARG, NOARG), NOCRC, 0,
                  NULL) == R1_RESPONSE_ERR) {
 
-    UART_DBG("sd: CMD55 failure\r\n");
+    DBG("sd: CMD55 failure\r\n");
     DELAY_MS(10);
     return 0xFF;
   }
@@ -176,15 +169,14 @@ static __attribute__((always inline)) int8_t sd_find_resp_byte(uint8_t *buf,
 static __attribute__((always inline)) void sd_get_bytes(uint16_t bytes,
                                                         uint8_t *buf) {
 
-  UART_DBG("sd: spi received: ");
+  DBG("sd: spi received: ");
 
   for (uint16_t i = 0; i < bytes; i++) {
     buf[i] = spi_read_char();
-    UART_DBG_HEX(buf[i]);
-    UART_DBG(" ");
+    DBG("%X ", buf[i]);
   }
 
-  UART_DBG("\r\n");
+  DBG("\n");
 }
 
 static __attribute__((always inline)) int8_t sd_init_read_sector(uint32_t arg) {
@@ -204,7 +196,7 @@ static __attribute__((always inline)) int8_t sd_init_read_sector(uint32_t arg) {
   /* data read token */
   while (spi_read_char() != 0xFE) {
 
-    UART_DBG("sd: CMD17 error\r\n");
+    DBG("sd: CMD17 error\n");
 
     /* can't read loop here because we need the bytes */
     DELAY_MS(1);
@@ -240,7 +232,7 @@ int8_t initialize_sd(struct sd_ctx *sd) {
     /* unhandled error */
     goto failure;
 
-  UART_DBG("sd: sd card woken up\r\n");
+  DBG("sd: sd card woken up\n");
   DELAY_MS(10);
 
   /* start the clock, must find the correct response in time */
@@ -249,7 +241,7 @@ int8_t initialize_sd(struct sd_ctx *sd) {
   /* send CMD0, get IDLE state */
   while (sd_command(0x40 | 0, 0x00, 0x95, 0, NULL) != R1_IDLE_STATE) {
 
-    UART_DBG("sd: CMD0 error\r\n");
+    DBG("sd: CMD0 error\n");
     DELAY_MS(10);
 
     /* too late */
@@ -257,16 +249,16 @@ int8_t initialize_sd(struct sd_ctx *sd) {
       goto failure;
   }
 
-  UART_DBG("sd: CMD0 succesful\r\n");
+  DBG("sd: CMD0 succesful\n");
 
   while (sd_is_busy()) {
     /* need timeout */
 
-    UART_DBG("sd: card is busy\r\n");
+    DBG("sd: card is busy\n");
     DELAY_MS(10);
   }
 
-  UART_DBG("sd: CMD0 succesful\r\n");
+  DBG("sd: CMD0 succesful\n");
   DELAY_MS(10);
 
   trials = 0;
@@ -276,20 +268,20 @@ int8_t initialize_sd(struct sd_ctx *sd) {
                            bind_args(NOARG, NOARG, 0x01, CMD8_RESPONSE_PATTERN),
                            CMD8_CRC, 0, NULL)) != R1_IDLE_STATE) {
 
-    UART_DBG("sd: CMD8 error\r\n");
+    DBG("sd: CMD8 error\n");
     DELAY_MS(10);
 
     if (++trials > MAX_CMD_TRIALS)
       goto failure;
   }
 
-  UART_DBG("sd: CMD8 succesful\r\n");
+  DBG("sd: CMD8 succesful\n");
   DELAY_MS(10);
 
   /* SD type 1 cards will return illegal and idle */
   if (ret == (R1_IDLE_STATE | R1_ILLEGAL_COMMAND)) {
 
-    UART_DBG("sd: type 1 sd card\r\n");
+    DBG("sd: type 1 sd card\n");
     DELAY_MS(10);
 
     sd->sd_type = SD_TYPE_1;
@@ -298,7 +290,7 @@ int8_t initialize_sd(struct sd_ctx *sd) {
   /* command received correctly */
   else if (ret == R1_IDLE_STATE) {
 
-    UART_DBG("sd: checking voltage\r\n");
+    DBG("sd: checking voltage\n");
     DELAY_MS(10);
 
     /* get the response byte R7 */
@@ -308,21 +300,13 @@ int8_t initialize_sd(struct sd_ctx *sd) {
     if (buf[3] == CMD8_RESPONSE_PATTERN) {
 
       /* type 2 sd card */
-      UART_DBG("sd: type 2 sd card\r\n");
+      DBG("sd: type 2 sd card\n");
       DELAY_MS(10);
       sd->sd_type = SD_TYPE_2;
 
     } else {
 
-      UART_DBG("sd: CMD8 response error: ");
-      UART_DBG_HEX(buf[0]);
-      UART_DBG(" ");
-      UART_DBG_HEX(buf[1]);
-      UART_DBG(" ");
-      UART_DBG_HEX(buf[2]);
-      UART_DBG(" ");
-      UART_DBG_HEX(buf[3]);
-      UART_DBG("\r\n");
+      DBG("sd: CMD8 response error: %X %X %X %X\n", buf[0], buf[1], buf[2], buf[3]);
       DELAY_MS(10);
 
       /* unhandled error */
@@ -333,9 +317,7 @@ int8_t initialize_sd(struct sd_ctx *sd) {
   /* unhandled error */
   else {
 
-    UART_DBG("sd: unhandled CMD8 return: ");
-    UART_DBG_HEX(ret);
-    UART_DBG("\r\n");
+    DBG("sd: unhandled CMD8 return: %X\n", ret);
     DELAY_MS(10);
 
     goto failure;
@@ -351,7 +333,7 @@ int8_t initialize_sd(struct sd_ctx *sd) {
                       : (bind_args(NOARG, NOARG, NOARG, NOARG)),
                   NOCRC, 0, NULL) != R1_READY_STATE) {
 
-    UART_DBG("sd: ACMD41 error\r\n");
+    DBG("sd: ACMD41 error\n");
     DELAY_MS(10);
 
     while (sd_is_busy()) {
@@ -372,7 +354,7 @@ int8_t initialize_sd(struct sd_ctx *sd) {
     while ((ret = sd_command(CMD58, bind_args(NOARG, NOARG, NOARG, NOARG),
                              NOCRC, 0, NULL)) != R1_READY_STATE) {
 
-      UART_DBG("sd: CMD58 error\r\n");
+      DBG("sd: CMD58 error\n");
       DELAY_MS(10);
 
       if (++trials > MAX_CMD_TRIALS)
@@ -380,22 +362,14 @@ int8_t initialize_sd(struct sd_ctx *sd) {
     }
 
     sd_get_bytes(CMD_RESP_BYTES, buf);
-    UART_DBG("sd: CMD58 response: ");
-    UART_DBG_HEX(buf[0]);
-    UART_DBG(" ");
-    UART_DBG_HEX(buf[1]);
-    UART_DBG(" ");
-    UART_DBG_HEX(buf[2]);
-    UART_DBG(" ");
-    UART_DBG_HEX(buf[3]);
-    UART_DBG("\r\n");
+    DBG("sd: CMD58 response: %X %X %X %X\n", buf[0], buf[1], buf[2], buf[3]);
     DELAY_MS(10);
 
     if ((buf[0] & SDHC_OCR_MASK) == SDHC_OCR_MASK) {
 
       /* SDHC */
       sd->sd_type = SD_TYPE_SDHC;
-      UART_DBG("sd: SDHC card\r\n");
+      DBG("sd: SDHC card\n");
       DELAY_MS(10);
     }
   }
@@ -421,13 +395,13 @@ int16_t sd_get_sector(uint32_t addr, uint8_t *buf, uint16_t size) {
 
   if (sd_init_read_sector(addr) < 0) {
 
-    UART_DBG("sd: unable to initialize sector\r\n");
+    DBG("sd: unable to initialize sector\n");
 
     spi_device_disable(SPI_SD_CARD);
     return -1;
   }
 
-  UART_DBG("sd: sector ready\r\n");
+  DBG("sd: sector ready\n");
 
   sd_get_bytes(size, buf);
 
@@ -468,41 +442,37 @@ int8_t sd_put_sector(uint32_t addr, uint8_t *buf, uint16_t size) {
   spi_device_enable(SPI_SD_CARD);
 
   if (sd_init_put_sector(addr) < 0) {
-    UART_DBG("sd: unable to initialize write sector\r\n");
+    DBG("sd: unable to initialize write sector\n");
     return -1;
   }
 
-  UART_DBG("sd: successfully initialized write sector\r\n");
+  DBG("sd: successfully initialized write sector\n");
 
   sd_put_bytes(buf, size);
 
-  UART_DBG("sd: wrote out block\r\n");
+  DBG("sd: wrote out block\n");
 
   for (uint8_t i = 0; i < 128; i++) {
     if (((ret = spi_read_char()) & 0x11) == 0x01) {
 
-      UART_DBG("ret: ");
-      UART_DBG_HEX(ret);
-      UART_DBG("\r\n");
+      DBG("ret: %X\n", ret);
 
       if ((ret & 0x0E) == 0x04) {
-        UART_DBG("sd: data acknowledged\r\n");
-        UART_DBG("sd: wrote block at sector: 0x");
-        UART_DBG_32(addr);
-        UART_DBG("\r\n");
+        DBG("sd: data acknowledged\r\n");
+        DBG("sd: wrote block at sector: 0x%X\n", addr);
         while (sd_is_busy()) {
           /* timeout */
         }
         spi_device_disable(SPI_SD_CARD);
         return 0;
       } else {
-        UART_DBG("sd: incorrect response\r\n");
+        DBG("sd: incorrect response\n");
         break;
       }
     } else
-      UART_DBG("sd: incorrect resp format\r\n");
+      DBG("sd: incorrect resp format\n");
   }
-  UART_DBG("sd: response ack not found\r\n");
+  DBG("sd: response ack not found\n");
 
   /* guarantee that the device is done writing when the func returns */
   while (sd_is_busy()) {

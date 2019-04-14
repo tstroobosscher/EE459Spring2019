@@ -82,10 +82,10 @@ static const enum {
 #define PIN_TX_0 15
 #define PIN_RX_1 16
 #define PIN_TX_1 17
-#define PIN_SS_SD 4
-#define PIN_MOSI 5
-#define PIN_MISO 6 /* input ! */
-#define PIN_SCK 7
+#define PIN_SS_SD 5
+#define PIN_MOSI 6
+#define PIN_MISO 7 /* input ! */
+#define PIN_SCK 8
 
 #endif
 

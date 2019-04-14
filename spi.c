@@ -10,10 +10,7 @@
 #include "spi.h"
 #include "uart.h"
 #include "utils.h"
-
-/* turn off SPI dbg messages */
-#define UART_DBG(x)
-#define UART_DBG_HEX(x)
+#include "astdio.h"
 
 static __attribute__((always inline)) void
 spi_initialize_slave_select(uint8_t pin) {
@@ -21,9 +18,9 @@ spi_initialize_slave_select(uint8_t pin) {
    *	Initialize slave select pin with active high
    */
   if (pin_high(pin) < 0)
-    UART_DBG("spi: unable to initialize slave select pin\n\r");
+    DBG("spi: unable to initialize slave select pin\n\r");
   else
-    UART_DBG("spi: succesfully initialized slave select pin\n\r");
+    DBG("spi: succesfully initialized slave select pin\n\r");
 }
 
 void initialize_spi() {
@@ -60,7 +57,7 @@ int8_t spi_device_enable(uint8_t dev) {
   case SPI_SD_CARD:
     if (pin_low(PIN_SS_SD) < 0)
       return -1;
-    UART_DBG("spi: SD slave select enabled\r\n");
+    DBG("spi: SD slave select enabled\r\n");
     return 0;
   default:
     return -1;
@@ -73,7 +70,7 @@ int8_t spi_device_disable(uint8_t dev) {
   case SPI_SD_CARD:
     if (pin_high(PIN_SS_SD) < 0)
       return -1;
-    UART_DBG("spi: SD slave select disabled\r\n");
+    DBG("spi: SD slave select disabled\r\n");
     return 0;
   default:
     return -1;

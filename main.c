@@ -8,7 +8,7 @@
 
 #include <avr/interrupt.h>
 #include <avr/io.h>
-//#include <stdint.h>
+#include <stdint.h>
 #include <stdio.h>
 
 #include "debug.h"
@@ -63,24 +63,31 @@ struct io_ctx io;
  */
 struct fat32_ctx fat32;
 
-char buffer[1];
 
 extern FILE *stdout;
 
 int main() {
 
   /* atmel hardware */
+  sei();
+
   initialize_pins();
 
   initialize_uart(UART_PORT_0, MYUBRR(BUAD_UART_0));
 
-  DBG("main: initialized uart\n");
+  UART_DBG("main: initialized uart\r\n");
 
   initialize_stdio(&stdout);
 
-  initialize_fifo(&fifo);
+  DBG("main: initialized stdout\n");
 
-  DBG("Hello World! \n%s\n", "Goodbye World!");
+  initialize_uart(UART_PORT_1, MYUBRR(BUAD_UART_1));
+
+  UCSR1B |= (1 << RXCIE1);
+
+  DBG("main: initialized AT port\n");
+
+  initialize_fifo(&fifo);
 
   DBG("main: initialized fifo\n");
 
@@ -94,46 +101,17 @@ int main() {
   else
     DBG("main: initialized sd\n");
 
-  if (initialize_io(&io, &sd) < 0)
-    DBG("main: unable to initialize io\n");
-  else
-    DBG("main: initialized io\n");
+  // if (initialize_io(&io, &sd) < 0)
+  //   DBG("main: unable to initialize io\n");
+  // else
+  //   DBG("main: initialized io\n");
 
-  if (initialize_fat32(&fat32, &io, &sd) < 0)
-    DBG("main: unable to initialize fat32\n");
-  else
-    DBG("main: initialized fat32\n");
+  // if (initialize_fat32(&fat32, &io, &sd) < 0)
+  //   DBG("main: unable to initialize fat32\n");
+  // else
+  //   DBG("main: initialized fat32\n");
 
   /* main routines */
-  struct fat32_file file;
-
-  strncpy(file.file_name, "logfile1", 8);
-  strncpy(file.file_ext, "txt", 3);
-
-  fat32_creat_file(&fat32, &file);
-
-  char *buf_1 = "Hello World!\n";
-
-  fat32_write_file_nbytes(&fat32, &file, buf_1, strlen(buf_1));
-
-  char *buf_2 = "Goodbye World!\n";
-
-  fat32_write_file_nbytes(&fat32, &file, buf_2, strlen(buf_2));
-
-  char *buf_3 = "How Are You Doing World!\n";
-
-  fat32_write_file_nbytes(&fat32, &file, buf_3, strlen(buf_3));
-
-  char *buf_4 = "I Am Doing Well World!\n";
-
-  fat32_write_file_nbytes(&fat32, &file, buf_4, strlen(buf_4));
-
-  io_flush_write_buffer(&io);
-
-  initialize_uart(UART_PORT_1, MYUBRR(BUAD_UART_1));
-  sei();
-  UCSR1B |= (1 << RXCIE1);
-
   if (initialize_elm(&fifo, &elm, UART_PORT_1) < 0) 
     DBG("main: unable to initialize elm\n");
   else
@@ -144,7 +122,7 @@ int main() {
   else
     DBG("main: initialized obd\n");
 
-  char buf[64];
+  char buf[BUF_SIZE];
 
   while (1) {
     struct node *ptr = obd.linked_list;
@@ -163,13 +141,6 @@ int main() {
         }
         (*(cmd->handle_data))(ret, buf, cmd->resp_bytes, &obd);
         DBG("main: %s = %s %s\n", cmd->cmd_str, ret, cmd->obd_units);
-        // UART_DBG(cmd->cmd_str);
-        // UART_DBG(" = ");
-        // UART_DBG(ret);
-        // UART_DBG(" ");
-        // UART_DBG(cmd->obd_units);
-        // UART_DBG("\r\n");
-        //printf("%s = %s %s\n", cmd->cmd_str, res, cmd->obd_units);
       }
       ptr = ptr->next;
     }

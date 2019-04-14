@@ -11,6 +11,7 @@
 #include "io.h"
 #include "sd.h"
 #include "uart.h"
+#include "astdio.h"
 
 #ifdef DEBUG
 #define FAT32_DBG_FILENAME(x) fat32_dump_filename(x)
@@ -51,25 +52,33 @@ fat32_dump_filename(struct FAT32Entry *e) {
 }
 
 void fat32_dump_file_meta(struct fat32_file *file) {
-  uart_write_str(UART_PORT_0, "\r\nfile name: ");
-  uart_write_strn(UART_PORT_0, file->file_name, 8);
-  uart_write_str(UART_PORT_0, ".");
-  uart_write_strn(UART_PORT_0, file->file_ext, 3);
-  uart_write_str(UART_PORT_0, "\r\nfile size: 0x");
-  uart_write_32(UART_PORT_0, file->file_size);
-  uart_write_str(UART_PORT_0, "\r\nfile position: 0x");
-  uart_write_32(UART_PORT_0, file->start_byte_offset);
-  uart_write_str(UART_PORT_0, "\r\ncurrent cluster: 0x");
-  uart_write_32(UART_PORT_0, file->current_cluster);
-  uart_write_str(UART_PORT_0, "\r\nsectors per cluster: 0x");
-  uart_write_32(UART_PORT_0, file->sectors_per_cluster);
-  uart_write_str(UART_PORT_0, "\r\ncurrent sector: 0x");
-  uart_write_32(UART_PORT_0, file->current_sector);
-  uart_write_str(UART_PORT_0, "\r\nlist pointer: 0x");
-  uart_write_32(UART_PORT_0, (uint32_t)file->fat_list);
-  uart_write_str(UART_PORT_0, "\r\nroot_dir_offset: 0x");
-  uart_write_32(UART_PORT_0, file->root_dir_offset);
-  uart_write_str(UART_PORT_0, "\r\n");
+  printf("file name: %s.%s\n", file->file_name, file->file_ext);
+  printf("file size: 0x%X\n", file->file_size);
+  printf("file start byte: 0x%X\n", file->start_byte_offset);
+  printf("file current cluster: 0x%X\n", file->current_cluster);
+  printf("file sectors per cluster: 0x%X\n", file->sectors_per_cluster);
+  printf("file current sector: 0x%X\n", file->current_sector);
+  printf("file fat list pointer: 0x%X\n", (uint32_t)file->fat_list);
+  printf("file root directory offset: 0x%X\n", file->root_dir_offset);
+  // uart_write_str(UART_PORT_0, "\r\nfile name: ");
+  // uart_write_strn(UART_PORT_0, file->file_name, 8);
+  // uart_write_str(UART_PORT_0, ".");
+  // uart_write_strn(UART_PORT_0, file->file_ext, 3);
+  // uart_write_str(UART_PORT_0, "\r\nfile size: 0x");
+  // uart_write_32(UART_PORT_0, file->file_size);
+  // uart_write_str(UART_PORT_0, "\r\nfile position: 0x");
+  // uart_write_32(UART_PORT_0, file->start_byte_offset);
+  // uart_write_str(UART_PORT_0, "\r\ncurrent cluster: 0x");
+  // uart_write_32(UART_PORT_0, file->current_cluster);
+  // uart_write_str(UART_PORT_0, "\r\nsectors per cluster: 0x");
+  // uart_write_32(UART_PORT_0, file->sectors_per_cluster);
+  // uart_write_str(UART_PORT_0, "\r\ncurrent sector: 0x");
+  // uart_write_32(UART_PORT_0, file->current_sector);
+  // uart_write_str(UART_PORT_0, "\r\nlist pointer: 0x");
+  // uart_write_32(UART_PORT_0, (uint32_t)file->fat_list);
+  // uart_write_str(UART_PORT_0, "\r\nroot_dir_offset: 0x");
+  // uart_write_32(UART_PORT_0, file->root_dir_offset);
+  // uart_write_str(UART_PORT_0, "\r\n");
 }
 
 int8_t fat32_parse_entry(struct FAT32Entry *e) {

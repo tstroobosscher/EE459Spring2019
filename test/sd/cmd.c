@@ -1,12 +1,12 @@
 #include <avr/io.h>
 
-#define ATMEGA2560
+#define ATMEGA1284
 
-#define FOSC 16000000
+#define FOSC 7372800
 /*
  *	UART Baud rate
  */
-#define BAUD 19200
+#define BAUD 38400
 
 /*
  *	Value for UBRR0 register
@@ -105,6 +105,19 @@ void USARTInit(unsigned long ubrr_value) {
 
 #define CS_DDR DDRB
 #define CS (1<<PB0)
+#define CS_ENABLE() (PORTB &= ~CS)
+#define CS_DISABLE() (PORTB |= CS)
+
+#elif defined ATMEGA1284
+
+#define SPI_DDR DDRB
+#define SPI_PORT PORTB
+#define MOSI (1<<PB5)
+#define MISO (1<<PB6)
+#define SCK (1<<PB7)
+
+#define CS_DDR DDRB
+#define CS (1<<PB4)
 #define CS_ENABLE() (PORTB &= ~CS)
 #define CS_DISABLE() (PORTB |= CS)
 
