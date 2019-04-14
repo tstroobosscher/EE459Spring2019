@@ -14,6 +14,8 @@
 #include "utils.h"
 #include "astdio.h"
 
+#define DBG(...)
+
 static __attribute__((always inline)) int8_t sd_wake_up() {
   /* enable sd card */
   if (spi_device_disable(SPI_SD_CARD) < 0)

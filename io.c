@@ -11,6 +11,8 @@
 #include "spi.h"
 #include "uart.h"
 
+#define DBG(...)
+
 /*
  *	the strategy is to abstract the flash reading and writing to placing
  *	and getting bytes, everything else can be handled at the byte level

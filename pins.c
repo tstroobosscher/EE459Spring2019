@@ -1101,7 +1101,7 @@ static const struct atmel_328_pin {
         ATMEL_PULL_DIS,
         &DDRB,
     },
-    /* 4  */
+    /* 4, Slave Select LCD */
     {
         &PORTB,
         3,

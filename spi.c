@@ -37,6 +37,9 @@ void initialize_spi() {
   /* master device */
   SPCR |= (1 << MSTR);
 
+  /* fosc/128 */
+  SPCR |= (1 << SPR1) | (1 << SPR0);
+
   /*
    *	We will need to see how fast we can use SPI, the board might cause
    *	the signals to slow down and force us to lower our maximum transfer
@@ -51,6 +54,7 @@ void spi_set_speed() {}
 int8_t spi_device_enable(uint8_t dev) {
   /* clear pins first */
   pin_high(PIN_SS_SD);
+  pin_high(PIN_LCD_SS);
 
   /* set device enable */
   switch (dev) {
@@ -58,6 +62,11 @@ int8_t spi_device_enable(uint8_t dev) {
     if (pin_low(PIN_SS_SD) < 0)
       return -1;
     DBG("spi: SD slave select enabled\r\n");
+    return 0;
+  case SPI_LCD:
+    if (pin_low(PIN_LCD_SS) < 0)
+      return -1;
+    DBG("spi: LCD slave select enabled\r\n");
     return 0;
   default:
     return -1;
@@ -71,6 +80,11 @@ int8_t spi_device_disable(uint8_t dev) {
     if (pin_high(PIN_SS_SD) < 0)
       return -1;
     DBG("spi: SD slave select disabled\r\n");
+    return 0;
+  case SPI_LCD:
+    if (pin_high(PIN_LCD_SS) < 0)
+      return -1;
+    DBG("spi: LCD slave select enabled\r\n");
     return 0;
   default:
     return -1;
