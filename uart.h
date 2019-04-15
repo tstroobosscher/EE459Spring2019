@@ -11,21 +11,24 @@
 #include "debug.h"
 #include "utils.h"
 
-/*
- *	UART Baud rate uart 0
+/**
+ * @brief      UART Baud rate uart 0
  */
 #define BUAD_UART_0 38400
 
-/*
- *	UART Baud rate uart 1, ELM327 standard
+/**
+ * @brief      UART Baud rate uart 1, ELM327 standard
  */
 #define BUAD_UART_1 38400
 
-/*
- *	preprocessor for UBRR register
+/**
+ * @brief      preprocessor for UBRR register
  */
 #define MYUBRR(x) ((FOSC / 16 / x) - 1)
 
+/**
+ * @brief      enumeration constants for both UART ports
+ */
 const typedef enum {
   UART_PORT_0,
   UART_PORT_1,
@@ -39,6 +42,5 @@ void uart_write_32(uint8_t port, uint32_t val);
 void uart_write_str(uint8_t port, char *buf);
 void uart_write_strn(uint8_t port, uint8_t *buf, uint8_t n);
 void uart_read_strn(uint8_t port, uint8_t *buf, uint8_t n);
-char uart_data_available(port);
-// void uart_check_vowel_consonant();
+char uart_data_available(uint8_t port);
 #endif
