@@ -15,7 +15,5 @@ struct elm_ctx {
 };
 
 int initialize_elm(struct fifo_t *fifo, struct elm_ctx *elm, uint8_t device);
-// int elm_write(uint8_t device, const char *buf);
-// int elm_command(int device, const char *cmd, int len, char *buf, int size);
 
 #endif

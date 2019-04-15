@@ -24,40 +24,6 @@ static const enum {
   ATMEL_PULL_INVAL,
 } atmel_328_pull_status;
 
-/*
- *  ___ATMEGA328___
- *
- *	Pin assignments:
- *		1:	(Invalid) Reset
- *		2:	UART RX
- *		3:	UART TX
- *		4:
- *		5:
- *		6:
- *		7:	(Invalid) VCC
- *		8:	(Invalid) GND
- *		9:	(Invalid) XTAL
- *		10:
- *		11:
- *		12:
- *		13:
- *		14:
- *(B01)	15: LCD SPI Select
- *(D10)	16: SD Card SPI Select
- *(D11)	17: SPI MOSI
- *(D12)	18: SPI MISO
- *(D13)	19: SPI SCK
- *		20: (Invalid) AVCC
- *		21:	(Invalid) AREF
- *		22:	(Invalid) GND
- *		23:	(Analog)
- *		24:	(Analog)
- *		25:	(Analog)
- *		26:	(Analog)
- *		27:	(Analog)
- *		28:	(Analog)
- */
-
 #if defined ATMEGA328
 
 #define PIN_RX 2

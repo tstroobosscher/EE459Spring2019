@@ -5,24 +5,25 @@ DEVICE     = atmega1284p
 # (like the UART/Serial code) 
 
 # 7.3728MHz oscillator !  
-
 CLOCK      ?= 7372800
+
+
 PROGRAMMER = -c usbtiny -p m1284p -F
 PORT ?= /dev/ttyACM0
 ARDUINO_PROGRAMMER = -c arduino -b 115200 -P $(PORT)
-OBJECTS    = main.o \
-             uart.o \
-             pins.o \
-             utils.o \
-             list.o \
-             elm.o \
-             fifo.o \
-             obd.o \
-             astdio.o \
-             spi.o \
-             sd.o \
-             io.o \
-             fat.o
+OBJECTS   = main.o \
+            uart.o \
+            pins.o \
+            utils.o \
+            list.o \
+            elm.o \
+            fifo.o \
+            obd.o \
+            astdio.o \
+            spi.o \
+            sd.o \
+            io.o \
+            fat.o
 FUSES      = -U hfuse:w:0xde:m -U lfuse:w:0xff:m -U efuse:w:0x05:m
 
 # Tune the lines below only if you know what you are doing:

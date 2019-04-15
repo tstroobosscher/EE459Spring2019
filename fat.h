@@ -289,13 +289,8 @@ struct fat32_ctx {
   uint32_t root_dir_sector;
   uint32_t fat_begin_sector;
 
-  //struct fat32_file root_dir;
-
   /* list of directory entries, including the root */
   struct node *root_dir_entries;
-  
-  //struct node *fat_list;
-  //struct node *file_list;
 
   struct io_ctx *io;
 };

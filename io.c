@@ -1,5 +1,3 @@
-
-
 /*
  *	USC EE459 Spring 2019 Team 17 - Input/Output Abstraction Layer
  */
@@ -175,4 +173,3 @@ int8_t io_write_nbytes(struct io_ctx *io, void *buf, uint32_t offset,
 
   return 0;
 }
-

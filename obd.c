@@ -1,8 +1,6 @@
 /*
- *  USC EE459 Spring 2019 Team 17 - OBD Communication routines
+ *  USC EE459 Spring 2019 Team 17 - OBD Communication Routines
  */
-
-#define _GNU_SOURCE
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -445,9 +443,6 @@ void obd_set_supported_ops(char *buf, void *dat, int bytes, struct obd_ctx *ctx)
      */
 
     if(res & mask) {
-      // UART_DBG("obd: pushing list item: ");
-      // UART_DBG(obd_cmds[i].cmd_str);
-      // UART_DBG("\r\n");
       list_push_head(&ctx->linked_list, (struct obd_cmd *) &obd_cmds[i], sizeof(struct obd_cmd));
     }
 
@@ -462,10 +457,6 @@ char *obd_resp(const char *cmd, char *buf) {
 
   char pream[5];
 
-  // UART_DBG("obd: pream cmd: ");
-  // UART_DBG(cmd);
-  // UART_DBG("\r\n");
-
   if ((strlen(cmd) != OBD_CMD_LEN)) {
     DBG("obd_resp: strlen error\n");
     return NULL;
@@ -479,16 +470,8 @@ char *obd_resp(const char *cmd, char *buf) {
   /* NULL terminate substr, strncpy might already do this */
   pream[2] = '\0';
 
-  // UART_DBG("obd: trunc cmd: ");
-  // UART_DBG(pream);
-  // UART_DBG("\r\n");
-
   /* The obd standard responds with the mode arg added to 0x40 */
   snprintf(pream, 3, "%02lX", 0x40 + strtol(pream, 0, 16));
-
-  // UART_DBG("obd: pream: ");
-  // UART_DBG(pream);
-  // UART_DBG("\r\n");
 
   /* find the beginning of the data */
   return strstr(buf, pream);
@@ -582,8 +565,6 @@ int obd_command(struct obd_ctx *obd, const char *cmd, void *dat, int size) {
     /* grab each byte string, convert to unsigned char */
     char ch[3] = {data[i * 2], data[i * 2 + 1], '\0'};
 
-    //printf("%s\n", ch);
-
     /* strlen(data)/2 should also be equal to size NO! size is the max buf*/
     ret[i] = (unsigned char) strtol(ch, 0, HEX_BASE);
   }
@@ -609,9 +590,6 @@ int initialize_obd(struct elm_ctx *elm, struct obd_ctx *ctx) {
   uint32_t new_buf[BUF_SIZE];
   for(int i = 0; i < ARRAY_SIZE(dat); i++) {
     DBG("obd: dat: 0x%x\r", dat[i]);
-    // UART_DBG("dat: ");
-    // UART_DBG_HEX(dat[i]);
-    // UART_DBG("\r\n");
     new_buf[i] = dat[i];
   }
 
@@ -619,44 +597,9 @@ int initialize_obd(struct elm_ctx *elm, struct obd_ctx *ctx) {
 
   DBG("obd: res = %d\n", res);
 
-  // UART_DBG("obd: ");
-  // UART_DBG_32(res);
-  // UART_DBG("\r\n");
-
   obd_set_supported_ops(NULL, &res, sizeof(res), ctx);
 
   list_dump(ctx->linked_list, (void *) obd_print_cmd);
 
   return 0;
 }
-
-/*
-
-        static function_util_sensor(raw data)
-
-        struct sensor {
-
-                // name of the sensor (O2, Fuel Trim, etc.)
-                name,
-
-                // AT command used to retrieve sensor data
-                command,
-
-                // function used to translate raw dato to process
-                function pointer,
-
-                // units of the data if there are any
-                units
-        }
-
-    struct dtc {
-
-        // standardized string representation (PXXXX)
-                SAE name,
-
-                // string representing error cause
-                cause,
-    }
-
-
- */

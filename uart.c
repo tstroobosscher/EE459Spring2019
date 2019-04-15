@@ -10,6 +10,10 @@
 #include "uart.h"
 #include "utils.h"
 
+/**
+ * @brief      abstraction for the uart hardware structures, must be in the
+ *             order of the port enumerations
+ */
 static struct uart_port {
   volatile uint8_t *ucsra;
   volatile uint8_t *ucsrb;
@@ -58,13 +62,20 @@ static struct uart_port {
 #endif
 };
 
+/**
+ * @brief      read a single char from the
+ *
+ * @param      port  the uart port enumeration
+ *
+ * @return     the data sitting in the UDRX register
+ */
 char uart_read_char(uint8_t port) {
   while (!(*(uart_ports[port].ucsra) & (1 << uart_ports[port].rxc))) {
   }
   return *(uart_ports[port].udr);
 }
 
-char uart_data_available(port) {
+char uart_data_available(uint8_t port) {
   return (*(uart_ports[port].ucsra) & (1 << uart_ports[port].rxc));
 }
 
@@ -78,7 +89,7 @@ void uart_read_strn(uint8_t port, uint8_t *buf, uint8_t n) {
   }
 }
 
-void uart_write_char(uint8_t port, char data) {
+void uart_write_char(uint8_t port, int8_t data) {
   while (!(*(uart_ports[port].ucsra) & (1 << uart_ports[port].udre))) {
   }
   *(uart_ports[port].udr) = data;
@@ -138,32 +149,3 @@ void initialize_uart(uint8_t port, unsigned long ubrr_value) {
   *(uart_ports[port].ucsrb) =
       (1 << uart_ports[port].rxen) | (1 << uart_ports[port].txen);
 }
-
-// void uart_check_vowel_consonant() {
-//   uint8_t ch = uart_read_char();
-//   uint8_t buf[BUF_SIZE];
-
-//   if ((ch >= 'a') && (ch <= 'z')) {
-//     switch (ch) {
-//     case 'a':
-//       sprintf((char *)buf, "You entered a vowel: a\n\r");
-//       break;
-//     case 'e':
-//       sprintf((char *)buf, "You entered a vowel: e\n\r");
-//       break;
-//     case 'i':
-//       sprintf((char *)buf, "You entered a vowel: i\n\r");
-//       break;
-//     case 'o':
-//       sprintf((char *)buf, "You entered a vowel: o\n\r");
-//       break;
-//     case 'u':
-//       sprintf((char *)buf, "You entered a vowel: u\n\r");
-//       break;
-//     default:
-//       sprintf((char *)buf, "That was the consonant: %c\n\r", ch);
-//     }
-
-//     uart_write_str((char *)buf);
-//   }
-// }

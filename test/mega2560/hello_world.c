@@ -2,8 +2,6 @@
  *	USC EE459 Spring 2019 Team 17 - 2560 Test
  */
 
-
-
 #include <avr/io.h>
 #include <util/delay.h>
 

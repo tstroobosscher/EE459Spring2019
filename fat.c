@@ -132,50 +132,35 @@ fat32_set_partition(struct fat32_ctx *fat32, struct PartitionTable pt[]) {
 }
 
 static __attribute__((always inline)) void
-fat32_set_context(struct fat32_ctx *fat32, struct FAT32BootSector *bs) {
+fat32_set_context(struct fat32_ctx *ctx, struct FAT32BootSector *bs) {
 
   /*
    *  Grab the relevant information from BS, then process, then recycle
    */
 
-  fat32->reserved_sectors = bs->reserved_sectors;
+  ctx->reserved_sectors = bs->reserved_sectors;
+  DBG("fat32: reserved_sectors = 0x%X\n", ctx->reserved_sectors);
+  ctxs->number_of_fats = bs->number_of_fats;
+  DBG("fat32: number_of_fats = 0x%X\n", ctx->number_of_fats);
+  ctx->sectors_per_fat_32 = bs->sectors_per_fat_32;
+  DBG("fat32: sectors_per_fat_32 = 0x%X\n", ctx->sectors_per_fat_32);
+  ctx->sectors_per_cluster = bs->sectors_per_cluster;
+  DBG("fat32: sectors_per_cluster = 0x%X\n", ctx->sectors_per_cluster);
+  ctx->cluster_number_root_dir = bs->cluster_number_root_dir;
+  DBG("fat32: cluster_number_root_dir = 0x%X\n", ctx->cluster_number_root_dir);
+  ctx->cluster_begin_sector =
+      ctx->start_sector + ctx->reserved_sectors +
+      (ctx->number_of_fats * ctx->sectors_per_fat_32);
 
-  UART_DBG("fat32: reserved_sectors = ");
-  UART_DBG_32(fat32->reserved_sectors);
-  UART_DBG("\r\n");
-  fat32->number_of_fats = bs->number_of_fats;
-  UART_DBG("fat32: number_of_fats = ");
-  UART_DBG_32(fat32->number_of_fats);
-  UART_DBG("\r\n");
-  fat32->sectors_per_fat_32 = bs->sectors_per_fat_32;
-  UART_DBG("fat32: sectors_per_fat_32 = ");
-  UART_DBG_32(fat32->sectors_per_fat_32);
-  UART_DBG("\r\n");
-  fat32->sectors_per_cluster = bs->sectors_per_cluster;
-  UART_DBG("fat32: sectors_per_cluster = ");
-  UART_DBG_32(fat32->sectors_per_cluster);
-  UART_DBG("\r\n");
-  fat32->cluster_number_root_dir = bs->cluster_number_root_dir;
-  UART_DBG("fat32: cluster_number_root_dir = ");
-  UART_DBG_32(fat32->cluster_number_root_dir);
-  UART_DBG("\r\n");
-  fat32->cluster_begin_sector =
-      fat32->start_sector + fat32->reserved_sectors +
-      (fat32->number_of_fats * fat32->sectors_per_fat_32);
+  DBG("fat32: cluster_begin_sector = 0x%X\n", ctx->cluster_begin_sector);
 
-  UART_DBG("fat32: cluster_begin_sector = ");
-  UART_DBG_32(fat32->cluster_begin_sector);
-  UART_DBG("\r\n");
+  ctx->root_dir_sector =
+      (ctx->cluster_begin_sector +
+       ((ctx->cluster_number_root_dir - 2) * ctx->sectors_per_cluster));
 
-  fat32->root_dir_sector =
-      (fat32->cluster_begin_sector +
-       ((fat32->cluster_number_root_dir - 2) * fat32->sectors_per_cluster));
+  ctx->fat_begin_sector = ctx->start_sector + ctx->reserved_sectors;
 
-  fat32->fat_begin_sector = fat32->start_sector + fat32->reserved_sectors;
-
-  fat32->root_dir_entries = NULL;
-  // fat32->fat_list = NULL;
-  // fat32->file_list = NULL;
+  ctx->root_dir_entries = NULL;
 }
 
 static __attribute__((always inline)) void fat32_dump_address(uint32_t *dat) {
@@ -701,12 +686,6 @@ void fat32_close_file(struct fat32_ctx *ctx, struct fat32_file *file) {
   // list_free(ctx->fat_list);
 }
 
-// int8_t fat_32_read_file_byte() {}
-
-// int8_t fat32_read_file_nbytes() {
-
-// }
-
 int8_t fat32_write_file_nbytes(struct fat32_ctx *ctx, struct fat32_file *file,
                              uint8_t *buf, uint32_t nbytes) {
   /*
@@ -734,11 +713,5 @@ int8_t fat32_write_file_nbytes(struct fat32_ctx *ctx, struct fat32_file *file,
 
   file->current_byte_offset += nbytes;
 
-  //io_put_byte(ctx->io, file->cluster_begin_sector * SECTOR_SIZE + file, buf);
-
   return 0;
 }
-
-// int8_t fat32_write_file_nbytes() {
-
-// }
