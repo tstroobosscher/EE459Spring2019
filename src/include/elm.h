@@ -7,7 +7,7 @@
 
 #include "fifo.h"
 
-#define BUF_SIZE 128
+#define ELM_BUF_SIZE 128
 
 struct elm_ctx {
 	struct fifo_t *fifo;
