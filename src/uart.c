@@ -64,7 +64,7 @@ char uart_read_char(uint8_t port) {
   return *(uart_ports[port].udr);
 }
 
-char uart_data_available(port) {
+char uart_data_available(uint8_t port) {
   return (*(uart_ports[port].ucsra) & (1 << uart_ports[port].rxc));
 }
 

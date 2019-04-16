@@ -25,8 +25,8 @@ struct fifo_t {
   uint8_t f_status;
 };
 
-char fifo_write_byte(struct fifo_t *fifo, unsigned char *byte);
-char fifo_read_byte(struct fifo_t *fifo, unsigned char *byte);
+char fifo_write_byte(struct fifo_t *fifo, char *byte);
+char fifo_read_byte(struct fifo_t *fifo, char *byte);
 void fifo_dump_mem(struct fifo_t *fifo);
 
 /*
