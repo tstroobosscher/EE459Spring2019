@@ -29,6 +29,7 @@ set(CMAKE_CXX_COMPILER avr-g++)
 set(CMAKE_C_COMPILER avr-gcc)
 set(CMAKE_ASM_COMPILER avr-gcc)
 
+# Remove '-rdynamic'
 SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)
 
 # Pass defines to compiler
@@ -44,23 +45,23 @@ add_compile_options(
     -std=gnu99 # C99 standard
     -Os # optimize
     -Wall # enable warnings
-    #-Wno-main
-    #-Wundef
-    #-pedantic
+    -Wno-main
+    -Wundef
+    -pedantic
     #-Wstrict-prototypes
     #-Werror
     #-Wfatal-errors
-    #-Wl,--relax,--gc-sections
-    #-g
-    #-gdwarf-2
-    #-funsigned-char # a few optimizations
-    #-funsigned-bitfields
-    #-fpack-struct
-    #-fshort-enums
-    #ffunction-sections
-    #-fdata-sections
-    #-fno-split-wide-types
-    #-fno-tree-scev-cprop
+    -Wl,--relax,--gc-sections
+    -g
+    -gdwarf-2
+    -funsigned-char # a few optimizations
+    -funsigned-bitfields
+    -fpack-struct
+    -fshort-enums
+    -ffunction-sections
+    -fdata-sections
+    -fno-split-wide-types
+    -fno-tree-scev-cprop
     -Wl,-u,vfprintf
     -lprintf_flt
     -lm
