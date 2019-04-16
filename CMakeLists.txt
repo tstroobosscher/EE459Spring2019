@@ -1,10 +1,10 @@
 # I target a recent cmake, it shouldn't be a problem on a dev machine
 cmake_minimum_required(VERSION 2.8)
 # Project name
-project(group_17)
+project(USC_EE459_GROUP_17)
 
 # Product filename
-set(PRODUCT_NAME my_firmware)
+set(PRODUCT_NAME USC_EE459_GROUP_17)
 
 ## AVR Chip Configuration
 set(F_CPU 7372800)
@@ -96,6 +96,9 @@ add_custom_target(upload_eeprom avrdude -c ${PROG_TYPE} -p ${MCU}  -U eeprom:w:$
 
 # Burn fuses
 add_custom_target(fuses avrdude -c ${PROG_TYPE} -p ${MCU}  -U lfuse:w:${L_FUSE}:m -U hfuse:w:${H_FUSE}:m -U efuse:w:${E_FUSE}:m -U lock:w:${LOCK_BIT}:m )
+
+# Remove cmake files
+add_custom_target(distclean rm -rf CMakeFiles cmake_install.cmake CMakeCache.txt *.elf *.hex Makefile)
 
 # Clean extra files
 set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "${PRODUCT_NAME}.hex;${PRODUCT_NAME}.eeprom;${PRODUCT_NAME}.lst")
