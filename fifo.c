@@ -139,10 +139,7 @@ void fifo_dump_mem(struct fifo_t *fifo) {
   }
 
   for(int i = 0; i < ARRAY_SIZE(fifo->f_buf); i++){
-    printf("fifo address: ");
-    UART_DBG_32(i); 
-    printf(" data: ");
-    UART_DBG_32(fifo->f_buf[i]);
+    printf("fifo address: %d data: %d ", i, fifo->f_buf[i]);
     if(fifo->f_head == i)
       printf(" <- head");
     if(fifo->f_tail == i)
