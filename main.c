@@ -124,18 +124,26 @@ int main() {
 
 
   spi_device_enable(SPI_LCD);
+  DELAY_MS(10);
   spi_write_char(0xFE);
   spi_write_char(0x41);
+  DELAY_MS(10);
+  spi_device_disable(SPI_LCD);
+  spi_device_enable(SPI_LCD);
   spi_write_char(0xFE);
-  spi_write_char(0x4B);
-  //spi_device_disable(SPI_LCD);
+  spi_write_char(0x53);
+  spi_write_char(0x08);
+  spi_device_disable(SPI_LCD);
 
   char buf[BUF_SIZE];
 
   while (1) {
-    // spi_device_enable(SPI_LCD);
+    spi_write_char(0xFF);
+    spi_device_enable(SPI_LCD);
     spi_write_char('U');
-    // spi_device_disable(SPI_LCD);
+    _delay_us(5);
+    spi_write_char(0xFF);
+    spi_device_disable(SPI_LCD);
     // struct node *ptr = obd.linked_list;
 
     // while(ptr) {
