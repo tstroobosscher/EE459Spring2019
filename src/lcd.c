@@ -1,3 +1,3 @@
 /*
- *	USC EE459 Spring 2019 Team 17 - LCD Header
+ *	USC EE459 Spring 2019 Team 17 - LCD Code
  */
