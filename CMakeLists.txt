@@ -1,9 +1,14 @@
-# I target a recent cmake, it shouldn't be a problem on a dev machine
+###############################################################################
+##
+#   USC EE459 Group 17 CMakeLists.txt
+##
+###############################################################################
+
 cmake_minimum_required(VERSION 2.8)
 # Project name
 project(USC_EE459_GROUP_17)
 
-# Product filename
+# Product binary
 set(PRODUCT_NAME USC_EE459_GROUP_17)
 
 ## AVR Chip Configuration
