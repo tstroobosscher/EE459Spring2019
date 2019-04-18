@@ -24,6 +24,7 @@
 #include "elm.h"
 #include "obd.h"
 #include "astdio.h"
+#include "i2c.h"
 
 struct elm_ctx elm;
 
@@ -95,7 +96,7 @@ int main() {
 
   DBG("main: initialized spi\n");
 
-  i2c_init();
+  initialize_i2c();
 
   DBG("main: initialized i2c\n");
 
@@ -133,7 +134,7 @@ int main() {
 
   while (1) {
     char *string = "Hello World!";
-    i2c_io(0x50, string, 10, NULL, 0, NULL, 0);
+    i2c_io(0x50, string, strlen(string), NULL, 0, NULL, 0);
     // struct node *ptr = obd.linked_list;
 
     // while(ptr) {
