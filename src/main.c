@@ -95,6 +95,10 @@ int main() {
 
   DBG("main: initialized spi\n");
 
+  i2c_init();
+
+  DBG("main: initialized i2c\n");
+
   /* software resources */
   if (initialize_sd(&sd) < 0)
     DBG("main: unable to initialize sd\n");
@@ -123,27 +127,13 @@ int main() {
     DBG("main: initialized obd\n");
 
 
-  spi_device_enable(SPI_LCD);
-  DELAY_MS(10);
-  spi_write_char(0xFE);
-  spi_write_char(0x41);
-  DELAY_MS(10);
-  spi_device_disable(SPI_LCD);
-  spi_device_enable(SPI_LCD);
-  spi_write_char(0xFE);
-  spi_write_char(0x53);
-  spi_write_char(0x08);
-  spi_device_disable(SPI_LCD);
+  char buf[10] = {0xFE, 0x51};
 
-  char buf[BUF_SIZE];
+  i2c_io(0x50, buf, 2, NULL, 0, NULL, 0);
 
   while (1) {
-    spi_write_char(0xFF);
-    spi_device_enable(SPI_LCD);
-    spi_write_char('U');
-    _delay_us(5);
-    spi_write_char(0xFF);
-    spi_device_disable(SPI_LCD);
+    char *string = "Hello World!";
+    i2c_io(0x50, string, 10, NULL, 0, NULL, 0);
     // struct node *ptr = obd.linked_list;
 
     // while(ptr) {

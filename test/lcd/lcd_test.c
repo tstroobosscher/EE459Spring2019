@@ -1,271 +1,215 @@
+#include <avr/io.h>
+#include <util/delay.h>
+#include <stdio.h>
+#include <string.h>
+
+void i2c_init();
+uint8_t i2c_io(uint8_t, uint8_t *, uint16_t,
+               uint8_t *, uint16_t, uint8_t *, uint16_t);
+
+int main(void) {
+   uint8_t status;
+   uint8_t n;
+   char *sp;
+
+   DDRB |= (1 << 0);
+
+   i2c_init();             // Initialize the I2C port
+
+   char buf[10] = {0xFE, 0x51, 0xFE, 0x53, 0x04};
+
+   char *string = "Hello World!";
+
+   i2c_io(0x50, buf, 5, NULL, 0, NULL, 0);
+   
+    while (1) {                 // Loop forever
+      i2c_io(0x50, string, 10, NULL, 0, NULL, 0);
+      _delay_ms(1000);
+      PORTB ^= (1 << 0);
+    }
+}
+
+/* ----------------------------------------------------------------------- */
+
 /*
- * Demo_NHD0420CW-Ax3_SPI.ino
- * 
- * Tutorial sketch for use of character OLED slim display family by Newhaven with Arduino Uno, without 
- * using any library.  Models: NHD0420CW-Ax3, NHD0220CW-Ax3, NHD0216CW-Ax3. Controller: US2066
- * in this example, the display is connected to Arduino via SPI interface.
- *
- * Displays on the OLED alternately a 4-line message and a sequence of character "block".
- * This sketch assumes the use of a 4x20 display; if different, modify the values of the two variables 
- * ROW_N e COLUMN_N.
- * The sketch uses the minimum possible of Arduino's pins; if you intend to use also /RES or /CS lines, 
- * the related instructions are already present, it's sufficient to remove the comment markers.
- *
- * The circuit:
- * OLED pin 1 (Vss)    to Arduino pin ground
- * OLED pin 2 (VDD)    to Arduino pin 5V
- * OLED pin 3 (REGVDD) to Arduino pin 5V
- * OLED pin 4 to 6     to Vss ground
- * OLED pin 7 (SCLK)   to Arduino pin D13 (SCK)
- * OLED pin 8 (SID)    to Arduino pin D11 (MOSI)
- * OLED pin 9 (SOD)    to Arduino pin D12 (MISO) (optional, can be not connected)
- * OLED pin 10 to 14   to Vss ground
- * OLED pin 15 (/CS)   to Vss ground  (or to Arduino pin D2, in case of use of more than one display)
- * OLED pin 16 (/RES)  to Arduino pin Reset or VDD 5V (or to Arduino pin D3, to control reset by sw)
- * OLED pin 17 (BS0)   to Vss ground
- * OLED pin 18 (BS1)   to Vss ground
- * OLED pin 19 (BS2)   to Vss ground
- * OLED pin 20 (Vss)   to Vss ground
- *
- * Original example created by Newhaven Display International Inc.
- * Modified and adapted to Arduino Uno 30 Mar 2015 by Pasquale D'Antini
- * Modified 19 May 2015 by Pasquale D'Antini
- *
- * This example code is in the public domain.
- */
+  i2c_io - write and read bytes to a slave I2C device
 
-const byte ROW_N = 4;                 // Number of display rows
-const byte COLUMN_N = 20;             // Number of display columns
+  This funtions write "an" bytes from array "ap" and then "wn" bytes from array
+  "wp" to I2C device at address "device_addr".  It then reads "rn" bytes from
+  the same device to array "rp".
 
-//const byte CS = 2;                  // Arduino's pin assigned to the /CS line (optional, can be always low)
-//const byte RES = 3;                 // Arduino's pin assigned to the Reset line (optional, can be always high)
-const byte SCLK = 13;                 // Arduino's pin assigned to the SCLK line
-const byte SDIN = 11;                 // Arduino's pin assigned to the SID line
-//const byte SDOUT = 12;              // Arduino's pin assigned to the SOD line (optional, can be not connected)
+  Return values (might not be a complete list):
+        0    - Success
+        0x20 - NAK received after sending device address for writing
+        0x30 - NAK received after sending data
+        0x38 - Arbitration lost with address or data
+        0x48 - NAK received after sending device address for reading
 
-const byte TEXT[4][21] = {"1-Newhaven Display--", 
-                          "2-------Test--------", 
-                          "3-16/20-Characters--", 
-                          "4!@#$%^&*()_+{}[]<>?"};         // Strings to be displayed
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-byte new_line[4] = {0x80, 0xA0, 0xC0, 0xE0};               // DDRAM address for each line of the display
-byte rows = 0x08;                     // Display mode: 1/3 lines or 2/4 lines; default 2/4 (0x08)
-// _______________________________________________________________________________________
+This "i2c_io" I2C routine is an attempt to provide an I/O function for both
+reading and writing, rather than have separate functions.
 
-void command(byte c)                  // SUBROUTINE: PREPARES THE TRANSMISSION OF A COMMAND
+I2C writes consist of sending a stream of bytes to the slave device.  In some
+cases the first few bytes may be the internal address in the device, and then
+the data to be stored follows.  For example, EEPROMs like the 24LC256 require a
+two-byte address to precede the data.  The DS1307 RTC requires a one-byte
+address.
+
+I2C reads often consist of first writing one or two bytes of internal address
+data to the device and then reading back a stream of bytes starting from that
+address.  Some devices appear to claim that that reads can be done without
+first doing the address writes, but so far I haven't been able to get any to
+work that way.
+
+This function does writing and reading by using pointers to three arrays "ap",
+"wp", and "rp".  The function performs the following actions in this order:
+    If "an" is greater than zero, then "an" bytes are written from array "ap"
+    If "wn" is greater then zero, then "wn" bytes are written from array "wp"
+    If "rn" is greater then zero, then "rn" byte are read into array "rp"
+Any of the "an", "wn", or "rn" can be zero.
+
+The reason for separate "ap" and "wp" arrays is that the address data can be
+taken from one array (ap), and then the write data from another (wp) without
+requiring that the contents be merged into one array before calling the
+function.  This means the following three calls all do exactly the same thing.
+
+    i2c_io(0xA0, buf, 100, NULL, 0, NULL, 0);
+    i2c_io(0xA0, NULL, 0, buf, 100, NULL, 0);
+    12c_io(0xA0, buf, 2, buf+2, 98, NULL, 0);
+
+In all cases 100 bytes from array "buf" will be written to the I2C device at
+bus address 0xA0.
+
+A typical write with a 2-byte address is done with
+
+    i2c_io(0xA0, abuf, 2, wbuf, 50, NULL, 0);
+
+A typical read with a 1-byte address is done with
+
+    i2c_io(0xD0, abuf, 1, NULL, 0, rbuf, 20);
+*/
+
+uint8_t i2c_io(uint8_t device_addr, uint8_t *ap, uint16_t an, 
+               uint8_t *wp, uint16_t wn, uint8_t *rp, uint16_t rn)
 {
-   byte i = 0;                        // Bit index
-   
-   for(i=0; i<5; i++)
-   {
-      digitalWrite(SDIN, HIGH);
-      clockCycle();
-   }
-   for(i=0; i<3; i++)
-   {
-      digitalWrite(SDIN, LOW);
-      clockCycle();
-   }
-   
-   send_byte(c);                      // Transmits the byte
-}
-// _______________________________________________________________________________________
+    uint8_t status, send_stop, wrote, start_stat;
 
-void data(byte d)                     // SUBROUTINE: PREPARES THE TRANSMISSION OF A BYTE OF DATA
+    status = 0;
+    wrote = 0;
+    send_stop = 0;
+
+    if (an > 0 || wn > 0) {
+        wrote = 1;
+        send_stop = 1;
+
+        TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWSTA);  // Send start condition
+        while (!(TWCR & (1 << TWINT))){
+        }     // Wait for TWINT to be set
+        status = TWSR & 0xf8;
+        if (status != 0x08)                 // Check that START was sent OK
+            return(status);
+
+        TWDR = device_addr & 0xfe;          // Load device address and R/W = 0;
+        TWCR = (1 << TWINT) | (1 << TWEN);  // Start transmission
+        while (!(TWCR & (1 << TWINT)));     // Wait for TWINT to be set
+        status = TWSR & 0xf8;
+        if (status != 0x18) {               // Check that SLA+W was sent OK
+            if (status == 0x20)             // Check for NAK
+                goto nakstop;               // Send STOP condition
+            return(status);                 // Otherwise just return the status
+        }
+
+        // Write "an" data bytes to the slave device
+        while (an-- > 0) {
+            TWDR = *ap++;                   // Put next data byte in TWDR
+            TWCR = (1 << TWINT) | (1 << TWEN); // Start transmission
+            while (!(TWCR & (1 << TWINT))); // Wait for TWINT to be set
+            status = TWSR & 0xf8;
+            if (status != 0x28) {           // Check that data was sent OK
+                if (status == 0x30)         // Check for NAK
+                    goto nakstop;           // Send STOP condition
+                return(status);             // Otherwise just return the status
+            }
+        }
+
+        // Write "wn" data bytes to the slave device
+        while (wn-- > 0) {
+            TWDR = *wp++;                   // Put next data byte in TWDR
+            TWCR = (1 << TWINT) | (1 << TWEN); // Start transmission
+            while (!(TWCR & (1 << TWINT))); // Wait for TWINT to be set
+            status = TWSR & 0xf8;
+            if (status != 0x28) {           // Check that data was sent OK
+                if (status == 0x30)         // Check for NAK
+                    goto nakstop;           // Send STOP condition
+                return(status);             // Otherwise just return the status
+            }
+        }
+
+        status = 0;                         // Set status value to successful
+    }
+
+    if (rn > 0) {
+        send_stop = 1;
+
+        // Set the status value to check for depending on whether this is a
+        // START or repeated START
+        start_stat = (wrote) ? 0x10 : 0x08;
+
+        // Put TWI into Master Receive mode by sending a START, which could
+        // be a repeated START condition if we just finished writing.
+        TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWSTA);
+                                            // Send start (or repeated start) condition
+        while (!(TWCR & (1 << TWINT)));     // Wait for TWINT to be set
+        status = TWSR & 0xf8;
+        if (status != start_stat)           // Check that START or repeated START sent OK
+            return(status);
+
+        TWDR = device_addr  | 0x01;         // Load device address and R/W = 1;
+        TWCR = (1 << TWINT) | (1 << TWEN);  // Send address+r
+        while (!(TWCR & (1 << TWINT)));     // Wait for TWINT to be set
+        status = TWSR & 0xf8;
+        if (status != 0x40) {               // Check that SLA+R was sent OK
+            if (status == 0x48)             // Check for NAK
+                goto nakstop;
+            return(status);
+        }
+
+        // Read all but the last of n bytes from the slave device in this loop
+        rn--;
+        while (rn-- > 0) {
+            TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWEA); // Read byte and send ACK
+            while (!(TWCR & (1 << TWINT))); // Wait for TWINT to be set
+            status = TWSR & 0xf8;
+            if (status != 0x50)             // Check that data received OK
+                return(status);
+            *rp++ = TWDR;                   // Read the data
+        }
+
+        // Read the last byte
+        TWCR = (1 << TWINT) | (1 << TWEN);  // Read last byte with NOT ACK sent
+        while (!(TWCR & (1 << TWINT)));     // Wait for TWINT to be set
+        status = TWSR & 0xf8;
+        if (status != 0x58)                 // Check that data received OK
+            return(status);
+        *rp++ = TWDR;                       // Read the data
+
+        status = 0;                         // Set status value to successful
+    }
+    
+nakstop:                                    // Come here to send STOP after a NAK
+    if (send_stop)
+        TWCR = (1 << TWINT) | (1 << TWEN) | (1 << TWSTO);  // Send STOP condition
+
+    return(status);
+}
+
+
+/*
+  i2c_init - Initialize the I2C port
+*/
+void i2c_init()
 {
-   byte i = 0;                        // Bit index
-   
-   for(i=0; i<5; i++)
-   {
-      digitalWrite(SDIN, HIGH);
-      clockCycle();
-   }
-   digitalWrite(SDIN, LOW);
-   clockCycle();
-   digitalWrite(SDIN, HIGH);
-   clockCycle();
-   digitalWrite(SDIN, LOW);
-   clockCycle();
-   
-   send_byte(d);                      // Transmits the byte
-}
-// _______________________________________________________________________________________
-
-void send_byte(byte tx_b)             // SUBROUTINE: SEND TO THE DISPLAY THE BYTE IN tx_b
-{
-   byte i = 0;                        // Bit index
-   
-   for(i=0; i<4; i++)
-   {
-      if((tx_b & 0x01) == 1) 
-      {
-         digitalWrite(SDIN, HIGH);
-      }
-      else
-      {
-         digitalWrite(SDIN, LOW);
-      }
-      clockCycle();
-      tx_b = tx_b >> 1;
-   }
-   
-   for(i=0; i<4; i++)
-   {
-      digitalWrite(SDIN, LOW);
-      clockCycle();
-   }
-   
-   for(i=0; i<4; i++)
-   {
-      if((tx_b & 0x1) == 0x1)             // <------- Change
-      {
-         digitalWrite(SDIN, HIGH);
-      }
-      else
-      {
-         digitalWrite(SDIN, LOW);
-      }
-      clockCycle();
-      tx_b = tx_b >> 1;
-   }
-   
-   for(i=0; i<4; i++)
-   {
-      digitalWrite(SDIN, LOW);
-      clockCycle();
-   }
-}
-// _______________________________________________________________________________________
-
-void clockCycle(void)                 // SUBROUTINE: EXECUTE THE CLOCK SIGNAL CYCLE
-{
-//   digitalWrite(CS, LOW);           // Sets LOW the /CS line of the display (optional, can be always low)
-//   delayMicroseconds(1);            // Waits 1 us (required for timing purpose)
-   digitalWrite(SCLK, LOW);           // Sets LOW the SCLK line of the display
-   delayMicroseconds(1);              // Waits 1 us (required for timing purpose)
-   digitalWrite(SCLK, HIGH);          // Sets HIGH the SCLK line of the display
-   delayMicroseconds(1);              // Waits 1 us (required for timing purpose)
-//   delayMicroseconds(1);            // Waits 1 us (required for timing purpose)
-//   digitalWrite(CS, HIGH);          // Sets HIGH the /CS line of the display (optional, can be always low)
-}
-// _______________________________________________________________________________________
-
-void output(void)                     // SUBROUTINE: DISPLAYS THE FOUR STRINGS, THEN THE SAME IN REVERSE ORDER
-{
-   byte r = 0;                        // Row index
-   byte c = 0;                        // Column index
-
-   command(0x01);                     // Clears display (and cursor home)
-   delay(2);                          // After a clear display, a minimum pause of 1-2 ms is required
-   
-   for (r=0; r<ROW_N; r++)            // One row at a time,
-   {
-      command(new_line[r]);           //  moves the cursor to the first column of that line
-      for (c=0; c<COLUMN_N; c++)      // One character at a time, 
-      {
-         data(TEXT[r][c]);            //  displays the correspondig string
-      }
-   }
-
-   delay(2000);                       // Waits, only for visual effect purpose
-   
-   for (r=0; r<ROW_N; r++)            // One row at a time,
-   {
-      command(new_line[r]);           //  moves the cursor to the first column of that line
-      for (c=0; c<COLUMN_N; c++)      // One character at a time, 
-      {
-         data(TEXT[3-r][c]);          //  displays the correspondig string (in reverse order)
-      }
-   }
-}
-// _______________________________________________________________________________________
-
-void blocks(void)                     // SUBROUTINE: FILLS THE ENTIRE DISPLAY WITH THE CHARACTER "BLOCK"
-{
-   byte r = 0;                        // Row index
-   byte c = 0;                        // Column index
-
-   command(0x01);                     // Clear display (and cursor home)
-   delay(2);                          // After a clear display, a minimum pause of 1-2 ms is required
-
-   for (r=0; r<ROW_N; r++)            // One row at a time,
-   {
-      command(new_line[r]);           //  moves the cursor to the first column of that line
-      for (c=0; c<COLUMN_N; c++)      // One character at a time, 
-      {
-         data(0xDB);                  //  displays the character 0xDB (block)
-         delay(50);                   // Waits, only for visual effect purpose
-      }
-      delay(500);                     // Waits, only for visual effect purpose
-   }
-}
-// _______________________________________________________________________________________
-
-void setup(void)                      // INITIAL SETUP
-{
-   pinMode(SCLK, OUTPUT);             // Initializes Arduino pin for the SCLK line
-   digitalWrite(SCLK, HIGH);          // Sets HIGH the SCLK line of the display
-   pinMode(SDIN, OUTPUT);             // Initializes Arduino pin for the SDIN line
-   digitalWrite(SDIN, LOW);           // Sets LOW the SDIN line of the display
-//   pinMode(SDOUT, INPUT);           // Initializes Arduino pin for the SDOUT line (optional, can be not connected)
-//   pinMode(CS, OUTPUT);             // Initializes Arduino pin for the /CS line (optional)
-//   digitalWrite(CS, HIGH);          // Sets HIGH the /CS line of the display (optional, can be always low)
-//   pinMode(RES, OUTPUT);            // Initializes Arduino pin for the Reset line (optional)
-//   digitalWrite(RES, HIGH);         // Sets HIGH the Reset line of the display (optional, can be always high)
-   delayMicroseconds(200);            // Waits 200 us for stabilization purpose
-   
-   if (ROW_N == 2 || ROW_N == 4)
-      rows = 0x08;                    // Display mode: 2/4 lines
-   else
-      rows = 0x00;                    // Display mode: 1/3 lines
-   
-   command(0x22 | rows); // Function set: extended command set (RE=1), lines #
-   command(0x71);        // Function selection A:
-   data(0x5C);           //  enable internal Vdd regulator at 5V I/O mode (def. value) (0x00 for disable, 2.8V I/O)
-   command(0x20 | rows); // Function set: fundamental command set (RE=0) (exit from extended command set), lines #
-   command(0x08);        // Display ON/OFF control: display off, cursor off, blink off (default values)
-   command(0x22 | rows); // Function set: extended command set (RE=1), lines #
-   command(0x79);        // OLED characterization: OLED command set enabled (SD=1)
-   command(0xD5);        // Set display clock divide ratio/oscillator frequency:
-   command(0x70);        //  divide ratio=1, frequency=7 (default values)
-   command(0x78);        // OLED characterization: OLED command set disabled (SD=0) (exit from OLED command set)
-   
-   if (ROW_N > 2)
-      command(0x09);  // Extended function set (RE=1): 5-dot font, B/W inverting disabled (def. val.), 3/4 lines
-   else
-      command(0x08);  // Extended function set (RE=1): 5-dot font, B/W inverting disabled (def. val.), 1/2 lines
-   
-   command(0x06);        // Entry Mode set - COM/SEG direction: COM0->COM31, SEG99->SEG0 (BDC=1, BDS=0)
-   command(0x72);        // Function selection B:
-   data(0x0A);           //  ROM/CGRAM selection: ROM C, CGROM=250, CGRAM=6 (ROM=10, OPR=10)
-   command(0x79);        // OLED characterization: OLED command set enabled (SD=1)
-   command(0xDA);        // Set SEG pins hardware configuration:
-   command(0x10);        //  alternative odd/even SEG pin, disable SEG left/right remap (default values)
-   command(0xDC);        // Function selection C:
-   command(0x00);        //  internal VSL, GPIO input disable
-   command(0x81);        // Set contrast control:
-   command(0x7F);        //  contrast=127 (default value)
-   command(0xD9);        // Set phase length:
-   command(0xF1);        //  phase2=15, phase1=1 (default: 0x78)
-   command(0xDB);        // Set VCOMH deselect level:
-   command(0x40);        //  VCOMH deselect level=1 x Vcc (default: 0x20=0,77 x Vcc)
-   command(0x78);        // OLED characterization: OLED command set disabled (SD=0) (exit from OLED command set)
-   command(0x20 | rows); // Function set: fundamental command set (RE=0) (exit from extended command set), lines #
-   command(0x01);        // Clear display
-   delay(2);             // After a clear display, a minimum pause of 1-2 ms is required
-   command(0x80);        // Set DDRAM address 0x00 in address counter (cursor home) (default value)
-   command(0x0C);        // Display ON/OFF control: display ON, cursor off, blink off
-   delay(250);           // Waits 250 ms for stabilization purpose after display on
-   
-   if (ROW_N == 2)
-      new_line[1] = 0xC0;             // DDRAM address for each line of the display (only for 2-line mode)
-}
-// _______________________________________________________________________________________
-
-void loop(void)                       // MAIN PROGRAM
-{  
-   output();                          // Execute subroutine "output"
-   delay(2000);                       // Waits, only for visual effect purpose
-   blocks();                          // Execute subroutine "blocks"
-   delay(2000);                       // Waits, only for visual effect purpose
+    TWSR = 0;                           // Set prescalar for 1
+    TWBR = 84;                          // Set bit rate register
 }
