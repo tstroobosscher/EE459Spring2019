@@ -7,15 +7,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 #include "obd.h"
 #include "list.h"
 #include "elm.h"
 #include "utils.h"
 
-static const char *NO_DATA = "NO DATA";
-static const char *NO_CONNECT = "UNABLE TO CONNECT";
-static const char *GET_DEVS = "0100\r";
+static const int8_t *NO_DATA = "NO DATA";
+static const int8_t *NO_CONNECT = "UNABLE TO CONNECT";
+static const int8_t *GET_DEVS = "0100\r";
 
 struct obd_cmd obd_cmds[] = {
     {
@@ -309,114 +310,114 @@ struct obd_cmd obd_cmds[] = {
     },
 };
 
-int obd_print_cmd(struct obd_cmd *cmd) { UART_DBG(cmd->cmd_str); UART_DBG("\r\n"); return 0;}
+int32_t obd_print_cmd(struct obd_cmd *cmd) { DBG(cmd->cmd_str); DBG("\r\n"); return 0;}
 
-void obd_get_engine_load(char* buf, void *dat, int bytes, struct obd_ctx *ctx) {
+void obd_get_engine_load(int8_t* buf, void *dat, int32_t bytes, struct obd_ctx *ctx) {
 
-  unsigned char *res = (unsigned char *) dat;
+  uint8_t *res = (uint8_t *) dat;
 
   float calc = res[2]/2.55;
 
   sprintf(buf, "%.2f", calc);
 }
 
-void obd_get_coolant_temp(char *buf, void *dat, int bytes, struct obd_ctx *ctx) {
+void obd_get_coolant_temp(int8_t *buf, void *dat, int32_t bytes, struct obd_ctx *ctx) {
   /* can be negative */
-  unsigned char *res = (unsigned char *) dat;
+  uint8_t *res = (uint8_t *) dat;
 
-  int calc = res[2] - 40;
+  int32_t calc = res[2] - 40;
 
   sprintf(buf, "%d", calc);
 }
 
-void obd_get_fuel_trim(char *buf, void *dat, int bytes, struct obd_ctx *ctx) {
-  unsigned char *res = (unsigned char *) dat;
+void obd_get_fuel_trim(int8_t *buf, void *dat, int32_t bytes, struct obd_ctx *ctx) {
+  uint8_t *res = (uint8_t *) dat;
 
   float calc = res[2]/1.28 - 100;
 
   sprintf(buf, "%.2f", calc);
 }
 
-void obd_get_fuel_pressure(char *buf, void *dat, int bytes, struct obd_ctx *ctx) {
-  unsigned char *res = (unsigned char *) dat;
+void obd_get_fuel_pressure(int8_t *buf, void *dat, int32_t bytes, struct obd_ctx *ctx) {
+  uint8_t *res = (uint8_t *) dat;
 
-  int calc = res[2] * 3;
-
-  sprintf(buf, "%d", calc);
-}
-
-void obd_get_manifold_pressure(char *buf, void *dat, int bytes, struct obd_ctx *ctx) {
-  unsigned char *res = (unsigned char *) dat;
-
-  int calc = res[2];
+  int32_t calc = res[2] * 3;
 
   sprintf(buf, "%d", calc);
 }
 
-void obd_get_engine_rpm(char *buf, void *dat, int bytes, struct obd_ctx *ctx) {
-  unsigned char *res = (unsigned char *) dat;
+void obd_get_manifold_pressure(int8_t *buf, void *dat, int32_t bytes, struct obd_ctx *ctx) {
+  uint8_t *res = (uint8_t *) dat;
 
-  int calc = (res[2] * 256 + res[3])/4;
-
-  sprintf(buf, "%d", calc);
-}
-
-void obd_get_vehicle_speed(char *buf, void *dat, int bytes, struct obd_ctx *ctx) {
-  unsigned char *res = (unsigned char *) dat;
-
-  int calc = res[2];
-
-  char *ret;
+  int32_t calc = res[2];
 
   sprintf(buf, "%d", calc);
 }
 
-void obd_get_timing_advance(char *buf, void *dat, int bytes, struct obd_ctx *ctx) {
-  unsigned char *res = (unsigned char *) dat;
+void obd_get_engine_rpm(int8_t *buf, void *dat, int32_t bytes, struct obd_ctx *ctx) {
+  uint8_t *res = (uint8_t *) dat;
 
-  int calc = res[2]/2 - 64;
+  int32_t calc = (res[2] * 256 + res[3])/4;
 
   sprintf(buf, "%d", calc);
 }
 
-void obd_get_air_temp(char *buf, void *dat, int bytes, struct obd_ctx *ctx){
+void obd_get_vehicle_speed(int8_t *buf, void *dat, int32_t bytes, struct obd_ctx *ctx) {
+  uint8_t *res = (uint8_t *) dat;
+
+  int32_t calc = res[2];
+
+  int8_t *ret;
+
+  sprintf(buf, "%d", calc);
+}
+
+void obd_get_timing_advance(int8_t *buf, void *dat, int32_t bytes, struct obd_ctx *ctx) {
+  uint8_t *res = (uint8_t *) dat;
+
+  int32_t calc = res[2]/2 - 64;
+
+  sprintf(buf, "%d", calc);
+}
+
+void obd_get_air_temp(int8_t *buf, void *dat, int32_t bytes, struct obd_ctx *ctx){
   /* can be negative */
-  unsigned char *res = (unsigned char *) dat;
+  uint8_t *res = (uint8_t *) dat;
 
-  int calc = res[2] - 40;
-
-  sprintf(buf, "%d", calc);
-}
-
-void obd_get_maf_rate(char *buf, void *dat, int bytes, struct obd_ctx *ctx) {
-  unsigned char *res = (unsigned char *) dat;
-
-  int calc = (res[2] * 256 + res[3])/100;
+  int32_t calc = res[2] - 40;
 
   sprintf(buf, "%d", calc);
 }
 
-void obd_get_throttle_pos(char *buf, void *dat, int bytes, struct obd_ctx *ctx) {
-  unsigned char *res = (unsigned char *) dat;
+void obd_get_maf_rate(int8_t *buf, void *dat, int32_t bytes, struct obd_ctx *ctx) {
+  uint8_t *res = (uint8_t *) dat;
+
+  int32_t calc = (res[2] * 256 + res[3])/100;
+
+  sprintf(buf, "%d", calc);
+}
+
+void obd_get_throttle_pos(int8_t *buf, void *dat, int32_t bytes, struct obd_ctx *ctx) {
+  uint8_t *res = (uint8_t *) dat;
 
   float calc = res[2]/2.55;
 
   sprintf(buf, "%.2f", calc);
 }
 
-void obd_get_oxygen_sensors(char *buf, void *dat, int bytes, struct obd_ctx *ctx) {
-  unsigned char *res = (unsigned char *) dat;
+void obd_get_oxygen_sensors(int8_t *buf, void *dat, int32_t bytes, struct obd_ctx *ctx) {
+  uint8_t *res = (uint8_t *) dat;
 
-  int bank_1 = (res[2] >> 0) & 0x0F;
-  int bank_2 = (res[2] >> 4) & 0x0F;
+  int32_t bank_1 = (res[2] >> 0) & 0x0F;
+  int32_t bank_2 = (res[2] >> 4) & 0x0F;
 
-  int calc = bank_1 + bank_2;
+  int32_t calc = bank_1 + bank_2;
 
   sprintf(buf, "%d", calc);
 }
 
-void obd_get_oxygen_data(char *buf, void *dat, int bytes, struct obd_ctx *ctx) {
-  unsigned char *res = (unsigned char *) dat;
+void obd_get_oxygen_data(int8_t *buf, void *dat, int32_t bytes, struct obd_ctx *ctx) {
+  uint8_t *res = (uint8_t *) dat;
 
   /* this one can have multiple responses if permitted, % fuel trim and voltage */
   float calc = res[2]/200;
@@ -424,7 +425,7 @@ void obd_get_oxygen_data(char *buf, void *dat, int bytes, struct obd_ctx *ctx) {
   sprintf(buf, "%.2f", calc);
 }
 
-void obd_set_supported_ops(char *buf, void *dat, int bytes, struct obd_ctx *ctx) {
+void obd_set_supported_ops(int8_t *buf, void *dat, int32_t bytes, struct obd_ctx *ctx) {
 
   uint32_t res = *(uint32_t *)dat;
 
@@ -433,7 +434,7 @@ void obd_set_supported_ops(char *buf, void *dat, int bytes, struct obd_ctx *ctx)
   uint32_t mask = 0x80000000;
 
   /* skip the 0 pid, not in the return data */
-  for(int i = 1; i < 0x20; i++) {
+  for(int32_t i = 1; i < 0x20; i++) {
 
     /* 
      *  the msb in the res corresponds to the lowest order pid, not the 00 pid
@@ -455,12 +456,12 @@ void obd_set_supported_ops(char *buf, void *dat, int bytes, struct obd_ctx *ctx)
   }
 }
 
-char *obd_resp(const char *cmd, char *buf) {
+char *obd_resp(const int8_t *cmd, int8_t *buf) {
   /*
    *    find the beginning of the response data
    */
 
-  char pream[5];
+  int8_t pream[5];
 
   // UART_DBG("obd: pream cmd: ");
   // UART_DBG(cmd);
@@ -494,11 +495,11 @@ char *obd_resp(const char *cmd, char *buf) {
   return strstr(buf, pream);
 }
 
-int obd_fmt_resp(char *str) {
+int32_t obd_fmt_resp(int8_t *str) {
 
   /* format the response string */
-  int n = 0;
-  for (int i = 0; i < strlen(str); i++) {
+  int32_t n = 0;
+  for (int32_t i = 0; i < strlen(str); i++) {
 
     if (isspace(str[i]))
 
@@ -523,7 +524,7 @@ int obd_fmt_resp(char *str) {
   return 0;
 }
 
-int obd_command(struct obd_ctx *obd, const char *cmd, void *dat, int size) {
+int32_t obd_command(struct obd_ctx *obd, const int8_t *cmd, void *dat, int32_t size) {
   /*
    *    send cmd of 4 bytes to device, expect size bytes and put into dat
    *
@@ -543,9 +544,9 @@ int obd_command(struct obd_ctx *obd, const char *cmd, void *dat, int size) {
    */
 
   /* BUF_SIZE seems arbitrary, can be a varying number of whitespaces */
-  char buf[64];
-  char *data;
-  unsigned char *ret = (unsigned char *)dat;
+  int8_t buf[64];
+  int8_t *data;
+  uint8_t *ret = (uint8_t *)dat;
 
   if ((strlen(cmd) != OBD_CMD_LEN)) {
     DBG("obd_command: incorrect command format\n");
@@ -577,21 +578,21 @@ int obd_command(struct obd_ctx *obd, const char *cmd, void *dat, int size) {
   }
 
    /* there should only be an even number of hex char's now */
-  for (int i = 0; i < strlen(data)/2; i++) {
+  for (int32_t i = 0; i < strlen(data)/2; i++) {
 
-    /* grab each byte string, convert to unsigned char */
+    /* grab each byte string, convert to uint8_t */
     char ch[3] = {data[i * 2], data[i * 2 + 1], '\0'};
 
     //printf("%s\n", ch);
 
     /* strlen(data)/2 should also be equal to size NO! size is the max buf*/
-    ret[i] = (unsigned char) strtol(ch, 0, HEX_BASE);
+    ret[i] = (uint8_t) strtol(ch, 0, HEX_BASE);
   }
 
   return 0;
 }
 
-int initialize_obd(struct elm_ctx *elm, struct obd_ctx *ctx) {
+int8_t initialize_obd(struct elm_ctx *elm, struct obd_ctx *ctx) {
 
   ctx->elm = elm;
 
@@ -607,7 +608,7 @@ int initialize_obd(struct elm_ctx *elm, struct obd_ctx *ctx) {
    */
 
   uint32_t new_buf[BUF_SIZE];
-  for(int i = 0; i < ARRAY_SIZE(dat); i++) {
+  for(int32_t i = 0; i < ARRAY_SIZE(dat); i++) {
     DBG("obd: dat: 0x%x\r", dat[i]);
     // UART_DBG("dat: ");
     // UART_DBG_HEX(dat[i]);
@@ -629,34 +630,3 @@ int initialize_obd(struct elm_ctx *elm, struct obd_ctx *ctx) {
 
   return 0;
 }
-
-/*
-
-        static function_util_sensor(raw data)
-
-        struct sensor {
-
-                // name of the sensor (O2, Fuel Trim, etc.)
-                name,
-
-                // AT command used to retrieve sensor data
-                command,
-
-                // function used to translate raw dato to process
-                function pointer,
-
-                // units of the data if there are any
-                units
-        }
-
-    struct dtc {
-
-        // standardized string representation (PXXXX)
-                SAE name,
-
-                // string representing error cause
-                cause,
-    }
-
-
- */

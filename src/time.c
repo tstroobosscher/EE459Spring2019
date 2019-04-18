@@ -30,21 +30,21 @@ static void set_time(struct atmel_328_time *t, uint16_t val) {
   }
 }
 
-void dump_time(struct atmel_328_time *t) {
-  char *buf[16];
-  snprintf(buf, 16, "%u", get_timer_val(t));
-  uart_write_str(buf);
-  uart_write_str("\r\n");
-}
+// void dump_time(struct atmel_328_time *t) {
+//   char *buf[16];
+//   snprintf(buf, 16, "%u", get_timer_val(t));
+//   uart_write_str(buf);
+//   uart_write_str("\r\n");
+// }
 
-void timein(struct atmel_328_time *t) { set_time(t, 0); }
+// void timein(struct atmel_328_time *t) { set_time(t, 0); }
 
-int8_t timeout(struct atmel_328_time *t, uint16_t timeout_val) {
-  return (get_timer_val(t) >= timeout_val);
-}
+// int8_t timeout(struct atmel_328_time *t, uint16_t timeout_val) {
+//   return (get_timer_val(t) >= timeout_val);
+// }
 
-void initialize_timer(struct atmel_328_time *t, uint8_t timer_reg) {
-  t->timer_reg = timer_reg;
-  t->timer_value = 0;
-  set_time(t, 0);
-}
+// void initialize_timer(struct atmel_328_time *t, uint8_t timer_reg) {
+//   t->timer_reg = timer_reg;
+//   t->timer_value = 0;
+//   set_time(t, 0);
+// }

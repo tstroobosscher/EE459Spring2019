@@ -39,6 +39,6 @@ void uart_write_32(uint8_t port, uint32_t val);
 void uart_write_str(uint8_t port, char *buf);
 void uart_write_strn(uint8_t port, uint8_t *buf, uint8_t n);
 void uart_read_strn(uint8_t port, uint8_t *buf, uint8_t n);
-char uart_data_available(port);
+char uart_data_available(uint8_t port);
 // void uart_check_vowel_consonant();
 #endif

@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "list.h"
 #include "debug.h"
 #include "fat.h"
 #include "io.h"
@@ -13,19 +14,12 @@
 #include "uart.h"
 #include "astdio.h"
 
-#ifdef DEBUG
 #define FAT32_DBG_FILENAME(x) fat32_dump_filename(x)
 #define FAT32_DBG_ADDRESS(x) fat32_dump_address(x)
 #define LIST_DBG(x, y) list_dump(x, y)
 #define FAT32_DBG_FILE_META(x) fat32_dump_file_meta(x)
-#else
-#define FAT32_DBG_FILENAME(x)
-#define FAT32_DBG_ADDRESS(x)
-#define LIST_DBG(x, y)
-#define FAT32_DBG_FILE_META(x)
-#endif
 
-static __attribute__((always inline)) uint32_t
+static inline uint32_t
 fat32_calc_first_cluster(uint16_t high, uint16_t low) {
   uint32_t shift_high = high;
   uint32_t shift_low = low;
@@ -33,14 +27,14 @@ fat32_calc_first_cluster(uint16_t high, uint16_t low) {
   return (shift_high << 16) | (shift_low);
 }
 
-static __attribute__((always inline)) uint32_t
+static inline uint32_t
 fat32_calc_lba_from_cluster(uint32_t cluster_begin_lba,
                             uint32_t sectors_per_cluster,
                             uint32_t cluster_number) {
   return cluster_begin_lba + (cluster_number - 2) * sectors_per_cluster;
 }
 
-static __attribute__((always inline)) void
+static inline void
 fat32_dump_filename(struct FAT32Entry *e) {
   uart_write_strn(UART_PORT_0, e->filename, 8);
   uart_write_str(UART_PORT_0, ".");
@@ -49,13 +43,12 @@ fat32_dump_filename(struct FAT32Entry *e) {
 
 void fat32_dump_file_meta(struct fat32_file *file) {
   printf("file name: %s.%s\n", file->file_name, file->file_ext);
-  printf("file size: 0x%X\n", file->file_size);
-  printf("file start byte: 0x%X\n", file->start_byte_offset);
-  printf("file current cluster: 0x%X\n", file->current_cluster);
-  printf("file sectors per cluster: 0x%X\n", file->sectors_per_cluster);
-  printf("file current sector: 0x%X\n", file->current_sector);
-  printf("file fat list pointer: 0x%X\n", (uint32_t)file->fat_list);
-  printf("file root directory offset: 0x%X\n", file->root_dir_offset);
+  printf("file size: 0x%lX\n", file->file_size);
+  printf("file start byte: 0x%lX\n", file->start_byte_offset);
+  printf("file current cluster: 0x%lX\n", file->current_cluster);
+  printf("file sectors per cluster: 0x%lX\n", file->sectors_per_cluster);
+  printf("file current sector: 0x%lX\n", file->current_sector);
+  printf("file root directory offset: 0x%lX\n", file->root_dir_offset);
   // uart_write_str(UART_PORT_0, "\r\nfile name: ");
   // uart_write_strn(UART_PORT_0, file->file_name, 8);
   // uart_write_str(UART_PORT_0, ".");
@@ -118,12 +111,12 @@ int8_t fat32_parse_entry(struct FAT32Entry *e) {
   uint32_t cluster_addr = fat32_calc_first_cluster(e->first_cluster_addr_high,
                                                    e->first_cluster_addr_low) + 2;
 
-  DBG("    Starting cluter address: 0x%X\n", cluster_addr);
+  DBG("    Starting cluter address: 0x%lX\n", cluster_addr);
 
   return 0;
 }
 
-static __attribute__((always inline)) void
+static void
 fat32_set_partition(struct fat32_ctx *fat32, struct PartitionTable pt[]) {
   /* lets just worry about the first partition */
   fat32->partition_type = pt[0].partition_type;
@@ -131,7 +124,7 @@ fat32_set_partition(struct fat32_ctx *fat32, struct PartitionTable pt[]) {
   fat32->length_sectors = pt[0].length_sectors;
 }
 
-static __attribute__((always inline)) void
+static void
 fat32_set_context(struct fat32_ctx *fat32, struct FAT32BootSector *bs) {
 
   /*
@@ -178,13 +171,13 @@ fat32_set_context(struct fat32_ctx *fat32, struct FAT32BootSector *bs) {
   // fat32->file_list = NULL;
 }
 
-static __attribute__((always inline)) void fat32_dump_address(uint32_t *dat) {
+static void fat32_dump_address(uint32_t *dat) {
   uart_write_str(UART_PORT_0, "fat list item: ");
   uart_write_32(UART_PORT_0, *dat);
   uart_write_str(UART_PORT_0, "\r\n");
 }
 
-static __attribute__((always inline)) int8_t
+static int8_t
 fat32_is_last_cluster(uint32_t dat) {
   if ((0x0FFFFFFF & dat) >= 0x0FFFFFF8)
     return true;
@@ -192,7 +185,7 @@ fat32_is_last_cluster(uint32_t dat) {
     return false;
 }
 
-static __attribute__((always inline)) int8_t
+static int8_t
 fat32_get_fat(struct fat32_ctx *ctx, uint32_t first_cluster,
               struct node **ptr) {
   /*
@@ -200,7 +193,7 @@ fat32_get_fat(struct fat32_ctx *ctx, uint32_t first_cluster,
    *  containing the values, return by reference
    */
 
-  struct node *n = (struct node *)NULL;
+  struct node *n = NULL;
 
   uint32_t curr_address = first_cluster;
   uint32_t next_address;
@@ -213,12 +206,6 @@ fat32_get_fat(struct fat32_ctx *ctx, uint32_t first_cluster,
                        sizeof(curr_address)) < 0) {
       return -1;
     }
-
-    UART_DBG("pointer: ");
-    UART_DBG_32(curr_address);
-    UART_DBG(" value: ");
-    UART_DBG_32(next_address);
-    UART_DBG("\r\n");
 
     /*
      *  Lets cache the fat to speed up the look-up
@@ -285,7 +272,7 @@ int8_t fat32_open_file(struct fat32_ctx *ctx, struct FAT32Entry *e,
   return 0;
 }
 
-static __attribute__((always inline)) int8_t
+static int8_t
 fat32_cache_root_dir(struct fat32_ctx *ctx, struct sd_ctx *sd,
                      struct io_ctx *io, struct FAT32Entry *e) {
   /*
