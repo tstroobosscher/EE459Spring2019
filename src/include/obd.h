@@ -5,6 +5,8 @@
 #ifndef OBD_H
 #define OBD_H
 
+#include <stdint.h>
+
 #include "elm.h"
 #include "list.h"
 
@@ -19,12 +21,12 @@ struct obd_ctx {
 
 struct obd_cmd {
   /* i think pids are limited to 256 */
-  unsigned char obd_pid;
-  int resp_bytes;
-  const char *obd_units;
-  const char *obd_cmd;
-  const char *cmd_str;
-  void (*handle_data)(char *buf, void *dat, int bytes, struct obd_ctx *ctx);
+  uint8_t obd_pid;
+  uint32_t resp_bytes;
+  const int8_t *obd_units;
+  const int8_t *obd_cmd;
+  const int8_t *cmd_str;
+  void (*handle_data)(int8_t *buf, void *dat, uint32_t bytes, struct obd_ctx *ctx);
 };
 
 #define BUF_SIZE 64
@@ -207,21 +209,21 @@ static const enum {
 } __attribute__ ((unused)) obd_pid;
 
 /* callbacks */
-void obd_set_supported_ops(char *buf, void *dat, int bytes, struct obd_ctx *ctx);
-void obd_get_engine_load(char *buf, void *dat, int bytes, struct obd_ctx *ctx);
-void obd_get_coolant_temp(char *buf, void *dat, int bytes, struct obd_ctx *ctx);
-void obd_get_fuel_trim(char *buf, void *dat, int bytes, struct obd_ctx *ctx);
-void obd_get_fuel_pressure(char *buf, void *dat, int bytes, struct obd_ctx *ctx);
-void obd_get_manifold_pressure(char *buf, void *dat, int bytes, struct obd_ctx *ctx);
-void obd_get_engine_rpm(char *buf, void *dat, int bytes, struct obd_ctx *ctx);
-void obd_get_vehicle_speed(char *buf, void *dat, int bytes, struct obd_ctx *ctx);
-void obd_get_timing_advance(char *buf, void *dat, int bytes, struct obd_ctx *ctx);
-void obd_get_air_temp(char *buf, void *dat, int bytes, struct obd_ctx *ctx);
-void obd_get_maf_rate(char *buf, void *dat, int bytes, struct obd_ctx *ctx);
-void obd_get_throttle_pos(char *buf, void *dat, int bytes, struct obd_ctx *ctx);
-void obd_get_oxygen_sensors(char *buf, void *dat, int bytes, struct obd_ctx *ctx);
-void obd_get_oxygen_data(char *buf, void *dat, int bytes, struct obd_ctx *ctx);
+void obd_set_supported_ops(int8_t *buf, void *dat, int32_t bytes, struct obd_ctx *ctx);
+void obd_get_engine_load(int8_t *buf, void *dat, int32_t bytes, struct obd_ctx *ctx);
+void obd_get_coolant_temp(int8_t *buf, void *dat, int32_t bytes, struct obd_ctx *ctx);
+void obd_get_fuel_trim(int8_t *buf, void *dat, int32_t bytes, struct obd_ctx *ctx);
+void obd_get_fuel_pressure(int8_t *buf, void *dat, int32_t bytes, struct obd_ctx *ctx);
+void obd_get_manifold_pressure(int8_t *buf, void *dat, int32_t bytes, struct obd_ctx *ctx);
+void obd_get_engine_rpm(int8_t *buf, void *dat, int32_t bytes, struct obd_ctx *ctx);
+void obd_get_vehicle_speed(int8_t *buf, void *dat, int32_t bytes, struct obd_ctx *ctx);
+void obd_get_timing_advance(int8_t *buf, void *dat, int32_t bytes, struct obd_ctx *ctx);
+void obd_get_air_temp(int8_t *buf, void *dat, int32_t bytes, struct obd_ctx *ctx);
+void obd_get_maf_rate(int8_t *buf, void *dat, int32_t bytes, struct obd_ctx *ctx);
+void obd_get_throttle_pos(int8_t *buf, void *dat, int32_t bytes, struct obd_ctx *ctx);
+void obd_get_oxygen_sensors(int8_t *buf, void *dat, int32_t bytes, struct obd_ctx *ctx);
+void obd_get_oxygen_data(int8_t *buf, void *dat, int32_t bytes, struct obd_ctx *ctx);
 
-int initialize_obd(struct elm_ctx *elm, struct obd_ctx *ctx);
+int8_t initialize_obd(struct elm_ctx *elm, struct obd_ctx *ctx);
 
 #endif

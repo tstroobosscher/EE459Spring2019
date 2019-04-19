@@ -1,0 +1,48 @@
+###############################################################################
+#
+#	EE459 - 2560 test code
+#
+###############################################################################
+
+SOURCE = lcd_test.c
+
+TARGET = lcd_test
+
+OBJECTS = lcd_test.o
+
+TARGET_FLAGS = -o
+
+DEVICE =  atmega1284p
+
+CLOCK = 7372800
+
+COMPILE = avr-gcc -std=c99 -Wall -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE)
+
+PROGRAMMER = -c usbtiny -p m1284p -F
+
+AVRDUDE = avrdude $(PROGRAMMER) -p $(DEVICE)
+
+all: main.hex
+
+.c.o:
+	@$(COMPILE) -c $< -o $@
+
+.S.o:
+	@$(COMPILE) -x assembler-with-cpp -c $< -o $@
+
+.c.s:
+	@$(COMPILE) -S $< -o $@
+
+main.elf: $(OBJECTS)
+	$(COMPILE) -o main.elf $(OBJECTS)
+
+main.hex: main.elf
+	@rm -f main.hex
+	@avr-objcopy -j .text -j .data -O ihex main.elf main.hex
+	@avr-size --format=avr --mcu=$(DEVICE) main.elf
+
+flash:	all
+	$(AVRDUDE) -U flash:w:main.hex:i
+
+clean:
+	@rm -f main.hex main.elf $(OBJECTS)

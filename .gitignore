@@ -7,3 +7,7 @@ avr_size.txt
 \#*\#
 .\#*
 myprog.map
+CMakeFiles/*
+CMakeCache.txt
+cmake_install.cmake
+/Makefile

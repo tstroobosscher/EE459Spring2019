@@ -33,8 +33,8 @@ struct fifo_t {
   uint8_t f_status;
 };
 
-int8_t fifo_write_byte(struct fifo_t *fifo, uint8_t *byte);
-int8_t fifo_read_byte(struct fifo_t *fifo, uint8_t *byte);
+char fifo_write_byte(struct fifo_t *fifo, char *byte);
+char fifo_read_byte(struct fifo_t *fifo, char *byte);
 void fifo_dump_mem(struct fifo_t *fifo);
 void initialize_fifo(struct fifo_t *fifo);
 

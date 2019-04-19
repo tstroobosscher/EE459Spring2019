@@ -4,4 +4,4 @@
 
 #include "msg.h"
 
-const char message_0[] PROGMEM = "Hello World!\r\n"
+//const char PROGMEM message_0[] = "Hello World!\r\n"

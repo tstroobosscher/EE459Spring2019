@@ -1,5 +1,5 @@
 /*
- *  USC EE459 Spring 2019 Team 17 - Standard Output Initialization Header
+ *	USC EE459 Spring 2019 Team 17 - Standard IO Header
  */
 
 #ifndef ASTDIO_H
