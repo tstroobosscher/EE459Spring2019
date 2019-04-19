@@ -18,6 +18,8 @@ static const int8_t *NO_DATA = "NO DATA";
 static const int8_t *NO_CONNECT = "UNABLE TO CONNECT";
 static const int8_t *GET_DEVS = "0100\r";
 
+#define DBG(...)
+
 struct obd_cmd obd_cmds[] = {
     {
         PIDS_SUPPORTED_01_02,

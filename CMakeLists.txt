@@ -43,32 +43,27 @@ add_definitions(
     -DBAUD0=${BAUD0}
 )
 # mmcu MUST be passed to bot the compiler and linker, this handle the linker
-set(CMAKE_EXE_LINKER_FLAGS -mmcu=${MCU})
+set(CMAKE_EXE_LINKER_FLAGS "-mmcu=${MCU} -Wl,-u,vfprintf")
 
 add_compile_options(
     -mmcu=${MCU} # MCU
     -std=gnu99 # C99 standard
     -Os # optimize
     -Wall # enable warnings
-    -Wno-main
-    -Wundef
-    -pedantic
-    #-Wstrict-prototypes
-    #-Werror
-    #-Wfatal-errors
-    -Wl,--relax,--gc-sections
-    -g
-    -gdwarf-2
-    -funsigned-char # a few optimizations
-    -funsigned-bitfields
-    -fpack-struct
-    -fshort-enums
-    -ffunction-sections
-    -fdata-sections
-    -fno-split-wide-types
-    -fno-tree-scev-cprop
-    -Wl,-u,vfprintf
-    -lprintf_flt
+    # -Wno-main
+    # -Wundef
+    # -pedantic
+    # -Wl,--relax,--gc-sections
+    # -g
+    # -gdwarf-2
+    # -funsigned-char # a few optimizations
+    # -funsigned-bitfields
+    # -fpack-struct
+    # -fshort-enums
+    # -ffunction-sections
+    # -fdata-sections
+    # -fno-split-wide-types
+    # -fno-tree-scev-cprop
     -lm
     -Wl,-Map=myprog.map 
     -Wl,--cref 
@@ -81,6 +76,8 @@ add_executable(${PRODUCT_NAME} ${SRC_FILES})
 
 # Include the header files
 target_include_directories(${PRODUCT_NAME} PUBLIC src/include)
+
+target_link_libraries(${PRODUCT_NAME} printf_flt)
 
 # Rename the output to .elf as we will create multiple files
 set_target_properties(${PRODUCT_NAME} PROPERTIES OUTPUT_NAME ${PRODUCT_NAME}.elf)
