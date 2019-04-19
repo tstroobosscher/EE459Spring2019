@@ -15,6 +15,8 @@ static char *ELM_RESET = "ATZ\r";
 static char *ECHO_OFF = "ATE0\r";
 static char *SEARCH_BUS = "ATSP0\r";
 
+#define DBG(...)
+
 
 /*
  *	The idea for this file is to provide a layer of abstraction between the 
@@ -73,9 +75,7 @@ static int elm_read(struct elm_ctx *elm, char *buf, int len) {
 
     *cur = ch;
 
-    UART_DBG("elm: read buf: ");
-    UART_DBG(buf);
-    UART_DBG("\r\n");
+    DBG("elm: read buf: %s\n", buf);
 
     cur++;
     ret++;

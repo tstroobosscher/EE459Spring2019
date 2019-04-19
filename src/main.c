@@ -116,7 +116,6 @@ int main() {
   else
     DBG("main: initialized fat32\n");
 
-  /* main routines */
   if (initialize_elm(&fifo, &elm, UART_PORT_1) < 0) 
     DBG("main: unable to initialize elm\n");
   else
@@ -128,35 +127,46 @@ int main() {
     DBG("main: initialized obd\n");
 
 
-  char buf[10] = {0xFE, 0x51};
+  char buf[13] = {0xFE, 0x54, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-  i2c_io(0x50, buf, 2, NULL, 0, NULL, 0);
+  i2c_io(0x50, buf, 13, NULL, 0, NULL, 0);
 
-  while (1) {
-    char *string = "Hello World!";
-    i2c_io(0x50, string, strlen(string), NULL, 0, NULL, 0);
-    // struct node *ptr = obd.linked_list;
+  char lcd_screen[20][4];
 
-    // while(ptr) {
+    while (1) {
+    buf[0] = 0xFE;
+    buf[1] = 0x46;
+    i2c_io(0x50, buf, 2, NULL, 0, NULL, 0);
 
-    //   /* the compiler needs offset information to dereference void pointers */
-    //   struct obd_cmd *cmd = (struct obd_cmd *) ptr->data;
+    struct node *ptr = obd.linked_list;
 
-    //   char ret[64];
+    memset(lcd_screen, 0, 20*4);
 
-    //   if(cmd->handle_data != NULL) {
-    //     if(obd_command(&obd, cmd->obd_cmd, buf, BUF_SIZE) < 0) {
-    //       ptr = ptr->next;
-    //       continue;
-    //     }
-    //     (*(cmd->handle_data))(ret, buf, cmd->resp_bytes, &obd);
-    //     DBG("main: %s = %s %s\n", cmd->cmd_str, ret, cmd->obd_units);
-    //   }
-    //   ptr = ptr->next;
-    // }
+    while(ptr) {
+
+      /* the compiler needs offset information to dereference void pointers */
+      struct obd_cmd *cmd = (struct obd_cmd *) ptr->data;
+
+      char ret[64];
+
+      if(cmd->handle_data != NULL) {
+        if(obd_command(&obd, cmd->obd_cmd, buf, BUF_SIZE) < 0) {
+          ptr = ptr->next;
+          continue;
+        }
+        (*(cmd->handle_data))(ret, buf, cmd->resp_bytes, &obd);
+        DBG("main: %s = %s %s\n", cmd->cmd_str, ret, cmd->obd_units);
+
+        if(cmd->obd_pid == ENGINE_RPM) {
+          snprintf(lcd_screen[0], 20, "RPM: %s%s", ret, cmd->obd_units);
+          i2c_io(0x50, lcd_screen[0], 20, NULL, 0, NULL, 0);
+        }
+
+      }
+      ptr = ptr->next;
+    }
     
     PORTB ^= (1 << 0);
-    DELAY_MS(1000);
   }
 
   return (0);
