@@ -50,20 +50,20 @@ add_compile_options(
     -std=gnu99 # C99 standard
     -Os # optimize
     -Wall # enable warnings
-    # -Wno-main
-    # -Wundef
-    # -pedantic
-    # -Wl,--relax,--gc-sections
-    # -g
-    # -gdwarf-2
-    # -funsigned-char # a few optimizations
-    # -funsigned-bitfields
-    # -fpack-struct
-    # -fshort-enums
-    # -ffunction-sections
-    # -fdata-sections
-    # -fno-split-wide-types
-    # -fno-tree-scev-cprop
+    -Wno-main
+    -Wundef
+    -pedantic
+    -Wl,--relax,--gc-sections
+    -g
+    -gdwarf-2
+    -funsigned-char # a few optimizations
+    -funsigned-bitfields
+    -fpack-struct
+    -fshort-enums
+    -ffunction-sections
+    -fdata-sections
+    -fno-split-wide-types
+    -fno-tree-scev-cprop
     -lm
     -Wl,-Map=myprog.map 
     -Wl,--cref 
