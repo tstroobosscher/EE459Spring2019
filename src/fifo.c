@@ -22,7 +22,6 @@ void initialize_fifo(struct fifo_t *fifo) {
   return;
 }
 
-<<<<<<< HEAD:fifo.c
 /**
  * @brief      write a byte to the fifo, move the head up
  *
@@ -33,19 +32,6 @@ void initialize_fifo(struct fifo_t *fifo) {
  */
 
 int8_t fifo_write_byte(struct fifo_t *fifo, unsigned char *byte) {
-=======
-char fifo_write_byte(struct fifo_t *fifo, char *byte) {
-  /*
-   *	write a single byte to the fifo, increment the head
-   *	if fifo is full, return -1
-   *	return 0 on success
-   *
-   *	param: fifo is the fifo struct pointer
-   *	param: byte is a reference argument
-   *
-   *	private function, should not be exported
-   */
->>>>>>> master:src/fifo.c
 
   /* fifo ready or empty */
   if (fifo->f_status != FIFO_FULL) {
@@ -71,7 +57,6 @@ char fifo_write_byte(struct fifo_t *fifo, char *byte) {
   return -1;
 }
 
-<<<<<<< HEAD:fifo.c
 /**
  * @brief      read a single byte from the fifo, move the tail up
  *
@@ -81,19 +66,6 @@ char fifo_write_byte(struct fifo_t *fifo, char *byte) {
  * @return     return success or failure
  */
 int8_t fifo_read_byte(struct fifo_t *fifo, uint8_t *byte) {
-=======
-char fifo_read_byte(struct fifo_t *fifo, char *byte) {
-  /*
-   *	read a single byte the fifo, increment the tail
-   *	if fifo is empty, return -1
-   *	return 0 on success, assign reference value the read byte
-   *
-   *	param: fifo is the fifo struct pointer
-   *	param: byte is value-result argument
-   *
-   *	private function, should not be exported
-   */
->>>>>>> master:src/fifo.c
 
   /* fifo ready or full */
   if (fifo->f_status != FIFO_EMPTY) {
@@ -141,19 +113,11 @@ void fifo_dump_mem(struct fifo_t *fifo) {
   }
 
   for(int i = 0; i < ARRAY_SIZE(fifo->f_buf); i++){
-<<<<<<< HEAD:fifo.c
     printf("fifo address: 0x%X data: 0x%X ", i, fifo->f_buf[i]);
     if(fifo->f_head == i)
       printf(" <- head");
     if(fifo->f_tail == i)
      printf(" <- tail");
-=======
-    printf("fifo address: %d data: %d ", i, fifo->f_buf[i]);
-    if(fifo->f_head == i)
-      printf(" <- head");
-    if(fifo->f_tail == i)
-      printf(" <- tail");
->>>>>>> master:src/fifo.c
 
     printf("\n");
   }

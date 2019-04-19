@@ -125,7 +125,7 @@ fat32_set_partition(struct fat32_ctx *fat32, struct PartitionTable pt[]) {
 }
 
 static void
-fat32_set_context(struct fat32_ctx *fat32, struct FAT32BootSector *bs) {
+fat32_set_context(struct fat32_ctx *ctx, struct FAT32BootSector *bs) {
 
   /*
    *  Grab the relevant information from BS, then process, then recycle
@@ -133,7 +133,7 @@ fat32_set_context(struct fat32_ctx *fat32, struct FAT32BootSector *bs) {
 
   ctx->reserved_sectors = bs->reserved_sectors;
   DBG("fat32: reserved_sectors = 0x%X\n", ctx->reserved_sectors);
-  ctxs->number_of_fats = bs->number_of_fats;
+  ctx->number_of_fats = bs->number_of_fats;
   DBG("fat32: number_of_fats = 0x%X\n", ctx->number_of_fats);
   ctx->sectors_per_fat_32 = bs->sectors_per_fat_32;
   DBG("fat32: sectors_per_fat_32 = 0x%X\n", ctx->sectors_per_fat_32);
