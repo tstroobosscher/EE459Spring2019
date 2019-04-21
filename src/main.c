@@ -126,6 +126,12 @@ int main() {
   else
     DBG("main: initialized obd\n");
 
+  // struct fat32_file f;
+
+  // strncpy(f.file_name, "logfile1", 8);
+  // strncpy(f.file_ext, "txt", 3);
+
+  // fat32_creat_file(&fat32, &f);
 
   char buf[13] = {0xFE, 0x54, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
@@ -140,14 +146,14 @@ int main() {
 
     struct node *ptr = obd.linked_list;
 
-    memset(lcd_screen, 0, 20*4);
-
     while(ptr) {
+      memset(lcd_screen, 0, 20*4);
 
       /* the compiler needs offset information to dereference void pointers */
       struct obd_cmd *cmd = (struct obd_cmd *) ptr->data;
 
       char ret[64];
+      char message[64];
 
       if(cmd->handle_data != NULL) {
         if(obd_command(&obd, cmd->obd_cmd, buf, BUF_SIZE) < 0) {
@@ -157,14 +163,47 @@ int main() {
         (*(cmd->handle_data))(ret, buf, cmd->resp_bytes, &obd);
         DBG("main: %s = %s %s\n", cmd->cmd_str, ret, cmd->obd_units);
 
+        // sprintf(message, "%s,", ret);
+
+        // fat32_write_file_nbytes(&fat32, &f, message, strlen(message));
+
         if(cmd->obd_pid == ENGINE_RPM) {
+          buf[0] = 0xFE;
+          buf[1] = 0x45;
+          buf[2] = 0x00;
+          i2c_io(0x50, buf, 3, NULL, 0, NULL, 0);
           snprintf(lcd_screen[0], 20, "RPM: %s%s", ret, cmd->obd_units);
+          i2c_io(0x50, lcd_screen[0], 20, NULL, 0, NULL, 0);
+        }
+        if(cmd->obd_pid == CALCULATED_ENGINE_LOAD) {
+          buf[0] = 0xFE;
+          buf[1] = 0x45;
+          buf[2] = 0x40;
+          i2c_io(0x50, buf, 3, NULL, 0, NULL, 0);
+          snprintf(lcd_screen[0], 20, "LOAD: %s%s", ret, cmd->obd_units);
+          i2c_io(0x50, lcd_screen[0], 20, NULL, 0, NULL, 0);
+        }
+        if(cmd->obd_pid == ENGINE_COOLANT_TEMP_1) {
+          buf[0] = 0xFE;
+          buf[1] = 0x45;
+          buf[2] = 0x14;
+          i2c_io(0x50, buf, 3, NULL, 0, NULL, 0);
+          snprintf(lcd_screen[0], 20, "TEMP: %s%s", ret, cmd->obd_units);
+          i2c_io(0x50, lcd_screen[0], 20, NULL, 0, NULL, 0);
+        }
+        if(cmd->obd_pid == VEHICLE_SPEED) {
+          buf[0] = 0xFE;
+          buf[1] = 0x45;
+          buf[2] = 0x54;
+          i2c_io(0x50, buf, 3, NULL, 0, NULL, 0);
+          snprintf(lcd_screen[0], 20, "SPEED: %s%s", ret, cmd->obd_units);
           i2c_io(0x50, lcd_screen[0], 20, NULL, 0, NULL, 0);
         }
 
       }
       ptr = ptr->next;
     }
+    // fat32_write_file_nbytes(&fat32, &f, "\n", 1);
     
     PORTB ^= (1 << 0);
   }

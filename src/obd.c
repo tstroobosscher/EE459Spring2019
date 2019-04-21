@@ -70,7 +70,7 @@ struct obd_cmd obd_cmds[] = {
         ENGINE_COOLANT_TEMP_1,
         1,
         /* UNITS_CELCIUS, */
-        "° Celsius",
+        "* Celsius",
         "0105\r",
         "ENGINE COOLANT TEMP 1",
         &obd_get_coolant_temp,
