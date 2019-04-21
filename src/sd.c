@@ -87,7 +87,8 @@ sd_command(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t bytes,
 
       ret = spi_read_char();
 
-      DBG("%X ", ret);
+      UART_DBG_HEX(ret);
+      UART_DBG(" ");
 
       DELAY_MS(10);
 
@@ -126,7 +127,7 @@ sd_acommand(uint8_t cmd, uint32_t arg, uint8_t crc, uint8_t bytes,
   if (sd_command(CMD55, bind_args(NOARG, NOARG, NOARG, NOARG), NOCRC, 0,
                  NULL) == R1_RESPONSE_ERR) {
 
-    DBG("sd: CMD55 failure\n");
+    DBG("sd: CMD55 failure\r\n");
     DELAY_MS(10);
     return 0xFF;
   }

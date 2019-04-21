@@ -610,9 +610,11 @@ int8_t fat32_update_file_size(struct fat32_ctx *ctx, struct fat32_file *file, ui
       UART_DBG("main: error reading FAT32 root entry\r\n");
   }
 
-  e.file_size = size;
+  e.file_size += size;
 
-  DBG("fat32: updating file size at root dir offset 0x%lX\n", file->root_dir_offset);
+  UART_DBG("fat32: updating file size at root dir offset 0x");
+  UART_DBG_32(file->root_dir_offset);
+  UART_DBG("\r\n");
 
   fat32_dump_entry(&e);
 
@@ -630,10 +632,10 @@ int8_t fat32_creat_file(struct fat32_ctx *ctx, struct fat32_file *file) {
 
   if((f = fat32_file_exists(ctx, file)) != NULL) {
     /* file already exists */
-    DBG("fat32: file already exists\n");
+    UART_DBG("fat32: file already exists\r\n");
     /* just return the cached file information */
     file->root_dir_offset = f->root_dir_offset;
-    file->file_size = 0;
+    file->file_size = f->file_size;
     file->fat_list = f->fat_list;
     file->current_cluster = f->current_cluster;
 
@@ -644,15 +646,19 @@ int8_t fat32_creat_file(struct fat32_ctx *ctx, struct fat32_file *file) {
     struct FAT32Entry e;
     memset(&e, 0, sizeof(struct FAT32Entry));
 
-    DBG("fat32: creating new file entry\n");
+    UART_DBG("fat32: creating new file entry\r\n");
 
     file->root_dir_offset = fat32_get_next_root_dir_loc(ctx);
 
-    DBG("fat32: creat: root dir offset: 0x%X\n", file->root_dir_offset);
+    UART_DBG("fat32: creat: root dir offset: 0x");
+    UART_DBG_32(file->root_dir_offset);
+    UART_DBG("\r\n");
 
     first_cluster_addr = fat32_get_next_cluster(ctx);
 
-    DBG("fat32: next cluster address: 0x%X\n", first_cluster_addr);
+    UART_DBG("fat32: next cluster address: 0x");
+    UART_DBG_32(first_cluster_addr);
+    UART_DBG("\r\n");
 
     e.first_cluster_addr_high = (first_cluster_addr >> 16);
     e.first_cluster_addr_low = (first_cluster_addr);
@@ -697,16 +703,21 @@ int8_t fat32_write_file_nbytes(struct fat32_ctx *ctx, struct fat32_file *file,
   /* jesus christ the 2 unit translation is frustrating */
   uint64_t addr =  + file->current_byte_offset;
 
-  DBG("main: fat32 writing to byte address 0x%lX\n", addr);
+  UART_DBG("main: fat32 writing to byte address 0x");
+  UART_DBG_32(addr >> 32);
+  UART_DBG_32(addr);
+  UART_DBG("\r\n");
 
-  DBG("main: buf size: 0x%X\n", nbytes);
+  UART_DBG("main: buf size: 0x");
+  UART_DBG_32(nbytes);
+  UART_DBG("\r\n");
 
   io_write_nbytes(ctx->io, buf, addr, nbytes);
 
   io_flush_read_buffer(ctx->io);
   io_flush_write_buffer(ctx->io);
 
-  fat32_update_file_size(ctx, file, file->file_size + nbytes);
+  fat32_update_file_size(ctx, file, nbytes);
 
   file->current_byte_offset += nbytes;
 

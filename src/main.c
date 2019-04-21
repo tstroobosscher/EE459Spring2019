@@ -126,20 +126,6 @@ int main() {
   else
     DBG("main: initialized obd\n");
 
-  // struct fat32_file f;
-
-  // strncpy(f.file_name, "logfile1", 8);
-  // strncpy(f.file_ext, "txt", 3);
-
-  // fat32_creat_file(&fat32, &f);
-
-  // io_flush_write_buffer(fat32.io);
-
-  // char *message = "THE TRADGEDY OF MACBETH\n";
-
-  // fat32_write_file_nbytes(&fat32, &f, message, strlen(message));
-
-  // io_flush_write_buffer(fat32.io);
 
   char buf[13] = {0xFE, 0x54, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
@@ -175,18 +161,6 @@ int main() {
           snprintf(lcd_screen[0], 20, "RPM: %s%s", ret, cmd->obd_units);
           i2c_io(0x50, lcd_screen[0], 20, NULL, 0, NULL, 0);
         }
-        // if(cmd->obd_pid == CALCULATED_ENGINE_LOAD) {
-        //   snprintf(lcd_screen[1], 20, "LOAD: %s%s", ret, cmd->obd_units);
-        //   i2c_io(0x50, lcd_screen[1], 20, NULL, 0, NULL, 0);
-        // }
-        // if(cmd->obd_pid == ENGINE_COOLANT_TEMP_1) {
-        //   snprintf(lcd_screen[2], 20, "TEMP: %s%s", ret, cmd->obd_units);
-        //   i2c_io(0x50, lcd_screen[2], 20, NULL, 0, NULL, 0);
-        // }
-        // if(cmd->obd_pid == VEHICLE_SPEED) {
-        //   snprintf(lcd_screen[3], 20, "SPEED: %s%s", ret, cmd->obd_units);
-        //   i2c_io(0x50, lcd_screen[3], 20, NULL, 0, NULL, 0);
-        // }
 
       }
       ptr = ptr->next;

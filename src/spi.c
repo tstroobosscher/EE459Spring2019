@@ -12,8 +12,6 @@
 #include "utils.h"
 #include "astdio.h"
 
-#define DBG(...)
-
 static __attribute__((always inline)) void
 spi_initialize_slave_select(uint8_t pin) {
   /*
