@@ -206,6 +206,7 @@ int main() {
     // fat32_write_file_nbytes(&fat32, &f, "\n", 1);
     
     PORTB ^= (1 << 0);
+    //DELAY_MS(1000);
   }
 
   return (0);
