@@ -77,6 +77,7 @@ add_executable(${PRODUCT_NAME} ${SRC_FILES})
 # Include the header files
 target_include_directories(${PRODUCT_NAME} PUBLIC src/include)
 
+# Link to avr-libc's floating point libraries
 target_link_libraries(${PRODUCT_NAME} printf_flt)
 
 # Rename the output to .elf as we will create multiple files
@@ -93,6 +94,8 @@ add_custom_target(eeprom avr-objcopy -j .eeprom  --set-section-flags=.eeprom="al
 
 # Upload the firmware with avrdude
 add_custom_target(flash avrdude  -c ${PROG_TYPE} -p ${MCU} -U flash:w:${PRODUCT_NAME}.hex DEPENDS hex)
+
+add_custom_target(stats avr-size --format=avr --mcu=${MCU} ${PRODUCT_NAME}.elf DEPENDS hex)
 
 # Upload the eeprom with avrdude
 add_custom_target(upload_eeprom avrdude -c ${PROG_TYPE} -p ${MCU}  -U eeprom:w:${PRODUCT_NAME}.eep DEPENDS eeprom)
